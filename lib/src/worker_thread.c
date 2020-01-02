@@ -31,6 +31,9 @@ static bool work(int output_fd) {
   int_fast32_t front = buf_page->storage_front;
   int_fast32_t back =
       atomic_load_explicit(&buf_page->storage_back, memory_order_acquire);
+  if (back > SYAN_BUFFER_PAGE_SIZE) {
+    back = SYAN_BUFFER_PAGE_SIZE;
+  }
 
   for (int i = front; i < back; i++) {
     while (atomic_load_explicit(&buf_page->storage[i].signature,
@@ -41,7 +44,7 @@ static bool work(int output_fd) {
   write_all_or_crash(&buf_page->storage[front], (back - front) * sizeof(Event),
                      output_fd);
 
-  if (back == sizeof(buf_page->storage) / sizeof(Event)) {
+  if (back == SYAN_BUFFER_PAGE_SIZE) {
     syan_global_buffer_release_front_page();
   } else {
     buf_page->storage_front = back;

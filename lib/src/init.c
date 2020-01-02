@@ -29,7 +29,7 @@ void syan_init() {
             sizeof(Buffer));
     exit(EXIT_FAILURE);
   }
-  if (buffer_init_status == BUFFER_INIT_MALLOC_FAILED_FIRST_PAGE) {
+  if (buffer_init_status == BUFFER_INIT_MALLOC_FAILED_PAGE) {
     fprintf(stderr, "SyncAnalysis init: malloc failed for %lu bytes\n",
             sizeof(BufferPage));
     exit(EXIT_FAILURE);
