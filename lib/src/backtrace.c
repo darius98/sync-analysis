@@ -1,6 +1,5 @@
 #include "backtrace.h"
 
-#define UNW_LOCAL_ONLY
 #include <libunwind.h>
 
 void syan_get_backtrace(intptr_t* backtrace) {
