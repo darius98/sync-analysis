@@ -9,13 +9,8 @@
 namespace sync {
 
 RWLock::RWLock() {
-  pthread_rwlockattr_t attr{};
-  int status = pthread_rwlockattr_init(&attr);
-  SyncException::throw_on_error("RWLock", "pthread_rwlockattr_init", status);
-  status = pthread_rwlock_init(&pt_rwlock, &attr);
+  int status = pthread_rwlock_init(&pt_rwlock, nullptr);
   SyncException::throw_on_error("RWLock", "pthread_rwlock_init", status);
-  status = pthread_rwlockattr_destroy(&attr);
-  SyncException::throw_on_error("RWLock", "pthread_rwlockattr_destroy", status);
   syan_rwlock_on_create(this);
 }
 

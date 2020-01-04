@@ -9,13 +9,8 @@
 namespace sync {
 
 Mutex::Mutex() {
-  pthread_mutexattr_t attr{};
-  int status = pthread_mutexattr_init(&attr);
-  SyncException::throw_on_error("Mutex", "pthread_mutexattr_init", status);
-  status = pthread_mutex_init(&pt_mutex, &attr);
+  int status = pthread_mutex_init(&pt_mutex, nullptr);
   SyncException::throw_on_error("Mutex", "pthread_mutex_init", status);
-  status = pthread_mutexattr_destroy(&attr);
-  SyncException::throw_on_error("Mutex", "pthread_mutexattr_destroy", status);
   syan_mutex_on_create(this);
 }
 

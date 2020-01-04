@@ -40,13 +40,8 @@ void Thread::detach() {
 }
 
 void Thread::init_thread(void* (*func)(void*), void* arg) {
-  pthread_attr_t attr{};
-  int status = pthread_attr_init(&attr);
-  SyncException::throw_on_error("Thread", "pthread_attr_init", status);
-  status = pthread_create(&pt_thread, &attr, func, arg);
+  int status = pthread_create(&pt_thread, nullptr, func, arg);
   SyncException::throw_on_error("Thread", "pthread_create", status);
-  status = pthread_attr_destroy(&attr);
-  SyncException::throw_on_error("Thread", "pthread_attr_destroy", status);
 }
 
 void Thread::on_thread_start() {
