@@ -17,7 +17,6 @@ add_library(sync_analysis_lib STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/worker_thread.c
         )
 target_include_directories(sync_analysis_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib/include)
-target_compile_definitions(sync_analysis_lib PUBLIC SYNC_ANALYSIS_ENABLED=1)
 target_link_libraries(sync_analysis_lib PUBLIC pthread)
 target_compile_definitions(sync_analysis_lib PRIVATE UNW_LOCAL_ONLY)
 
