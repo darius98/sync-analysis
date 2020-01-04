@@ -17,3 +17,14 @@ add_library(sync_analysis_lib STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/worker_thread.c
         )
 target_include_directories(sync_analysis_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib/include)
+target_link_libraries(sync_analysis_lib PUBLIC pthread)
+
+add_library(cxx_sync_lib STATIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/integration/cxx_sync/exception.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/integration/cxx_sync/mutex.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/integration/cxx_sync/recursive_mutex.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/integration/cxx_sync/rwlock.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/integration/cxx_sync/thread.cpp
+        )
+target_include_directories(cxx_sync_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/integration)
+target_link_libraries(cxx_sync_lib PUBLIC pthread sync_analysis_lib)
