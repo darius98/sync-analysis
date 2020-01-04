@@ -1,7 +1,5 @@
 #include "mutex.hpp"
 
-#include <cassert>
-
 #include <sync_analysis.h>
 
 #include "exception.hpp"
@@ -15,8 +13,7 @@ Mutex::Mutex() {
 }
 
 Mutex::~Mutex() {
-  int status = pthread_mutex_destroy(&pt_mutex);
-  assert(status == 0);
+  pthread_mutex_destroy(&pt_mutex);
   syan_mutex_on_destroy(this);
 }
 

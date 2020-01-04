@@ -1,7 +1,5 @@
 #include "rwlock.hpp"
 
-#include <cassert>
-
 #include <sync_analysis.h>
 
 #include "exception.hpp"
@@ -15,8 +13,7 @@ RWLock::RWLock() {
 }
 
 RWLock::~RWLock() {
-  int status = pthread_rwlock_destroy(&pt_rwlock);
-  assert(status == 0);
+  pthread_rwlock_destroy(&pt_rwlock);
   syan_rwlock_on_destroy(this);
 }
 

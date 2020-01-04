@@ -1,7 +1,5 @@
 #include "recursive_mutex.hpp"
 
-#include <cassert>
-
 #include <sync_analysis.h>
 
 #include "exception.hpp"
@@ -25,8 +23,7 @@ RecursiveMutex::RecursiveMutex() {
 }
 
 RecursiveMutex::~RecursiveMutex() {
-  int status = pthread_mutex_destroy(&pt_mutex);
-  assert(status == 0);
+  pthread_mutex_destroy(&pt_mutex);
   syan_rec_mutex_on_destroy(this);
 }
 

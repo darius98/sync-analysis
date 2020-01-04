@@ -1,5 +1,6 @@
 #include "exception.hpp"
 
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
@@ -15,16 +16,17 @@ void SyncException::throw_on_error(const char* type, const char* function,
 SyncException::SyncException(const char* type, const char* function,
                              int error_code)
     : type(type), function(function), error_code(error_code),
-      message(static_cast<char*>(
-          malloc(strlen(type) + 2 + strlen(function) + 19 + 11))) {
+      message(static_cast<char*>(std::malloc(
+          std::strlen(type) + 2 + std::strlen(function) + 19 + 11))) {
   if (message == nullptr) {
     std::abort();
   }
-  sprintf(message, "%s: %s failed with error %d", type, function, error_code);
+  std::sprintf(message, "%s: %s failed with error %d", type, function,
+               error_code);
 }
 
 SyncException::~SyncException() noexcept {
-  free(message);
+  std::free(message);
 }
 
 const char* SyncException::get_type() const noexcept {

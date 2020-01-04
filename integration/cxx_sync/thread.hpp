@@ -7,9 +7,9 @@ namespace sync {
 
 class Thread {
 public:
-  template <class Callable> explicit Thread(Callable callable) {
-    auto context = new Context{this, static_cast<Callable&&>(callable)};
-    init_thread(&proxy<Callable>, context);
+  template <class Func> explicit Thread(Func callable) {
+    auto context = new Context<Func>{this, static_cast<Func&&>(callable)};
+    init_thread(&proxy<Func>, context);
   }
 
   ~Thread();
@@ -21,9 +21,9 @@ public:
   void detach();
 
 private:
-  template <class Callable> struct Context {
+  template <class Func> struct Context {
     Thread* thread;
-    Callable callable;
+    Func callable;
   };
 
   void init_thread(void* (*func)(void*), void* arg);
@@ -32,8 +32,8 @@ private:
 
   pthread_t pt_thread = nullptr;
 
-  template <class Callable> static void* proxy(void* arg) {
-    auto context = static_cast<Context<Callable>*>(arg);
+  template <class Func> static void* proxy(void* arg) {
+    auto context = static_cast<Context<Func>*>(arg);
     context->thread->on_thread_start();
     context->callable();
     delete context;
