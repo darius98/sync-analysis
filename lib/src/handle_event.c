@@ -1,7 +1,6 @@
 #include "handle_event.h"
 
 #include <stdatomic.h>
-#include <time.h>
 
 #include <pthread.h>
 
@@ -10,7 +9,7 @@
 #include "event_time.h"
 #include "global_buffer.h"
 
-void handle_event(EventType event_type, void* addr) {
+void syan_handle_event(EventType event_type, void* addr) {
   Event* event = syan_global_buffer_acquire_event_slot();
   event->event_type = event_type;
   event->timestamp = syan_event_time_now();
