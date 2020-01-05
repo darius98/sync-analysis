@@ -14,19 +14,16 @@
 static pthread_t worker_thread;
 static atomic_bool stop_token;
 
-static void write_all_or_crash(void* buffer, int num_bytes, int fd) {
-  while (num_bytes > 0) {
-    int num_written = write(fd, buffer, num_bytes);
-    if (num_written < 0) {
-      fprintf(stderr, "SyncAnalysis write: failed with error %d\n", errno);
-      exit(EXIT_FAILURE);
-    }
-    num_bytes -= num_written;
-    buffer += num_written;
+static void write_all_or_crash(void* buffer, int num_bytes, FILE* file) {
+  int num_written = fwrite(buffer, 1, num_bytes, file);
+  if (num_written < num_bytes) {
+    fprintf(stderr, "SyncAnalysis write: failed with error %d\n",
+            ferror(file));
+    exit(EXIT_FAILURE);
   }
 }
 
-static bool work(int output_fd) {
+static bool work(FILE* file) {
   BufferPagePtr buf_page = syan_global_buffer_get_front_page();
   int_fast32_t front = buf_page->storage_front;
   int_fast32_t back =
@@ -42,7 +39,7 @@ static bool work(int output_fd) {
   }
 
   write_all_or_crash(&buf_page->storage[front], (back - front) * sizeof(Event),
-                     output_fd);
+                     file);
 
   if (back == SYAN_BUFFER_PAGE_SIZE) {
     syan_global_buffer_release_front_page();
@@ -53,21 +50,19 @@ static bool work(int output_fd) {
   return back - front > 0;
 }
 
-static void* loop(void* file_descriptor) {
-  int fd = *(int*)file_descriptor;
-  free(file_descriptor);
+static void* loop(void* param) {
+  FILE* file = (FILE*)param;
   while (atomic_load_explicit(&stop_token, memory_order_acquire) == false) {
-    while (work(fd)) {
+    while (work(file)) {
     }
     usleep(5);
   }
   return NULL;
 }
 
-int syan_start_worker_thread(void* file_descriptor) {
+int syan_start_worker_thread(void* param) {
   atomic_store_explicit(&stop_token, false, memory_order_release);
-  pthread_attr_t thread_attr;
-  return pthread_create(&worker_thread, &thread_attr, loop, file_descriptor);
+  return pthread_create(&worker_thread, NULL, loop, param);
 }
 
 int syan_stop_worker_thread() {

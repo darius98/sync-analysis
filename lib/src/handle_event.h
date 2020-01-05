@@ -3,6 +3,14 @@
 
 #include "event_type.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void syan_handle_event(EventType event_type, void* addr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

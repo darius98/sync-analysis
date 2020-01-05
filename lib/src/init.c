@@ -2,16 +2,13 @@
 
 #include "event_time.h"
 #include "global_buffer.h"
-#include "open_output_stream.h"
 #include "worker_thread.h"
 
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <unistd.h>
-
-static int output_fd;
+static FILE* output_file;
 
 void syan_init() {
   int event_time_init_status = syan_event_time_init();
@@ -35,22 +32,14 @@ void syan_init() {
     exit(EXIT_FAILURE);
   }
 
-  output_fd = syan_open_output_stream();
-  if (output_fd == -1) {
-    fprintf(stderr,
-            "SyncAnalysis init: failed to open output stream. errno=%d\n",
+  output_file = fopen("sync_analysis.dump", "wb");
+  if (output_file == NULL) {
+    fprintf(stderr, "SyncAnalysis init: failed to open output file. errno=%d\n",
             errno);
     exit(EXIT_FAILURE);
   }
 
-  void* thread_param = malloc(sizeof(int));
-  if (thread_param == NULL) {
-    fprintf(stderr, "SyncAnalysis init: malloc failed for %lu bytes\n",
-            sizeof(int));
-    exit(EXIT_FAILURE);
-  }
-
-  int status = syan_start_worker_thread(thread_param);
+  int status = syan_start_worker_thread(output_file);
   if (status != 0) {
     fprintf(stderr, "SyncAnalysis init: pthread_create failed error=%d\n",
             status);
@@ -66,5 +55,5 @@ void syan_shutdown() {
     exit(EXIT_FAILURE);
   }
 
-  close(output_fd);
+  fclose(output_file);
 }

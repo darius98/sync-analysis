@@ -1,5 +1,9 @@
 #include "handle_event.h"
 
+#include "init.h"
+
+extern "C" {
+
 // Thread
 
 void syan_thread_on_create(void* addr) {
@@ -106,4 +110,22 @@ void syan_rwlock_on_wr_unlock(void* addr) {
 
 void syan_rwlock_on_destroy(void* addr) {
   syan_handle_event(SA_EV_RWLOCK_ON_DESTROY, addr);
+}
+
+}
+
+namespace {
+
+struct StaticInitializer {
+  explicit StaticInitializer() noexcept {
+    syan_init();
+  }
+
+  ~StaticInitializer() noexcept {
+    syan_shutdown();
+  }
+};
+
+StaticInitializer initializer;
+
 }
