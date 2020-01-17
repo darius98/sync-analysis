@@ -3,6 +3,7 @@
 
 #include <lib/src/event.h>
 
+#include "environment.hpp"
 #include "internal_check_registerer.hpp"
 
 namespace syan {
@@ -11,7 +12,7 @@ class Check {
 public:
   virtual ~Check() = default;
 
-  virtual void on_event(const Event& event) = 0;
+  virtual void on_event(const Environment& environment, const Event& event) = 0;
 };
 
 } // namespace syan

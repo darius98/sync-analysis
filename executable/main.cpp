@@ -1,25 +1,41 @@
-#include <iostream>
+#include <mcga/cli.hpp>
 
-#include "check.hpp"
-#include "event_file_reader.hpp"
+#include "environment.hpp"
 
 int main(int argc, char** argv) {
-  if (argc != 3) {
-    std::cout << "Invalid arguments." << std::endl;
+  constexpr auto cli_message_header =
+      "Synchronization primitives analysis version 1.0\n"
+      "\n"
+      "Usage: ./sync_analysis [-options] [path/to/binary] "
+      "[path/to/sync_analysis.dump]";
+  mcga::cli::Parser parser{cli_message_header};
+
+  parser.addHelpFlag();
+  parser.addTerminalFlag(
+      mcga::cli::FlagSpec("version").setShortName("v").setDescription(
+          "Display program version and usage. Does not require positional "
+          "arguments and does not perform analysis."),
+      cli_message_header);
+
+  auto positional_args = parser.parse(argc, argv);
+
+  if (positional_args.size() != 3) {
+    std::cout << "Invalid number of arguments.\n"
+                 "\n"
+                 "Usage: ./sync_analysis [-options] [path/to/binary] "
+                 "[path/to/sync_analysis.dump]";
+    for (auto& arg : positional_args) {
+      std::cout << arg << "\n";
+    }
     return 1;
   }
 
-  syan::EventFileReader reader(argv[1]);
+  const auto& binary_file_path = positional_args[1];
+  const auto& dump_file_path = positional_args[2];
 
-  while (!reader.done()) {
-    Event event = reader.read();
+  auto syan_environment = syan::Environment{binary_file_path, dump_file_path};
 
-    for (auto* registered_check = syan::internal::RegisteredCheck::get_head();
-         registered_check != nullptr;
-         registered_check = registered_check->next_check) {
-      registered_check->check->on_event(event);
-    }
-  }
+  syan_environment.analyze();
 
   return 0;
 }
