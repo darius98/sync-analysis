@@ -1,6 +1,7 @@
 #include <iostream>
 
-#include "src/event_file_reader.hpp"
+#include "check.hpp"
+#include "event_file_reader.hpp"
 
 int main(int argc, char** argv) {
   if (argc != 3) {
@@ -12,8 +13,12 @@ int main(int argc, char** argv) {
 
   while (!reader.done()) {
     Event event = reader.read();
-    std::cout << "Event of type " << event.event_type << ", at timestamp "
-              << event.timestamp << ", on thread " << event.thread_id << "\n";
+
+    for (auto* registered_check = syan::internal::RegisteredCheck::get_head();
+         registered_check != nullptr;
+         registered_check = registered_check->next_check) {
+      registered_check->check->on_event(event);
+    }
   }
 
   return 0;
