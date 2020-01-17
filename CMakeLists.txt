@@ -33,6 +33,7 @@ add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/event_file_reader.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/logger.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/executable/report.cpp
 
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/checks/example_check.cpp
         )
@@ -40,5 +41,6 @@ target_include_directories(sync_analysis
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/mcga-cli/include
         )
+target_compile_definitions(sync_analysis PUBLIC -DSYNC_ANALYSIS_IS_IN_EXECUTABLE)
 
 add_subdirectory(tests)

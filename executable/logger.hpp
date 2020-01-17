@@ -7,7 +7,13 @@ namespace syan {
 
 class Logger {
 public:
-  [[noreturn]] void log_fatal(const std::string& message);
+  void log_info(const std::string& message) const;
+
+  void log_warn(const std::string& message) const;
+
+  void log_error(const std::string& message) const;
+
+  [[noreturn]] void log_fatal(const std::string& message) const;
 };
 
 }
