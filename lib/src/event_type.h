@@ -1,6 +1,10 @@
 #ifndef SYNC_ANALYSIS_LIB_SRC_EVENT_TYPE_H_
 #define SYNC_ANALYSIS_LIB_SRC_EVENT_TYPE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
   SA_EV_THREAD_ON_CREATE = 0,
   SA_EV_THREAD_ON_JOIN = 1,
@@ -28,5 +32,9 @@ typedef enum {
   SA_EV_RWLOCK_ON_WR_UNLOCK = 23,
   SA_EV_RWLOCK_ON_DESTROY = 24,
 } EventType;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

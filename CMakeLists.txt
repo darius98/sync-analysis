@@ -9,9 +9,9 @@ add_library(sync_analysis_lib STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/buffer.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/event_time.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/global_buffer.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/handle_event.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/handle_event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/init.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/sync_analysis.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/sync_analysis.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/worker_thread.c
         )
 target_include_directories(sync_analysis_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib/include)
@@ -27,5 +27,11 @@ add_library(cxx_sync_lib STATIC
         )
 target_include_directories(cxx_sync_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/integration)
 target_link_libraries(cxx_sync_lib PUBLIC pthread sync_analysis_lib)
+
+add_executable(sync_analysis
+        ${CMAKE_CURRENT_SOURCE_DIR}/executable/src/event_file_reader.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/executable/main.cpp
+        )
+target_include_directories(sync_analysis PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(tests)

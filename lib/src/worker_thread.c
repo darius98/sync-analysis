@@ -2,7 +2,6 @@
 
 #include "global_buffer.h"
 
-#include <errno.h>
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -17,8 +16,7 @@ static atomic_bool stop_token;
 static void write_all_or_crash(void* buffer, int num_bytes, FILE* file) {
   int num_written = fwrite(buffer, 1, num_bytes, file);
   if (num_written < num_bytes) {
-    fprintf(stderr, "SyncAnalysis write: failed with error %d\n",
-            ferror(file));
+    fprintf(stderr, "SyncAnalysis write: failed with error %d\n", ferror(file));
     exit(EXIT_FAILURE);
   }
 }

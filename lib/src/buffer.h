@@ -7,6 +7,10 @@
 
 #define SYAN_BUFFER_PAGE_SIZE ((1u << 15u) / sizeof(Event))
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
   // 32KB in each buffer page.
   Event storage[SYAN_BUFFER_PAGE_SIZE];
@@ -38,5 +42,9 @@ Event* syan_buffer_acquire_event_slot(Buffer* buffer);
 BufferPagePtr syan_buffer_get_front_page(Buffer* buffer);
 
 void syan_buffer_release_front_page(Buffer* buffer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

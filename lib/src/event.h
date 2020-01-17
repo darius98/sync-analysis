@@ -6,6 +6,10 @@
 
 #define SYAN_EVENT_SIGNATURE 666013
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // total size = 128B
 typedef struct {
   atomic_int_fast32_t signature; // 4B
@@ -15,5 +19,9 @@ typedef struct {
   intptr_t addr;                 // 8B
   intptr_t backtrace[12];        // 96B
 } Event;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

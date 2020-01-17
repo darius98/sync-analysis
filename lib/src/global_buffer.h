@@ -3,6 +3,10 @@
 
 #include "buffer.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 BufferInitStatus syan_global_buffer_init();
 
 Event* syan_global_buffer_acquire_event_slot();
@@ -10,5 +14,9 @@ Event* syan_global_buffer_acquire_event_slot();
 BufferPagePtr syan_global_buffer_get_front_page();
 
 void syan_global_buffer_release_front_page();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
