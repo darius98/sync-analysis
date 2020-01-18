@@ -5,11 +5,23 @@
 namespace syan {
 
 Environment::Environment(std::string binary_file_path,
-                         const std::string& dump_file_path)
+                         std::string dump_file_path)
     : binary_file_path(std::move(binary_file_path)),
-      dump_file_path(dump_file_path), dump_file_reader(dump_file_path) {}
+      dump_file_path(std::move(dump_file_path)) {
+  for (auto* registered_check = internal::RegisteredCheck::get_head();
+       registered_check != nullptr;
+       registered_check = registered_check->next_check) {
+    enabled_checks.push_back(registered_check->check);
+  }
+}
 
 void Environment::analyze() {
+  EventFileReader dump_file_reader(dump_file_path);
+
+  for (auto* check: enabled_checks){
+    check->on_start(*this);
+  }
+
   while (!dump_file_reader.done()) {
     Event event = dump_file_reader.read();
     if (event.signature != SYAN_EVENT_SIGNATURE) {
@@ -20,17 +32,24 @@ void Environment::analyze() {
         return;
       }
     }
-    for (auto* registered_check = internal::RegisteredCheck::get_head();
-         registered_check != nullptr;
-         registered_check = registered_check->next_check) {
-      registered_check->check->on_event(*this, event);
+    for (auto* check: enabled_checks){
+      check->on_event(*this, event);
     }
+    db.insert(event);
+  }
+
+  for (auto* check: enabled_checks){
+    check->on_end(*this);
   }
 }
 
 Report Environment::create_report(Report::Level level, int code,
-                                  std::string description) const {
+                                  std::string description) const noexcept {
   return Report{this, level, code, std::move(description)};
+}
+
+const ActiveObjectsDb& Environment::active_objects_db() const noexcept {
+  return db;
 }
 
 void Environment::send_report(Report::Level level, int code,

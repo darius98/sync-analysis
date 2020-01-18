@@ -7,7 +7,7 @@
 namespace syan {
 
 Report::Report(const Environment* env, Level level, int code,
-               std::string description)
+               std::string description) noexcept
     : env(env), level(level), code(code), description(std::move(description)) {}
 
 void Report::add_section(std::string section_description, const Event& event) {

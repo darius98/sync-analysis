@@ -31,6 +31,7 @@ target_link_libraries(cxx_sync_lib PUBLIC pthread sync_analysis_lib)
 add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/environment.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/event_file_reader.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/executable/active_objects_db.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/logger.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/report.cpp

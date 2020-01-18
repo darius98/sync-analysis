@@ -20,7 +20,7 @@ public:
   };
 
   explicit Report(const Environment* env, Level level, int code,
-                  std::string description);
+                  std::string description) noexcept;
 
   void add_section(std::string section_description, const Event& event);
 
