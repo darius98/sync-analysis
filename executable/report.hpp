@@ -25,13 +25,12 @@ public:
 
   void add_section(std::string section_description, EventPtr event);
 
-  void add_mutex_note(const std::string& mutex_name, ObjectId mutex_id);
+  void add_mutex_note(ObjectId mutex_id);
 
   void send();
 
 private:
-  void add_unique_object_note(const char* object_type,
-                              const std::string& object_name, EventPtr event);
+  void add_unique_object_note(const char* object_type, EventPtr event);
 
   struct ReportSection {
     std::string description;
@@ -46,7 +45,7 @@ private:
   std::string description;
   std::vector<ReportSection> sections;
   std::set<ThreadId> thread_notes;
-  std::set<std::tuple<const char*, std::string, EventPtr>> object_notes;
+  std::set<std::tuple<const char*, EventPtr>> object_notes;
 };
 
 } // namespace syan

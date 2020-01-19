@@ -15,17 +15,17 @@ void Report::add_section(std::string section_description, EventPtr event) {
   sections.emplace_back(std::move(section_description), std::move(event));
 }
 
-void Report::add_mutex_note(const std::string& mutex_name, ObjectId mutex_id) {
-  add_unique_object_note("Mutex", mutex_name,
-                         env->db().get_mutex_create_event(mutex_id));
+void Report::add_mutex_note(ObjectId mutex_id) {
+  add_unique_object_note("Mutex", env->db().mutex_create(mutex_id));
 }
 
 void Report::send() {
   for (const auto& object_note : object_notes) {
     sections.emplace_back(std::string{"Note: "} + std::get<0>(object_note) +
-                              " " + std::get<1>(object_note) +
+                              " " +
+                              std::to_string(std::get<1>(object_note)->addr) +
                               " was created here: ",
-                          std::get<2>(object_note));
+                          std::get<1>(object_note));
   }
 
   // TODO: Thread create stacktrace is not that useful, we need the stacktrace
@@ -34,14 +34,13 @@ void Report::send() {
   //  spawning thread and one on the spawned thread) and print the stacktrace on
   //  the spawning thread instead.
   for (const auto& thread_note : thread_notes) {
-    sections.emplace_back("Note: Thread " +
-                              env->db().get_thread_name(thread_note) +
+    sections.emplace_back("Note: Thread " + env->db().thread_name(thread_note) +
                               " was created here:",
-                          env->db().get_thread_create_event(thread_note));
-    auto thread_detach_event = env->db().get_thread_detach_event(thread_note);
+                          env->db().thread_create(thread_note));
+    auto thread_detach_event = env->db().thread_detach(thread_note);
     if (thread_detach_event != nullptr) {
       sections.emplace_back("Note: Thread " +
-                                env->db().get_thread_name(thread_note) +
+                                env->db().thread_name(thread_note) +
                                 " was detached here:",
                             thread_detach_event);
     }
@@ -57,10 +56,8 @@ void Report::send() {
   env->send_report(level, code, builder.str());
 }
 
-void Report::add_unique_object_note(const char* object_type,
-                                    const std::string& object_name,
-                                    EventPtr event) {
-  object_notes.emplace(object_type, object_name, std::move(event));
+void Report::add_unique_object_note(const char* object_type, EventPtr event) {
+  object_notes.emplace(object_type, std::move(event));
 }
 
 Report::ReportSection::ReportSection(std::string description, EventPtr event)

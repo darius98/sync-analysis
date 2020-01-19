@@ -20,27 +20,31 @@ public:
               Report::error, 1, "Mutex lock order inconsistency found");
 
           report.add_section(
-              "Thread " + env.db().get_thread_name(mtx1_lock->thread_id) +
-                  " locked mutex 1 first here:",
+              "Thread " + env.db().thread_name(mtx1_lock->thread_id) +
+                  " locked mutex " + env.db().mutex_name(mtx1_lock->addr) +
+                  " first here:",
               mtx1_lock);
           report.add_section(
-              "Thread " + env.db().get_thread_name(mtx2_lock->thread_id) +
-                  " locked mutex 2 second here:",
+              "Thread " + env.db().thread_name(mtx2_lock->thread_id) +
+                  " locked mutex " + env.db().mutex_name(mtx2_lock->addr) +
+                  " second here:",
               mtx2_lock);
 
           report.add_section(
-              "Thread " + env.db().get_thread_name(prev_lock_event->thread_id) +
-                  " locked mutex 2 first here:",
+              "Thread " + env.db().thread_name(prev_lock_event->thread_id) +
+                  " locked mutex " + env.db().mutex_name(mtx2_lock->addr) +
+                  " first here:",
               prev_lock_event);
 
-          report.add_section("Thread " +
-                                 env.db().get_thread_name(event->thread_id) +
-                                 " attempted to lock mutex 1 second here:",
-                             event);
+          report.add_section(
+              "Thread " + env.db().thread_name(event->thread_id) +
+                  " attempted to lock mutex " +
+                  env.db().mutex_name(mtx1_lock->addr) + " second here:",
+              event);
 
-          report.add_mutex_note("1", mtx1_lock->addr);
+          report.add_mutex_note(mtx1_lock->addr);
 
-          report.add_mutex_note("2", mtx2_lock->addr);
+          report.add_mutex_note(mtx2_lock->addr);
 
           report.send();
         }
