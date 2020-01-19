@@ -15,7 +15,7 @@ public:
 
   virtual void on_start(const Environment& env) {}
 
-  virtual void on_event(const Environment& env, const Event& event) = 0;
+  virtual void on_event(const Environment& env, EventPtr event) = 0;
 
   virtual void on_end(const Environment& env) {}
 };

@@ -23,8 +23,8 @@ void Environment::analyze() {
   }
 
   while (!dump_file_reader.done()) {
-    Event event = dump_file_reader.read();
-    if (event.signature != SYAN_EVENT_SIGNATURE) {
+    EventPtr event = EventPtr::make(dump_file_reader.read());
+    if (event->signature != SYAN_EVENT_SIGNATURE) {
       // It's ok for the last event to be corrupt, maybe something was broken.
       if (!dump_file_reader.done()) {
         logger.log_fatal("Dump file " + dump_file_path + " is corrupt.");

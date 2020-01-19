@@ -23,7 +23,7 @@ public:
   explicit Report(const Environment* env, Level level, int code,
                   std::string description) noexcept;
 
-  void add_section(std::string section_description, const Event& event);
+  void add_section(std::string section_description, EventPtr event);
 
   void add_mutex_note(const std::string& mutex_name, ObjectId mutex_id);
 
@@ -31,14 +31,13 @@ public:
 
 private:
   void add_unique_object_note(const char* object_type,
-                              const std::string& object_name,
-                              const Event& event);
+                              const std::string& object_name, EventPtr event);
 
   struct ReportSection {
     std::string description;
-    Event event;
+    EventPtr event;
 
-    ReportSection(std::string description, const Event& event);
+    ReportSection(std::string description, EventPtr event);
   };
 
   const Environment* env;
@@ -47,14 +46,7 @@ private:
   std::string description;
   std::vector<ReportSection> sections;
   std::set<ThreadId> thread_notes;
-
-  struct ObjectNoteCompare {
-    bool operator()(const std::tuple<const char*, std::string, Event>& t1,
-                    const std::tuple<const char*, std::string, Event>& t2) const
-        noexcept;
-  };
-  std::set<std::tuple<const char*, std::string, Event>, ObjectNoteCompare>
-      object_notes;
+  std::set<std::tuple<const char*, std::string, EventPtr>> object_notes;
 };
 
 } // namespace syan
