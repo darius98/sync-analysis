@@ -14,23 +14,26 @@ public:
   void insert(EventPtr event);
 
   std::string thread_name(ObjectId thread_id) const;
-
-  std::string mutex_name(ObjectId mutex_id) const;
-
-  std::string object_name(const Event& event) const;
+  std::string thread_name(const Event& event) const;
+  std::string thread_name(const EventPtr& event) const;
 
   EventPtr thread_create(ObjectId thread_id) const noexcept;
+  EventPtr thread_create(const Event& event) const noexcept;
+  EventPtr thread_create(const EventPtr& event) const noexcept;
 
   EventPtr thread_detach(ObjectId thread_id) const noexcept;
+  EventPtr thread_detach(const Event& event) const noexcept;
+  EventPtr thread_detach(const EventPtr& event) const noexcept;
 
-  EventPtr mutex_create(ObjectId mutex_id) const noexcept;
+  std::string object_name(const Event& event) const;
+  std::string object_name(const EventPtr& event) const;
 
-  EventPtr rec_mutex_create(ObjectId rec_mutex_id) const noexcept;
-
-  EventPtr rwlock_create(ObjectId rwlock_id) const noexcept;
+  EventPtr object_create(const Event& event) const noexcept;
+  EventPtr object_create(const EventPtr& event) const noexcept;
 
 private:
-  std::string object_name(std::string_view object_type, ObjectId object_id) const;
+  std::string object_name(std::string_view object_type,
+                          ObjectId object_id) const;
 
   struct ThreadState {
     EventPtr create;

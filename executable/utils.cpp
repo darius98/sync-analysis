@@ -11,26 +11,30 @@ bool is_create_event(const Event& event) noexcept {
          event.event_type == SA_EV_RWLOCK_ON_CREATE;
 }
 
-std::string_view get_object_type(const Event& event) noexcept {
+bool is_create_event(const EventPtr& event) noexcept {
+  return is_create_event(*event);
+}
+
+ObjectType get_object_type(const Event& event) noexcept {
   switch (event.event_type) {
   case SA_EV_THREAD_ON_CREATE:
   case SA_EV_THREAD_ON_JOIN:
   case SA_EV_THREAD_ON_DETACH:
-    return thread_object_type;
+    return ObjectType::thread;
   case SA_EV_MUTEX_ON_CREATE:
   case SA_EV_MUTEX_BEFORE_LOCK:
   case SA_EV_MUTEX_AFTER_LOCK:
   case SA_EV_MUTEX_ON_TRY_LOCK:
   case SA_EV_MUTEX_ON_UNLOCK:
   case SA_EV_MUTEX_ON_DESTROY:
-    return mutex_object_type;
+    return ObjectType::mutex;
   case SA_EV_REC_MUTEX_ON_CREATE:
   case SA_EV_REC_MUTEX_BEFORE_LOCK:
   case SA_EV_REC_MUTEX_AFTER_LOCK:
   case SA_EV_REC_MUTEX_ON_TRY_LOCK:
   case SA_EV_REC_MUTEX_ON_UNLOCK:
   case SA_EV_REC_MUTEX_ON_DESTROY:
-    return rec_mutex_object_type;
+    return ObjectType::rec_mutex;
   case SA_EV_RWLOCK_ON_CREATE:
   case SA_EV_RWLOCK_BEFORE_RD_LOCK:
   case SA_EV_RWLOCK_AFTER_RD_LOCK:
@@ -41,9 +45,34 @@ std::string_view get_object_type(const Event& event) noexcept {
   case SA_EV_RWLOCK_ON_WR_UNLOCK:
   case SA_EV_RWLOCK_ON_TRY_WR_LOCK:
   case SA_EV_RWLOCK_ON_DESTROY:
-    return rwlock_object_type;
+    return ObjectType::rwlock;
   }
   std::abort();
+}
+
+ObjectType get_object_type(const EventPtr& event) noexcept {
+  return get_object_type(*event);
+}
+
+std::string_view get_object_type_str(ObjectType object_type) noexcept {
+  switch (object_type) {
+  case ObjectType::thread:
+    return thread_object_type;
+  case ObjectType::mutex:
+    return mutex_object_type;
+  case ObjectType::rec_mutex:
+    return rec_mutex_object_type;
+  case ObjectType::rwlock:
+    return rwlock_object_type;
+  }
+}
+
+std::string_view get_object_type_str(const Event& event) noexcept {
+  return get_object_type_str(get_object_type(event));
+}
+
+std::string_view get_object_type_str(const EventPtr& event) noexcept {
+  return get_object_type_str(*event);
 }
 
 std::string_view get_event_type_str(const Event& event) noexcept {
@@ -100,6 +129,10 @@ std::string_view get_event_type_str(const Event& event) noexcept {
     return "read_write_lock_destroy";
   }
   std::abort();
+}
+
+std::string_view get_event_type_str(const EventPtr& event) noexcept {
+  return get_event_type_str(*event);
 }
 
 } // namespace syan

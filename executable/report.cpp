@@ -13,16 +13,15 @@ Report::Report(const Environment* env, Level level, int code,
 
 void Report::add_section(std::string section_description, EventPtr event) {
   thread_notes.insert(event->thread_id);
+  if (!is_create_event(event)) {
+    notes.emplace(env->db().object_create(event));
+  }
   sections.emplace_back(std::move(section_description), std::move(event));
-}
-
-void Report::add_mutex_note(ObjectId mutex_id) {
-  add_unique_object_note(env->db().mutex_create(mutex_id));
 }
 
 void Report::send() {
   for (const auto& note : notes) {
-    sections.emplace_back(std::string{"Note: "} + env->db().object_name(*note) +
+    sections.emplace_back(std::string{"Note: "} + env->db().object_name(note) +
                               " was created here: ",
                           note);
   }
@@ -42,15 +41,11 @@ void Report::send() {
   std::stringstream builder;
   builder << description << " (E" << code << ")";
   for (auto& section : sections) {
-    builder << "\n\t[" << section.event->timestamp << "] " << section.description
-            << "\n";
+    builder << "\n\t[" << section.event->timestamp << "] "
+            << section.description << "\n";
     env->symbolize_backtrace_to_stream(*section.event, builder);
   }
   env->send_report(level, code, builder.str());
-}
-
-void Report::add_unique_object_note(EventPtr event) {
-  notes.emplace(std::move(event));
 }
 
 Report::ReportSection::ReportSection(std::string description, EventPtr event)

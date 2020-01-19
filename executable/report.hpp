@@ -25,13 +25,9 @@ public:
 
   void add_section(std::string section_description, EventPtr event);
 
-  void add_mutex_note(ObjectId mutex_id);
-
   void send();
 
 private:
-  void add_unique_object_note(EventPtr event);
-
   struct ReportSection {
     std::string description;
     EventPtr event;
