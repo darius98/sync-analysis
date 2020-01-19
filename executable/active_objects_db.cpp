@@ -1,7 +1,5 @@
 #include "active_objects_db.hpp"
 
-#include <lib/src/event_type.h>
-
 namespace syan {
 
 void ActiveObjectsDb::insert(const Event& event) {
@@ -62,15 +60,17 @@ std::optional<Event> find_event_in_map(const Map& map, Id id) noexcept {
 
 } // namespace
 
+std::string ActiveObjectsDb::get_thread_name(ThreadId thread_id) const {
+  return std::to_string(thread_id);
+}
+
 std::optional<Event>
-ActiveObjectsDb::get_thread_create_event_by_thread_id(ThreadId thread_id) const
-    noexcept {
+ActiveObjectsDb::get_thread_create_event(ThreadId thread_id) const noexcept {
   return find_event_in_map(active_threads_by_id, thread_id);
 }
 
 std::optional<Event>
-ActiveObjectsDb::get_thread_detach_event_by_thread_id(ThreadId thread_id) const
-    noexcept {
+ActiveObjectsDb::get_thread_detach_event(ThreadId thread_id) const noexcept {
   auto create_event = find_event_in_map(active_threads_by_id, thread_id);
   if (!create_event.has_value()) {
     return std::nullopt;

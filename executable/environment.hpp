@@ -22,7 +22,7 @@ public:
   Report create_report(Report::Level level, int code,
                        std::string description) const noexcept;
 
-  const ActiveObjectsDb& active_objects_db() const noexcept;
+  const ActiveObjectsDb& db() const noexcept;
 
 private:
   void send_report(Report::Level level, int code,
@@ -35,7 +35,7 @@ private:
   std::string dump_file_path;
   std::vector<Check*> enabled_checks;
   Logger logger;
-  ActiveObjectsDb db;
+  ActiveObjectsDb active_objects_db;
 
   friend class Report;
 };

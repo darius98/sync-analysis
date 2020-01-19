@@ -36,7 +36,8 @@ add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/report.cpp
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/executable/checks/example_check.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/executable/checks/list.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/executable/checks/mutex_lock_order.cpp
         )
 target_include_directories(sync_analysis
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}

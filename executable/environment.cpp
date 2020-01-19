@@ -35,7 +35,7 @@ void Environment::analyze() {
     for (auto* check: enabled_checks){
       check->on_event(*this, event);
     }
-    db.insert(event);
+    active_objects_db.insert(event);
   }
 
   for (auto* check: enabled_checks){
@@ -48,8 +48,8 @@ Report Environment::create_report(Report::Level level, int code,
   return Report{this, level, code, std::move(description)};
 }
 
-const ActiveObjectsDb& Environment::active_objects_db() const noexcept {
-  return db;
+const ActiveObjectsDb& Environment::db() const noexcept {
+  return active_objects_db;
 }
 
 void Environment::send_report(Report::Level level, int code,

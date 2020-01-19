@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-#include <lib/src/event.h>
+#include "event.hpp"
 
 namespace syan {
 

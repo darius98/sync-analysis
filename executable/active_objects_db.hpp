@@ -3,23 +3,23 @@
 
 #include <map>
 #include <optional>
+#include <string>
 
-#include <lib/src/event.h>
+#include "event.hpp"
 
 namespace syan {
 
 class ActiveObjectsDb {
 public:
-  using ObjectId = decltype(Event::addr);
-  using ThreadId = decltype(Event::thread_id);
-
   void insert(const Event& event);
 
-  std::optional<Event>
-  get_thread_create_event_by_thread_id(ThreadId thread_id) const noexcept;
+  std::string get_thread_name(ThreadId thread_id) const;
 
-  std::optional<Event>
-  get_thread_detach_event_by_thread_id(ThreadId thread_id) const noexcept;
+  std::optional<Event> get_thread_create_event(ThreadId thread_id) const
+      noexcept;
+
+  std::optional<Event> get_thread_detach_event(ThreadId thread_id) const
+      noexcept;
 
   std::optional<Event> get_mutex_create_event(ObjectId mutex_id) const noexcept;
 
