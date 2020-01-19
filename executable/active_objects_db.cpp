@@ -61,7 +61,7 @@ std::string ActiveObjectsDb::object_name(const Event& event) const {
   return object_name(get_object_type(event), event.addr);
 }
 
-std::string ActiveObjectsDb::object_name(const char* object_type,
+std::string ActiveObjectsDb::object_name(std::string_view object_type,
                                          ObjectId object_id) const {
   std::stringstream builder;
   builder << object_type << " " << std::hex << std::setfill('0')

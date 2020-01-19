@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <string_view>
 
 #include "event.hpp"
 
@@ -29,7 +30,7 @@ public:
   EventPtr rwlock_create(ObjectId rwlock_id) const noexcept;
 
 private:
-  std::string object_name(const char* object_type, ObjectId object_id) const;
+  std::string object_name(std::string_view object_type, ObjectId object_id) const;
 
   struct ThreadState {
     EventPtr create;

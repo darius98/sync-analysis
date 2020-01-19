@@ -11,7 +11,7 @@ bool is_create_event(const Event& event) noexcept {
          event.event_type == SA_EV_RWLOCK_ON_CREATE;
 }
 
-const char* get_object_type(const Event& event) noexcept {
+std::string_view get_object_type(const Event& event) noexcept {
   switch (event.event_type) {
   case SA_EV_THREAD_ON_CREATE:
   case SA_EV_THREAD_ON_JOIN:
@@ -46,7 +46,7 @@ const char* get_object_type(const Event& event) noexcept {
   std::abort();
 }
 
-const char* get_event_type_str(const Event& event) noexcept {
+std::string_view get_event_type_str(const Event& event) noexcept {
   switch (event.event_type) {
   case SA_EV_THREAD_ON_CREATE:
     return "thread_create";
