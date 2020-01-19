@@ -16,6 +16,6 @@ public:
   [[noreturn]] void log_fatal(const std::string& message) const;
 };
 
-}
+} // namespace syan
 
 #endif

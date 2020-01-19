@@ -75,7 +75,8 @@ void Environment::symbolize_backtrace_to_stream(const Event& event,
   for (const auto& pc : event.backtrace) {
     if (pc != 0) {
       stream << "\t\t" << std::hex << std::setfill('0') << std::setw(16) << pc
-             << "\n" << std::dec;
+             << "\n"
+             << std::dec;
     }
   }
 }
