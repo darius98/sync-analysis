@@ -9,7 +9,6 @@ namespace syan {
 using EventType = ::EventType;
 using Event = ::Event;
 using ObjectId = decltype(Event::addr);
-using ThreadId = decltype(Event::thread_id);
 
 // A shared_ptr implementation that is:
 // - without thread-safety guarantees

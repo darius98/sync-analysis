@@ -1,5 +1,7 @@
 #include "environment.hpp"
 
+#include <iomanip>
+
 #include "check.hpp"
 
 namespace syan {
@@ -18,7 +20,7 @@ Environment::Environment(std::string binary_file_path,
 void Environment::analyze() {
   EventFileReader dump_file_reader(dump_file_path);
 
-  for (auto* check: enabled_checks){
+  for (auto* check : enabled_checks) {
     check->on_start(*this);
   }
 
@@ -32,19 +34,19 @@ void Environment::analyze() {
         return;
       }
     }
-    for (auto* check: enabled_checks){
+    for (auto* check : enabled_checks) {
       check->on_event(*this, event);
     }
     active_objects_db.insert(event);
   }
 
-  for (auto* check: enabled_checks){
+  for (auto* check : enabled_checks) {
     check->on_end(*this);
   }
 }
 
 Report Environment::create_report(Report::Level level, int code,
-                                  std::string description) const noexcept {
+                                  std::string description) const {
   return Report{this, level, code, std::move(description)};
 }
 
@@ -72,7 +74,8 @@ void Environment::symbolize_backtrace_to_stream(const Event& event,
   // TODO: Implement this.
   for (const auto& pc : event.backtrace) {
     if (pc != 0) {
-      stream << "\t\t" << pc << "\n";
+      stream << "\t\t" << std::hex << std::setfill('0') << std::setw(16) << pc
+             << "\n";
     }
   }
 }

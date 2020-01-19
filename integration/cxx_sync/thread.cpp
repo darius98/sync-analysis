@@ -24,7 +24,7 @@ void Thread::join() {
   void* result;
   int status = pthread_join(pt_thread, &result);
   SyncException::throw_on_error("Thread", "pthread_join", status);
-  syan_thread_on_join(this);
+  syan_thread_on_join(pt_thread);
   pt_thread = nullptr;
 }
 
@@ -35,17 +35,14 @@ void Thread::detach() {
 
   int status = pthread_detach(pt_thread);
   SyncException::throw_on_error("Thread", "pthread_detach", status);
-  syan_thread_on_detach(this);
+  syan_thread_on_detach(pt_thread);
   pt_thread = nullptr;
 }
 
 void Thread::init_thread(void* (*func)(void*), void* arg) {
   int status = pthread_create(&pt_thread, nullptr, func, arg);
+  syan_thread_on_create(pt_thread);
   SyncException::throw_on_error("Thread", "pthread_create", status);
-}
-
-void Thread::on_thread_start() {
-  syan_thread_on_create(this);
 }
 
 } // namespace sync

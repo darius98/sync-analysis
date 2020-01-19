@@ -20,7 +20,7 @@ public:
   void analyze();
 
   Report create_report(Report::Level level, int code,
-                       std::string description) const noexcept;
+                       std::string description) const;
 
   const ActiveObjectsDb& db() const noexcept;
 

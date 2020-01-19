@@ -21,7 +21,7 @@ public:
   };
 
   explicit Report(const Environment* env, Level level, int code,
-                  std::string description) noexcept;
+                  std::string description);
 
   void add_section(std::string section_description, EventPtr event);
 
@@ -30,7 +30,7 @@ public:
   void send();
 
 private:
-  void add_unique_object_note(const char* object_type, EventPtr event);
+  void add_unique_object_note(EventPtr event);
 
   struct ReportSection {
     std::string description;
@@ -44,8 +44,8 @@ private:
   int code;
   std::string description;
   std::vector<ReportSection> sections;
-  std::set<ThreadId> thread_notes;
-  std::set<std::tuple<const char*, EventPtr>> object_notes;
+  std::set<ObjectId> thread_notes;
+  std::set<EventPtr> notes;
 };
 
 } // namespace syan

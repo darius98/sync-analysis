@@ -1,17 +1,19 @@
 #include "active_objects_db.hpp"
 
+#include <iomanip>
+#include <sstream>
+
+#include "utils.hpp"
+
 namespace syan {
 
 void ActiveObjectsDb::insert(EventPtr event) {
   switch (event->event_type) {
   case SA_EV_THREAD_ON_CREATE: {
-    active_threads_id_to_addr.emplace(event->thread_id, event->addr);
     active_threads.emplace(event->addr, ThreadState{std::move(event), nullptr});
     break;
   }
   case SA_EV_THREAD_ON_JOIN: {
-    const auto& thread_state = active_threads.at(event->addr);
-    active_threads_id_to_addr.erase(thread_state.create->thread_id);
     active_threads.erase(event->addr);
     break;
   }
@@ -47,24 +49,32 @@ void ActiveObjectsDb::insert(EventPtr event) {
   }
 }
 
-std::string ActiveObjectsDb::thread_name(ThreadId thread_id) const {
-  return std::to_string(thread_id);
+std::string ActiveObjectsDb::thread_name(ObjectId thread_id) const {
+  return object_name(thread_object_type, thread_id);
 }
 
 std::string ActiveObjectsDb::mutex_name(ObjectId mutex_id) const {
-  return std::to_string(mutex_id);
+  return object_name(mutex_object_type, mutex_id);
 }
 
-EventPtr ActiveObjectsDb::thread_create(ThreadId thread_id) const noexcept {
-  const auto& thread_addr = active_threads_id_to_addr.at(thread_id);
-  const auto& thread_state = active_threads.at(thread_addr);
-  return thread_state.create;
+std::string ActiveObjectsDb::object_name(const Event& event) const {
+  return object_name(get_object_type(event), event.addr);
 }
 
-EventPtr ActiveObjectsDb::thread_detach(ThreadId thread_id) const noexcept {
-  const auto& thread_addr = active_threads_id_to_addr.at(thread_id);
-  const auto& thread_state = active_threads.at(thread_addr);
-  return thread_state.detach;
+std::string ActiveObjectsDb::object_name(const char* object_type,
+                                         ObjectId object_id) const {
+  std::stringstream builder;
+  builder << object_type << " " << std::hex << std::setfill('0')
+          << std::setw(16) << object_id;
+  return builder.str();
+}
+
+EventPtr ActiveObjectsDb::thread_create(ObjectId thread_id) const noexcept {
+  return active_threads.at(thread_id).create;
+}
+
+EventPtr ActiveObjectsDb::thread_detach(ObjectId thread_id) const noexcept {
+  return active_threads.at(thread_id).detach;
 }
 
 namespace {

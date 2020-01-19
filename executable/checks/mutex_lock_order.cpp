@@ -20,25 +20,21 @@ public:
               Report::error, 1, "Mutex lock order inconsistency found");
 
           report.add_section(
-              "Thread " + env.db().thread_name(mtx1_lock->thread_id) +
-                  " locked mutex " + env.db().mutex_name(mtx1_lock->addr) +
-                  " first here:",
+              env.db().thread_name(mtx1_lock->thread_id) + " locked " +
+                  env.db().mutex_name(mtx1_lock->addr) + " first here:",
               mtx1_lock);
           report.add_section(
-              "Thread " + env.db().thread_name(mtx2_lock->thread_id) +
-                  " locked mutex " + env.db().mutex_name(mtx2_lock->addr) +
-                  " second here:",
+              env.db().thread_name(mtx2_lock->thread_id) + " locked " +
+                  env.db().mutex_name(mtx2_lock->addr) + " second here:",
               mtx2_lock);
 
           report.add_section(
-              "Thread " + env.db().thread_name(prev_lock_event->thread_id) +
-                  " locked mutex " + env.db().mutex_name(mtx2_lock->addr) +
-                  " first here:",
+              env.db().thread_name(prev_lock_event->thread_id) + " locked " +
+                  env.db().mutex_name(mtx2_lock->addr) + " first here:",
               prev_lock_event);
 
           report.add_section(
-              "Thread " + env.db().thread_name(event->thread_id) +
-                  " attempted to lock mutex " +
+              env.db().thread_name(event->thread_id) + " attempted to lock " +
                   env.db().mutex_name(mtx1_lock->addr) + " second here:",
               event);
 
@@ -73,6 +69,6 @@ public:
 private:
   std::map<std::pair<ObjectId, ObjectId>, std::pair<EventPtr, EventPtr>>
       ordered_objects;
-  std::map<ThreadId, std::set<EventPtr>> thread_locked_objects;
+  std::map<ObjectId, std::set<EventPtr>> thread_locked_objects;
 };
 SYAN_REGISTER_CHECK(MutexLockOrderCheck);

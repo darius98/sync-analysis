@@ -12,13 +12,15 @@ class ActiveObjectsDb {
 public:
   void insert(EventPtr event);
 
-  std::string thread_name(ThreadId thread_id) const;
+  std::string thread_name(ObjectId thread_id) const;
 
   std::string mutex_name(ObjectId mutex_id) const;
 
-  EventPtr thread_create(ThreadId thread_id) const noexcept;
+  std::string object_name(const Event& event) const;
 
-  EventPtr thread_detach(ThreadId thread_id) const noexcept;
+  EventPtr thread_create(ObjectId thread_id) const noexcept;
+
+  EventPtr thread_detach(ObjectId thread_id) const noexcept;
 
   EventPtr mutex_create(ObjectId mutex_id) const noexcept;
 
@@ -27,11 +29,12 @@ public:
   EventPtr rwlock_create(ObjectId rwlock_id) const noexcept;
 
 private:
+  std::string object_name(const char* object_type, ObjectId object_id) const;
+
   struct ThreadState {
     EventPtr create;
     EventPtr detach;
   };
-  std::map<ThreadId, ObjectId> active_threads_id_to_addr;
   std::map<ObjectId, ThreadState> active_threads;
 
   std::map<ObjectId, EventPtr> active_mutexes;
