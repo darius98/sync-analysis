@@ -7,45 +7,22 @@
 
 namespace syan {
 
-void ActiveObjectsDb::insert(EventPtr event) {
-  switch (event->event_type) {
-  case SA_EV_THREAD_ON_CREATE: {
-    active_threads.emplace(event->addr, ThreadState{std::move(event), nullptr});
-    break;
+void ActiveObjectsDb::insert(const EventPtr& event) {
+  if (is_create_event(event)) {
+    active_objects.emplace(std::pair{get_object_type(event), event->addr},
+                           event);
   }
-  case SA_EV_THREAD_ON_JOIN: {
+
+  if (is_destroy_event(event)) {
+    active_objects.erase(std::pair{get_object_type(event), event->addr});
+  }
+
+  if (event->event_type == SA_EV_THREAD_ON_CREATE) {
+    active_threads.emplace(event->addr, ThreadState{event, nullptr});
+  } else if (event->event_type == SA_EV_THREAD_ON_DETACH) {
+    active_threads.at(event->addr).detach = event;
+  } else if (event->event_type == SA_EV_THREAD_ON_JOIN) {
     active_threads.erase(event->addr);
-    break;
-  }
-  case SA_EV_THREAD_ON_DETACH: {
-    auto& thread_state = active_threads.at(event->addr);
-    thread_state.detach = std::move(event);
-    break;
-  }
-  case SA_EV_MUTEX_ON_CREATE: {
-    active_mutexes.emplace(event->addr, std::move(event));
-    break;
-  }
-  case SA_EV_MUTEX_ON_DESTROY: {
-    active_mutexes.erase(event->addr);
-    break;
-  }
-  case SA_EV_REC_MUTEX_ON_CREATE: {
-    active_rec_mutexes.emplace(event->addr, std::move(event));
-    break;
-  }
-  case SA_EV_REC_MUTEX_ON_DESTROY: {
-    active_rec_mutexes.erase(event->addr);
-    break;
-  }
-  case SA_EV_RWLOCK_ON_CREATE: {
-    active_rwlocks.emplace(event->addr, std::move(event));
-    break;
-  }
-  case SA_EV_RWLOCK_ON_DESTROY: {
-    active_rwlocks.erase(event->addr);
-    break;
-  }
   }
 }
 
@@ -102,16 +79,7 @@ EventPtr ActiveObjectsDb::thread_detach(const EventPtr& event) const noexcept {
 }
 
 EventPtr ActiveObjectsDb::object_create(const Event& event) const noexcept {
-  switch (get_object_type(event)) {
-  case ObjectType::thread:
-    return active_threads.at(event.addr).create;
-  case ObjectType::mutex:
-    return active_mutexes.at(event.addr);
-  case ObjectType::rec_mutex:
-    return active_rec_mutexes.at(event.addr);
-  case ObjectType::rwlock:
-    return active_rwlocks.at(event.addr);
-  }
+  return active_objects.at(std::pair{get_object_type(event), event.addr});
 }
 
 EventPtr ActiveObjectsDb::object_create(const EventPtr& event) const noexcept {

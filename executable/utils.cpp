@@ -15,6 +15,17 @@ bool is_create_event(const EventPtr& event) noexcept {
   return is_create_event(*event);
 }
 
+bool is_destroy_event(const Event& event) noexcept {
+  return event.event_type == SA_EV_THREAD_ON_JOIN ||
+         event.event_type == SA_EV_MUTEX_ON_DESTROY ||
+         event.event_type == SA_EV_REC_MUTEX_ON_DESTROY ||
+         event.event_type == SA_EV_RWLOCK_ON_DESTROY;
+}
+
+bool is_destroy_event(const EventPtr& event) noexcept {
+  return is_destroy_event(*event);
+}
+
 ObjectType get_object_type(const Event& event) noexcept {
   switch (event.event_type) {
   case SA_EV_THREAD_ON_CREATE:

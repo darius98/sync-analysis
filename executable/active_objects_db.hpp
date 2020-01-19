@@ -6,12 +6,13 @@
 #include <string_view>
 
 #include "event.hpp"
+#include "utils.hpp"
 
 namespace syan {
 
 class ActiveObjectsDb {
 public:
-  void insert(EventPtr event);
+  void insert(const EventPtr& event);
 
   std::string thread_name(ObjectId thread_id) const;
   std::string thread_name(const Event& event) const;
@@ -40,10 +41,7 @@ private:
     EventPtr detach;
   };
   std::map<ObjectId, ThreadState> active_threads;
-
-  std::map<ObjectId, EventPtr> active_mutexes;
-  std::map<ObjectId, EventPtr> active_rec_mutexes;
-  std::map<ObjectId, EventPtr> active_rwlocks;
+  std::map<std::pair<ObjectType, ObjectId>, EventPtr> active_objects;
 };
 
 } // namespace syan

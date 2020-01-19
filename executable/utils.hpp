@@ -15,6 +15,9 @@ constexpr std::string_view rwlock_object_type = "read-write lock";
 bool is_create_event(const Event& event) noexcept;
 bool is_create_event(const EventPtr& event) noexcept;
 
+bool is_destroy_event(const Event& event) noexcept;
+bool is_destroy_event(const EventPtr& event) noexcept;
+
 enum class ObjectType {
   thread,
   mutex,
