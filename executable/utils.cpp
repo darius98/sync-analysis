@@ -17,6 +17,7 @@ bool is_create_event(const EventPtr& event) noexcept {
 
 bool is_destroy_event(const Event& event) noexcept {
   return event.event_type == SA_EV_THREAD_ON_JOIN ||
+         event.event_type == SA_EV_THREAD_ON_DETACH ||
          event.event_type == SA_EV_MUTEX_ON_DESTROY ||
          event.event_type == SA_EV_REC_MUTEX_ON_DESTROY ||
          event.event_type == SA_EV_RWLOCK_ON_DESTROY;
