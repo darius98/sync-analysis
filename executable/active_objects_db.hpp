@@ -6,7 +6,6 @@
 #include <string_view>
 
 #include "event.hpp"
-#include "utils.hpp"
 
 namespace syan {
 

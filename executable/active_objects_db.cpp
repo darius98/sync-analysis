@@ -1,14 +1,12 @@
 #include "active_objects_db.hpp"
 
-#include "utils.hpp"
-
 namespace syan {
 
 void ActiveObjectsDb::handle_event_before_checks(const Event& event) {
-  if (is_create_event(event)) {
-    auto key = std::pair{get_object_type(event), event.object()};
+  if (event.is_create_event()) {
+    auto key = std::pair{event.object_type(), event.object()};
     active_objects.emplace(key, event);
-    object_names.emplace(key, ++last_used_name[get_object_type(event)]);
+    object_names.emplace(key, ++last_used_name[event.object_type()]);
   }
 
   if (event.type() == SA_EV_THREAD_ON_CREATE) {
@@ -21,8 +19,8 @@ void ActiveObjectsDb::handle_event_before_checks(const Event& event) {
 }
 
 void ActiveObjectsDb::handle_event_after_checks(const Event& event) {
-  if (is_destroy_event(event)) {
-    auto key = std::pair{get_object_type(event), event.object()};
+  if (event.is_destroy_event()) {
+    auto key = std::pair{event.object_type(), event.object()};
     active_objects.erase(key);
     object_names.erase(key);
   }
@@ -41,12 +39,12 @@ std::string ActiveObjectsDb::thread_name(const Event& event) const {
 }
 
 std::string ActiveObjectsDb::object_name(const Event& event) const {
-  return object_name(get_object_type(event), event.object());
+  return object_name(event.object_type(), event.object());
 }
 
 std::string ActiveObjectsDb::object_name(ObjectType object_type,
                                          ObjectId object_id) const {
-  return std::string{get_object_type_str(object_type)} + " " +
+  return std::string{Event::object_type_str(object_type)} + " " +
          std::to_string(object_names.at({object_type, object_id}));
 }
 
@@ -67,7 +65,7 @@ Event ActiveObjectsDb::thread_detach(const Event& event) const noexcept {
 }
 
 Event ActiveObjectsDb::object_create(const Event& event) const noexcept {
-  return active_objects.at(std::pair{get_object_type(event), event.object()});
+  return active_objects.at(std::pair{event.object_type(), event.object()});
 }
 
 } // namespace syan

@@ -4,7 +4,6 @@
 #include <sstream>
 
 #include "environment.hpp"
-#include "utils.hpp"
 
 namespace syan {
 
@@ -14,7 +13,7 @@ Report::Report(const Environment* env, Level level, int code,
 
 void Report::add_section(std::string section_description, Event event) {
   thread_notes.insert(event.thread());
-  if (!is_create_event(event)) {
+  if (!event.is_create_event()) {
     notes.emplace(env->db().object_create(event));
   }
   sections.emplace_back(std::move(section_description), std::move(event));
