@@ -10,10 +10,19 @@ EventFileReader::EventFileReader(std::string fn, std::size_t buffer_cap)
       is_done_reading_file(false) {
   auto buf = std::make_unique<Event[]>(buffer_cap);
   if (file == nullptr) {
-    throw std::runtime_error("File " + file_name + " does not exist");
+    throw std::runtime_error("Cannot read dump file at '" + file_name + "'");
   }
   buffer = std::move(buf);
+  auto num_read =
+      std::fread(&file_header, sizeof(DumpFileHeader), 1, file.get());
+  if (num_read != 1) {
+    throw std::runtime_error("cannot read dump file at '" + file_name + "'");
+  }
   read_next_chunk();
+}
+
+DumpFileHeader EventFileReader::get_header() const noexcept {
+  return file_header;
 }
 
 bool EventFileReader::done() const noexcept {

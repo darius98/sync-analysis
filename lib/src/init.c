@@ -1,3 +1,4 @@
+#include "dump_file_header.h"
 #include "event_time.h"
 #include "global_buffer.h"
 #include "sync_analysis.h"
@@ -9,7 +10,7 @@
 
 #include <pthread.h>
 
-static FILE* output_file;
+static FILE* syan_output_file;
 
 void syan_init() {
   int event_time_init_status = syan_event_time_init();
@@ -21,26 +22,46 @@ void syan_init() {
     exit(EXIT_FAILURE);
   }
 
-  BufferInitStatus buffer_init_status = syan_global_buffer_init();
+  SyanBufferInitStatus buffer_init_status = syan_global_buffer_init();
   if (buffer_init_status == BUFFER_INIT_MALLOC_FAILED_BUFFER) {
     fprintf(stderr, "SyncAnalysis init: malloc failed for %lu bytes\n",
-            sizeof(Buffer));
+            sizeof(SyanBuffer));
     exit(EXIT_FAILURE);
   }
   if (buffer_init_status == BUFFER_INIT_MALLOC_FAILED_PAGE) {
     fprintf(stderr, "SyncAnalysis init: malloc failed for %lu bytes\n",
-            sizeof(BufferPage));
+            sizeof(SyanBufferPage));
     exit(EXIT_FAILURE);
   }
 
-  output_file = fopen("sync_analysis.dump", "wb");
-  if (output_file == NULL) {
+  syan_output_file = fopen("sync_analysis.dump", "wb");
+  if (syan_output_file == NULL) {
     fprintf(stderr, "SyncAnalysis init: failed to open output file. errno=%d\n",
             errno);
     exit(EXIT_FAILURE);
   }
 
-  int status = syan_start_worker_thread(output_file);
+  SyanDumpFileHeader dump_file_header;
+  int init_header_status = syan_init_dump_file_header(&dump_file_header);
+  if (init_header_status != 0) {
+    fprintf(
+        stderr,
+        "SyncAnalysis init: failed to initialize dump file header. error=%d\n",
+        init_header_status);
+    exit(EXIT_FAILURE);
+  }
+
+  int num_written = fwrite(&dump_file_header, sizeof(SyanDumpFileHeader), 1,
+                           syan_output_file);
+  if (num_written != 1) {
+    fprintf(stderr,
+            "SyncAnalysis init: failed to write dump file header. ferror=%d, "
+            "errno=%d\n",
+            ferror(syan_output_file), errno);
+    exit(EXIT_FAILURE);
+  }
+
+  int status = syan_start_worker_thread(syan_output_file);
   if (status != 0) {
     fprintf(stderr, "SyncAnalysis init: pthread_create failed error=%d\n",
             status);
@@ -58,5 +79,5 @@ void syan_shutdown() {
     exit(EXIT_FAILURE);
   }
 
-  fclose(output_file);
+  fclose(syan_output_file);
 }

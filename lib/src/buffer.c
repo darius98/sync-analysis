@@ -3,24 +3,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void reset_buffer_page(BufferPagePtr page) {
+static void syan_reset_buffer_page(SyanBufferPagePtr page) {
   page->storage_front = 0;
   atomic_store_explicit(&page->storage_back, 0, memory_order_release);
   memset(page->storage, 0, sizeof(page->storage));
 }
 
-BufferInitStatus syan_buffer_init(Buffer** buffer) {
-  *buffer = malloc(sizeof(Buffer));
+SyanBufferInitStatus syan_buffer_init(SyanBuffer** buffer) {
+  *buffer = malloc(sizeof(SyanBuffer));
   if (*buffer == NULL) {
     return BUFFER_INIT_MALLOC_FAILED_BUFFER;
   }
 
   for (int i = 0; i < SYAN_BUFFER_NUM_PAGES; i++) {
-    (*buffer)->pages[i] = malloc(sizeof(BufferPage));
+    (*buffer)->pages[i] = malloc(sizeof(SyanBufferPage));
     if ((*buffer)->pages[i] == NULL) {
       return BUFFER_INIT_MALLOC_FAILED_PAGE;
     }
-    reset_buffer_page((*buffer)->pages[i]);
+    syan_reset_buffer_page((*buffer)->pages[i]);
   }
   (*buffer)->pages_front = 0;
   atomic_store(&(*buffer)->pages_back, 0);
@@ -28,10 +28,10 @@ BufferInitStatus syan_buffer_init(Buffer** buffer) {
   return BUFFER_INIT_OK;
 }
 
-Event* syan_buffer_acquire_event_slot(Buffer* buffer) {
+SyanEvent* syan_buffer_acquire_event_slot(SyanBuffer* buffer) {
   while (1) {
     int_fast16_t page_index = atomic_load(&buffer->pages_back);
-    BufferPagePtr page = buffer->pages[page_index];
+    SyanBufferPagePtr page = buffer->pages[page_index];
     int_fast32_t slot = atomic_fetch_add(&page->storage_back, 1);
     if (slot < SYAN_BUFFER_PAGE_SIZE) {
       return page->storage + slot;
@@ -45,15 +45,15 @@ Event* syan_buffer_acquire_event_slot(Buffer* buffer) {
   }
 }
 
-BufferPagePtr syan_buffer_get_front_page(Buffer* buffer) {
+SyanBufferPagePtr syan_buffer_get_front_page(SyanBuffer* buffer) {
   return buffer->pages[buffer->pages_front];
 }
 
-void syan_buffer_release_front_page(Buffer* buffer) {
-  BufferPagePtr page = syan_buffer_get_front_page(buffer);
+void syan_buffer_release_front_page(SyanBuffer* buffer) {
+  SyanBufferPagePtr page = syan_buffer_get_front_page(buffer);
   buffer->pages_front++;
   if (buffer->pages_front == SYAN_BUFFER_NUM_PAGES) {
     buffer->pages_front = 0;
   }
-  reset_buffer_page(page);
+  syan_reset_buffer_page(page);
 }

@@ -1,21 +1,19 @@
-#include "global_buffer.h"
-
 #include "buffer.h"
 
-static Buffer* buffer = NULL;
+static SyanBuffer* syan_global_buffer = NULL;
 
-BufferInitStatus syan_global_buffer_init() {
-  return syan_buffer_init(&buffer);
+SyanBufferInitStatus syan_global_buffer_init() {
+  return syan_buffer_init(&syan_global_buffer);
 }
 
-Event* syan_global_buffer_acquire_event_slot() {
-  return syan_buffer_acquire_event_slot(buffer);
+SyanEvent* syan_global_buffer_acquire_event_slot() {
+  return syan_buffer_acquire_event_slot(syan_global_buffer);
 }
 
-BufferPagePtr syan_global_buffer_get_front_page() {
-  return syan_buffer_get_front_page(buffer);
+SyanBufferPagePtr syan_global_buffer_get_front_page() {
+  return syan_buffer_get_front_page(syan_global_buffer);
 }
 
 void syan_global_buffer_release_front_page() {
-  syan_buffer_release_front_page(buffer);
+  syan_buffer_release_front_page(syan_global_buffer);
 }

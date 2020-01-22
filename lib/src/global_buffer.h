@@ -7,11 +7,11 @@
 extern "C" {
 #endif
 
-BufferInitStatus syan_global_buffer_init();
+SyanBufferInitStatus syan_global_buffer_init();
 
-Event* syan_global_buffer_acquire_event_slot();
+SyanEvent* syan_global_buffer_acquire_event_slot();
 
-BufferPagePtr syan_global_buffer_get_front_page();
+SyanBufferPagePtr syan_global_buffer_get_front_page();
 
 void syan_global_buffer_release_front_page();
 

@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 add_library(sync_analysis_lib STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/backtrace.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/buffer.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/dump_file_header.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/event_time.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/global_buffer.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/handle_event.cpp

@@ -19,6 +19,7 @@ Environment::Environment(std::string binary_file_path,
 
 void Environment::analyze() {
   EventFileReader dump_file_reader(dump_file_path);
+  file_header = dump_file_reader.get_header();
 
   for (auto* check : enabled_checks) {
     check->on_start(*this);

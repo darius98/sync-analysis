@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-void syan_handle_event(EventType event_type, void* addr);
+void syan_handle_event(SyanEventType event_type, void* addr);
 
 #ifdef __cplusplus
 }

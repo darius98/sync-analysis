@@ -35,6 +35,7 @@ private:
   std::string dump_file_path;
   std::vector<Check*> enabled_checks;
   Logger logger;
+  DumpFileHeader file_header;
   ActiveObjectsDb active_objects_db;
 
   friend class Report;

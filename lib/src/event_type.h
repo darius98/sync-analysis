@@ -31,7 +31,7 @@ typedef enum {
   SA_EV_RWLOCK_AFTER_WR_LOCK = 22,
   SA_EV_RWLOCK_ON_WR_UNLOCK = 23,
   SA_EV_RWLOCK_ON_DESTROY = 24,
-} EventType;
+} SyanEventType;
 
 #ifdef __cplusplus
 }

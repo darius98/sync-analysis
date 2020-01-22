@@ -24,7 +24,7 @@ typedef struct {
   intptr_t thread_id;     // 8B
   intptr_t addr;          // 8B
   intptr_t backtrace[12]; // 96B
-} Event;
+} SyanEvent;
 
 #ifdef __cplusplus
 }

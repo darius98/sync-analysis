@@ -1,5 +1,6 @@
 #include "report.hpp"
 
+#include <iomanip>
 #include <sstream>
 
 #include "environment.hpp"
@@ -41,8 +42,17 @@ void Report::send() {
   std::stringstream builder;
   builder << description << " (E" << code << ")";
   for (auto& section : sections) {
-    builder << "\n\t[" << section.event->timestamp << "] "
-            << section.description << "\n";
+    auto timestamp = env->file_header.start_time;
+    timestamp.tv_sec += section.event->timestamp / 1000000000;
+    timestamp.tv_nsec += section.event->timestamp % 1000000000;
+
+    timestamp.tv_sec += timestamp.tv_nsec / 1000000000;
+    timestamp.tv_nsec %= 1000000000;
+    tm* calendarTime = gmtime(&timestamp.tv_sec);
+    builder << "\n\t[" << std::put_time(calendarTime, "%d/%m/%Y %H:%M:%S")
+            << "." << std::setfill('0') << std::setw(6)
+            << timestamp.tv_nsec / 1000 << std::setw(0) << std::setfill(' ')
+            << "] " << section.description << "\n";
     env->symbolize_backtrace_to_stream(*section.event, builder);
   }
   env->send_report(level, code, builder.str());
