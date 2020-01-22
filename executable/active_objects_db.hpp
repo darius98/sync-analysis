@@ -12,7 +12,8 @@ namespace syan {
 
 class ActiveObjectsDb {
 public:
-  void insert(const EventPtr& event);
+  void handle_event_before_checks(const EventPtr& event);
+  void handle_event_after_checks(const EventPtr& event);
 
   std::string thread_name(ObjectId thread_id) const;
   std::string thread_name(const Event& event) const;
@@ -33,8 +34,7 @@ public:
   EventPtr object_create(const EventPtr& event) const noexcept;
 
 private:
-  std::string object_name(std::string_view object_type,
-                          ObjectId object_id) const;
+  std::string object_name(ObjectType object_type, ObjectId object_id) const;
 
   struct ThreadState {
     EventPtr create;
@@ -42,6 +42,8 @@ private:
   };
   std::map<ObjectId, ThreadState> active_threads;
   std::map<std::pair<ObjectType, ObjectId>, EventPtr> active_objects;
+  std::map<ObjectType, std::size_t> last_used_name;
+  std::map<std::pair<ObjectType, ObjectId>, std::size_t> object_names;
 };
 
 } // namespace syan

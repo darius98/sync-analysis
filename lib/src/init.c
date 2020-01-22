@@ -1,12 +1,13 @@
-#include "init.h"
-
 #include "event_time.h"
 #include "global_buffer.h"
+#include "sync_analysis.h"
 #include "worker_thread.h"
 
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <pthread.h>
 
 static FILE* output_file;
 
@@ -45,6 +46,8 @@ void syan_init() {
             status);
     exit(EXIT_FAILURE);
   }
+
+  syan_thread_on_create(pthread_self());
 }
 
 void syan_shutdown() {

@@ -34,10 +34,11 @@ void Environment::analyze() {
         return;
       }
     }
+    active_objects_db.handle_event_before_checks(event);
     for (auto* check : enabled_checks) {
       check->on_event(*this, event);
     }
-    active_objects_db.insert(event);
+    active_objects_db.handle_event_after_checks(event);
   }
 
   for (auto* check : enabled_checks) {

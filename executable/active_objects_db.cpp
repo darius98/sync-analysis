@@ -1,33 +1,39 @@
 #include "active_objects_db.hpp"
 
-#include <iomanip>
-#include <sstream>
-
 #include "utils.hpp"
 
 namespace syan {
 
-void ActiveObjectsDb::insert(const EventPtr& event) {
+void ActiveObjectsDb::handle_event_before_checks(const EventPtr& event) {
   if (is_create_event(event)) {
-    active_objects.emplace(std::pair{get_object_type(event), event->addr},
-                           event);
-  }
-
-  if (is_destroy_event(event)) {
-    active_objects.erase(std::pair{get_object_type(event), event->addr});
+    auto key = std::pair{get_object_type(event), event->addr};
+    active_objects.emplace(key, event);
+    object_names.emplace(key, ++last_used_name[get_object_type(event)]);
   }
 
   if (event->event_type == SA_EV_THREAD_ON_CREATE) {
     active_threads.emplace(event->addr, ThreadState{event, nullptr});
-  } else if (event->event_type == SA_EV_THREAD_ON_DETACH) {
+  }
+
+  if (event->event_type == SA_EV_THREAD_ON_DETACH) {
     active_threads.at(event->addr).detach = event;
-  } else if (event->event_type == SA_EV_THREAD_ON_JOIN) {
+  }
+}
+
+void ActiveObjectsDb::handle_event_after_checks(const EventPtr& event) {
+  if (is_destroy_event(event)) {
+    auto key = std::pair{get_object_type(event), event->addr};
+    active_objects.erase(key);
+    object_names.erase(key);
+  }
+
+  if (event->event_type == SA_EV_THREAD_ON_JOIN) {
     active_threads.erase(event->addr);
   }
 }
 
 std::string ActiveObjectsDb::thread_name(ObjectId thread_id) const {
-  return object_name(thread_object_type, thread_id);
+  return object_name(ObjectType::thread, thread_id);
 }
 
 std::string ActiveObjectsDb::thread_name(const Event& event) const {
@@ -39,19 +45,17 @@ std::string ActiveObjectsDb::thread_name(const EventPtr& event) const {
 }
 
 std::string ActiveObjectsDb::object_name(const Event& event) const {
-  return object_name(get_object_type_str(event), event.addr);
+  return object_name(get_object_type(event), event.addr);
 }
 
 std::string ActiveObjectsDb::object_name(const EventPtr& event) const {
   return object_name(*event);
 }
 
-std::string ActiveObjectsDb::object_name(std::string_view object_type,
+std::string ActiveObjectsDb::object_name(ObjectType object_type,
                                          ObjectId object_id) const {
-  std::stringstream builder;
-  builder << object_type << " " << std::hex << std::setfill('0')
-          << std::setw(16) << object_id << std::dec;
-  return builder.str();
+  return std::string{get_object_type_str(object_type)} + " " +
+         std::to_string(object_names.at({object_type, object_id}));
 }
 
 EventPtr ActiveObjectsDb::thread_create(ObjectId thread_id) const noexcept {
