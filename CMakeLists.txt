@@ -4,6 +4,8 @@ project(sync_analysis)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
+set(SYNC_ANALYSIS_VERSION "1.0")
+
 add_library(sync_analysis_lib STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/backtrace.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/buffer.c
@@ -18,6 +20,13 @@ add_library(sync_analysis_lib STATIC
 target_include_directories(sync_analysis_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib/include)
 target_link_libraries(sync_analysis_lib PUBLIC pthread)
 target_compile_definitions(sync_analysis_lib PRIVATE UNW_LOCAL_ONLY)
+if (APPLE)
+    target_compile_definitions(sync_analysis_lib PUBLIC SYNC_ANALYSIS_IS_MAC_OS_X)
+elseif (LINUX)
+    target_compile_definitions(sync_analysis_lib PUBLIC SYNC_ANALYSIS_IS_LINUX)
+else ()
+    message(FATAL "Target platform not supported.")
+endif ()
 
 add_library(cxx_sync_lib STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/integration/cxx_sync/exception.cpp
@@ -34,7 +43,6 @@ add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/environment.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/event_file_reader.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/executable/logger.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/report.cpp
 
@@ -45,6 +53,13 @@ target_include_directories(sync_analysis
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/mcga-cli/include
         )
-target_compile_definitions(sync_analysis PUBLIC -DSYNC_ANALYSIS_IS_IN_EXECUTABLE)
+target_compile_definitions(sync_analysis PUBLIC -DSYNC_ANALYSIS_IS_IN_EXECUTABLE -DSYNC_ANALYSIS_VERSION="${SYNC_ANALYSIS_VERSION}")
+if (APPLE)
+    target_compile_definitions(sync_analysis PUBLIC SYNC_ANALYSIS_IS_MAC_OS_X)
+elseif (LINUX)
+    target_compile_definitions(sync_analysis PUBLIC SYNC_ANALYSIS_IS_LINUX)
+else ()
+    message(FATAL "Target platform not supported.")
+endif ()
 
 add_subdirectory(tests)

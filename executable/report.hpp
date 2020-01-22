@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "event.hpp"
-#include "logger.hpp"
 
 namespace syan {
 

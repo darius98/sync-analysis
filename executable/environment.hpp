@@ -6,7 +6,6 @@
 
 #include "active_objects_db.hpp"
 #include "event_file_reader.hpp"
-#include "logger.hpp"
 #include "report.hpp"
 
 namespace syan {
@@ -34,7 +33,6 @@ private:
   std::string binary_file_path;
   std::string dump_file_path;
   std::vector<Check*> enabled_checks;
-  Logger logger;
   DumpFileHeader file_header;
   ActiveObjectsDb active_objects_db;
 
