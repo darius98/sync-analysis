@@ -6,7 +6,6 @@
 #include <memory>
 #include <string>
 
-#include "event.hpp"
 #include "lib_compat.hpp"
 
 namespace syan {
@@ -19,7 +18,7 @@ public:
 
   bool done() const noexcept;
 
-  Event read();
+  ::SyanEvent read();
 
 private:
   void read_next_chunk();
@@ -32,7 +31,7 @@ private:
   std::unique_ptr<std::FILE, CloseFileDeleter> file;
   std::size_t buffer_cap;
   std::size_t buffer_cursor;
-  std::unique_ptr<Event[]> buffer;
+  std::unique_ptr<::SyanEvent[]> buffer;
   bool is_done_reading_file;
   DumpFileHeader file_header;
 };

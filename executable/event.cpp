@@ -2,27 +2,30 @@
 
 namespace syan {
 
-EventPtr EventPtr::make(const Event& event) {
-  EventPtr event_ptr;
+Event Event::make(const ::SyanEvent& event) {
+  if (event.signature != SYAN_EVENT_SIGNATURE) {
+    return Event{};
+  }
+  Event event_ptr;
   event_ptr.ptr = new EventPtrInternal{1, event};
   return event_ptr;
 }
 
-EventPtr::EventPtr() noexcept : ptr(nullptr) {}
+Event::Event() noexcept : ptr(nullptr) {}
 
-EventPtr::EventPtr(decltype(nullptr)) noexcept : ptr(nullptr) {}
+Event::Event(decltype(nullptr)) noexcept : ptr(nullptr) {}
 
-EventPtr::EventPtr(const EventPtr& other) noexcept : ptr(other.ptr) {
+Event::Event(const Event& other) noexcept : ptr(other.ptr) {
   if (ptr != nullptr) {
     ptr->ref_count += 1;
   }
 }
 
-EventPtr::EventPtr(EventPtr&& other) noexcept : ptr(other.ptr) {
+Event::Event(Event&& other) noexcept : ptr(other.ptr) {
   other.ptr = nullptr;
 }
 
-EventPtr& EventPtr::operator=(const EventPtr& other) noexcept {
+Event& Event::operator=(const Event& other) noexcept {
   if (this == &other) {
     return *this;
   }
@@ -40,7 +43,7 @@ EventPtr& EventPtr::operator=(const EventPtr& other) noexcept {
   return *this;
 }
 
-EventPtr& EventPtr::operator=(EventPtr&& other) noexcept {
+Event& Event::operator=(Event&& other) noexcept {
   if (this == &other) {
     return *this;
   }
@@ -56,7 +59,7 @@ EventPtr& EventPtr::operator=(EventPtr&& other) noexcept {
   return *this;
 }
 
-EventPtr::~EventPtr() noexcept {
+Event::~Event() noexcept {
   if (ptr != nullptr) {
     ptr->ref_count -= 1;
     if (ptr->ref_count == 0) {
@@ -65,47 +68,59 @@ EventPtr::~EventPtr() noexcept {
   }
 }
 
-Event& EventPtr::operator*() const noexcept {
-  return ptr->event;
+EventType Event::type() const noexcept {
+  return static_cast<EventType>(ptr->event.event_type);
 }
 
-Event* EventPtr::operator->() const noexcept {
-  return &ptr->event;
+ObjectId Event::object() const noexcept {
+  return ptr->event.addr;
 }
 
-EventPtr::operator bool() const noexcept {
+ObjectId Event::thread() const noexcept {
+  return ptr->event.thread_id;
+}
+
+std::int64_t Event::time_rel_to_program_start() const noexcept {
+  return ptr->event.timestamp;
+}
+
+RawBacktrace Event::raw_backtrace() const noexcept {
+  return ptr->event.backtrace;
+}
+
+Event::operator bool() const noexcept {
   return ptr != nullptr;
 }
 
-bool EventPtr::operator==(decltype(nullptr)) const noexcept {
+bool Event::operator==(decltype(nullptr)) const noexcept {
   return ptr == nullptr;
 }
 
-bool EventPtr::operator!=(decltype(nullptr)) const noexcept {
+bool Event::operator!=(decltype(nullptr)) const noexcept {
   return ptr != nullptr;
 }
 
-bool EventPtr::operator<(const EventPtr& other) const noexcept {
+bool Event::operator<(const Event& other) const noexcept {
   return ptr < other.ptr;
 }
 
-bool EventPtr::operator>(const EventPtr& other) const noexcept {
+bool Event::operator>(const Event& other) const noexcept {
   return ptr > other.ptr;
 }
 
-bool EventPtr::operator<=(const EventPtr& other) const noexcept {
+bool Event::operator<=(const Event& other) const noexcept {
   return ptr <= other.ptr;
 }
 
-bool EventPtr::operator>=(const EventPtr& other) const noexcept {
+bool Event::operator>=(const Event& other) const noexcept {
   return ptr >= other.ptr;
 }
 
-bool EventPtr::operator==(const EventPtr& other) const noexcept {
+bool Event::operator==(const Event& other) const noexcept {
   return ptr == other.ptr;
 }
 
-bool EventPtr::operator!=(const EventPtr& other) const noexcept {
+bool Event::operator!=(const Event& other) const noexcept {
   return ptr != other.ptr;
 }
 

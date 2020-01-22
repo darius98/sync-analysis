@@ -1,49 +1,57 @@
 #ifndef SYNC_ANALYSIS_EXE_EVENT_H_
 #define SYNC_ANALYSIS_EXE_EVENT_H_
 
+#include <cstdint>
+
 #include "lib_compat.hpp"
 
 namespace syan {
 
-// A shared_ptr implementation that is:
+// A shared pointer-style implementation that is:
 // - without thread-safety guarantees
 // - without support for weak_ptr
 // - without support for taking ownership of an existing pointer
-class EventPtr {
+class Event {
 public:
-  static EventPtr make(const Event& event);
+  static Event make(const ::SyanEvent& event);
 
-  explicit EventPtr() noexcept;
-  EventPtr(decltype(nullptr)) noexcept;
+  explicit Event() noexcept;
+  Event(decltype(nullptr)) noexcept;
 
-  EventPtr(const EventPtr& other) noexcept;
-  EventPtr(EventPtr&& other) noexcept;
+  Event(const Event& other) noexcept;
+  Event(Event&& other) noexcept;
 
-  EventPtr& operator=(const EventPtr& other) noexcept;
-  EventPtr& operator=(EventPtr&& other) noexcept;
+  Event& operator=(const Event& other) noexcept;
+  Event& operator=(Event&& other) noexcept;
 
-  ~EventPtr() noexcept;
+  ~Event() noexcept;
 
-  Event& operator*() const noexcept;
+  EventType type() const noexcept;
 
-  Event* operator->() const noexcept;
+  ObjectId object() const noexcept;
+
+  ObjectId thread() const noexcept;
+
+  std::int64_t time_rel_to_program_start() const noexcept;
+
+  RawBacktrace raw_backtrace() const noexcept;
 
   explicit operator bool() const noexcept;
 
   bool operator==(decltype(nullptr)) const noexcept;
   bool operator!=(decltype(nullptr)) const noexcept;
 
-  bool operator<(const EventPtr& other) const noexcept;
-  bool operator>(const EventPtr& other) const noexcept;
-  bool operator<=(const EventPtr& other) const noexcept;
-  bool operator>=(const EventPtr& other) const noexcept;
-  bool operator==(const EventPtr& other) const noexcept;
-  bool operator!=(const EventPtr& other) const noexcept;
+  bool operator<(const Event& other) const noexcept;
+  bool operator>(const Event& other) const noexcept;
+  bool operator<=(const Event& other) const noexcept;
+  bool operator>=(const Event& other) const noexcept;
+  bool operator==(const Event& other) const noexcept;
+  bool operator!=(const Event& other) const noexcept;
 
 private:
   struct EventPtrInternal {
     int ref_count = 1;
-    Event event;
+    ::SyanEvent event;
   };
 
   EventPtrInternal* ptr;

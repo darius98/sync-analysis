@@ -12,8 +12,8 @@ Report::Report(const Environment* env, Level level, int code,
                std::string description)
     : env(env), level(level), code(code), description(std::move(description)) {}
 
-void Report::add_section(std::string section_description, EventPtr event) {
-  thread_notes.insert(event->thread_id);
+void Report::add_section(std::string section_description, Event event) {
+  thread_notes.insert(event.thread());
   if (!is_create_event(event)) {
     notes.emplace(env->db().object_create(event));
   }
@@ -43,8 +43,9 @@ void Report::send() {
   builder << description << " (E" << code << ")";
   for (auto& section : sections) {
     auto timestamp = env->file_header.start_time;
-    timestamp.tv_sec += section.event->timestamp / 1000000000;
-    timestamp.tv_nsec += section.event->timestamp % 1000000000;
+
+    timestamp.tv_sec += section.event.time_rel_to_program_start() / 1000000000;
+    timestamp.tv_nsec += section.event.time_rel_to_program_start() % 1000000000;
 
     timestamp.tv_sec += timestamp.tv_nsec / 1000000000;
     timestamp.tv_nsec %= 1000000000;
@@ -53,12 +54,12 @@ void Report::send() {
             << "." << std::setfill('0') << std::setw(6)
             << timestamp.tv_nsec / 1000 << std::setw(0) << std::setfill(' ')
             << "] " << section.description << "\n";
-    env->symbolize_backtrace_to_stream(*section.event, builder);
+    env->symbolize_backtrace_to_stream(section.event, builder);
   }
   env->send_report(level, code, builder.str());
 }
 
-Report::ReportSection::ReportSection(std::string description, EventPtr event)
+Report::ReportSection::ReportSection(std::string description, Event event)
     : description(std::move(description)), event(std::move(event)) {}
 
 } // namespace syan

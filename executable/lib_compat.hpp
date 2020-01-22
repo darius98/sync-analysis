@@ -10,8 +10,9 @@ namespace syan {
 using DumpFileHeader = ::SyanDumpFileHeader;
 
 using EventType = ::SyanEventType;
-using Event = ::SyanEvent;
-using ObjectId = decltype(Event::addr);
+using ObjectId = decltype(::SyanEvent::addr);
+
+using RawBacktrace = intptr_t (&)[12];
 
 } // namespace syan
 

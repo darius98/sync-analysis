@@ -7,12 +7,13 @@ using namespace syan;
 
 class MutexLockOrderCheck : public Check {
 public:
-  void on_event(const Environment& env, EventPtr event) final {
-    switch (event->event_type) {
+  void on_event(const Environment& env, Event event) final {
+    switch (event.type()) {
     case SA_EV_MUTEX_BEFORE_LOCK: {
-      auto& locked_on_thread = thread_locked_objects[event->thread_id];
+      auto& locked_on_thread = thread_locked_objects[event.thread()];
       for (const auto& prev_lock_event : locked_on_thread) {
-        auto it = ordered_objects.find({event->addr, prev_lock_event->addr});
+        auto it =
+            ordered_objects.find({event.object(), prev_lock_event.object()});
         if (it != ordered_objects.end()) {
           const auto& [mtx1_lock, mtx2_lock] = it->second;
 
@@ -44,17 +45,17 @@ public:
       break;
     }
     case SA_EV_MUTEX_AFTER_LOCK: {
-      thread_locked_objects[event->thread_id].insert(event);
-      auto& locked_on_thread = thread_locked_objects[event->thread_id];
+      thread_locked_objects[event.thread()].insert(event);
+      auto& locked_on_thread = thread_locked_objects[event.thread()];
       for (const auto& prev_lock_event : locked_on_thread) {
         ordered_objects.try_emplace(
-            std::pair{prev_lock_event->addr, event->addr},
+            std::pair{prev_lock_event.object(), event.object()},
             std::pair{prev_lock_event, event});
       }
       break;
     }
     case SA_EV_MUTEX_ON_UNLOCK: {
-      thread_locked_objects[event->thread_id].erase(event);
+      thread_locked_objects[event.thread()].erase(event);
       break;
     }
     default:
@@ -63,8 +64,8 @@ public:
   }
 
 private:
-  std::map<std::pair<ObjectId, ObjectId>, std::pair<EventPtr, EventPtr>>
+  std::map<std::pair<ObjectId, ObjectId>, std::pair<Event, Event>>
       ordered_objects;
-  std::map<ObjectId, std::set<EventPtr>> thread_locked_objects;
+  std::map<ObjectId, std::set<Event>> thread_locked_objects;
 };
 SYAN_REGISTER_CHECK(MutexLockOrderCheck);

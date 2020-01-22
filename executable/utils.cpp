@@ -5,30 +5,22 @@
 namespace syan {
 
 bool is_create_event(const Event& event) noexcept {
-  return event.event_type == SA_EV_THREAD_ON_CREATE ||
-         event.event_type == SA_EV_MUTEX_ON_CREATE ||
-         event.event_type == SA_EV_REC_MUTEX_ON_CREATE ||
-         event.event_type == SA_EV_RWLOCK_ON_CREATE;
-}
-
-bool is_create_event(const EventPtr& event) noexcept {
-  return is_create_event(*event);
+  return event.type() == SA_EV_THREAD_ON_CREATE ||
+         event.type() == SA_EV_MUTEX_ON_CREATE ||
+         event.type() == SA_EV_REC_MUTEX_ON_CREATE ||
+         event.type() == SA_EV_RWLOCK_ON_CREATE;
 }
 
 bool is_destroy_event(const Event& event) noexcept {
-  return event.event_type == SA_EV_THREAD_ON_JOIN ||
-         event.event_type == SA_EV_THREAD_ON_DETACH ||
-         event.event_type == SA_EV_MUTEX_ON_DESTROY ||
-         event.event_type == SA_EV_REC_MUTEX_ON_DESTROY ||
-         event.event_type == SA_EV_RWLOCK_ON_DESTROY;
-}
-
-bool is_destroy_event(const EventPtr& event) noexcept {
-  return is_destroy_event(*event);
+  return event.type() == SA_EV_THREAD_ON_JOIN ||
+         event.type() == SA_EV_THREAD_ON_DETACH ||
+         event.type() == SA_EV_MUTEX_ON_DESTROY ||
+         event.type() == SA_EV_REC_MUTEX_ON_DESTROY ||
+         event.type() == SA_EV_RWLOCK_ON_DESTROY;
 }
 
 ObjectType get_object_type(const Event& event) noexcept {
-  switch (event.event_type) {
+  switch (event.type()) {
   case SA_EV_THREAD_ON_CREATE:
   case SA_EV_THREAD_ON_JOIN:
   case SA_EV_THREAD_ON_DETACH:
@@ -62,10 +54,6 @@ ObjectType get_object_type(const Event& event) noexcept {
   std::abort();
 }
 
-ObjectType get_object_type(const EventPtr& event) noexcept {
-  return get_object_type(*event);
-}
-
 std::string_view get_object_type_str(ObjectType object_type) noexcept {
   switch (object_type) {
   case ObjectType::thread:
@@ -83,12 +71,8 @@ std::string_view get_object_type_str(const Event& event) noexcept {
   return get_object_type_str(get_object_type(event));
 }
 
-std::string_view get_object_type_str(const EventPtr& event) noexcept {
-  return get_object_type_str(*event);
-}
-
 std::string_view get_event_type_str(const Event& event) noexcept {
-  switch (event.event_type) {
+  switch (event.type()) {
   case SA_EV_THREAD_ON_CREATE:
     return "thread_create";
   case SA_EV_THREAD_ON_JOIN:
@@ -141,10 +125,6 @@ std::string_view get_event_type_str(const Event& event) noexcept {
     return "read_write_lock_destroy";
   }
   std::abort();
-}
-
-std::string_view get_event_type_str(const EventPtr& event) noexcept {
-  return get_event_type_str(*event);
 }
 
 } // namespace syan
