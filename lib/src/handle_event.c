@@ -8,9 +8,6 @@
 #include "event.h"
 #include "event_time.h"
 #include "global_buffer.h"
-#include "init.h"
-
-extern "C" {
 
 void syan_handle_event(SyanEventType event_type, void* addr) {
   SyanEvent* event = syan_global_buffer_acquire_event_slot();
@@ -22,20 +19,3 @@ void syan_handle_event(SyanEventType event_type, void* addr) {
   atomic_store_explicit(&event->signature, SYAN_EVENT_SIGNATURE,
                         memory_order_release);
 }
-}
-
-namespace {
-
-struct StaticInitializer {
-  explicit StaticInitializer() noexcept {
-    syan_init();
-  }
-
-  ~StaticInitializer() noexcept {
-    syan_shutdown();
-  }
-};
-
-StaticInitializer initializer;
-
-} // namespace

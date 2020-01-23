@@ -12,7 +12,7 @@ add_library(sync_analysis_lib STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/dump_file_header.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/event_time.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/global_buffer.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/handle_event.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/handle_event.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/init.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/sync_analysis.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/worker_thread.c
@@ -49,17 +49,14 @@ add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/checks/list.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/checks/mutex_lock_order.cpp
         )
+target_link_libraries(sync_analysis PUBLIC sync_analysis_lib)
 target_include_directories(sync_analysis
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/mcga-cli/include
         )
-target_compile_definitions(sync_analysis PUBLIC -DSYNC_ANALYSIS_IS_IN_EXECUTABLE -DSYNC_ANALYSIS_VERSION="${SYNC_ANALYSIS_VERSION}")
-if (APPLE)
-    target_compile_definitions(sync_analysis PUBLIC SYNC_ANALYSIS_IS_MAC_OS_X)
-elseif (LINUX)
-    target_compile_definitions(sync_analysis PUBLIC SYNC_ANALYSIS_IS_LINUX)
-else ()
-    message(FATAL "Target platform not supported.")
-endif ()
+target_compile_definitions(sync_analysis PUBLIC
+        -DSYNC_ANALYSIS_IS_IN_EXECUTABLE
+        -DSYNC_ANALYSIS_VERSION="${SYNC_ANALYSIS_VERSION}"
+        )
 
 add_subdirectory(tests)

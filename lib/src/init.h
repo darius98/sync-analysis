@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-void syan_init() SYAN_CPP_NOEXCEPT;
+void syan_init(int argc, char** argv) SYAN_CPP_NOEXCEPT;
 
 void syan_shutdown() SYAN_CPP_NOEXCEPT;
 

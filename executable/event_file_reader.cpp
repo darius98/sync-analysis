@@ -13,9 +13,8 @@ EventFileReader::EventFileReader(std::string fn, std::size_t buffer_cap)
     throw std::runtime_error("Cannot read dump file at '" + file_name + "'");
   }
   buffer = std::move(buf);
-  auto num_read =
-      std::fread(&file_header, sizeof(DumpFileHeader), 1, file.get());
-  if (num_read != 1) {
+  int read_status = syan_read_dump_file_header(file.get(), &file_header);
+  if (read_status != 0) {
     throw std::runtime_error("cannot read dump file at '" + file_name + "'");
   }
   read_next_chunk();

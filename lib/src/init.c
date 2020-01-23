@@ -12,7 +12,7 @@
 
 static FILE* syan_output_file;
 
-void syan_init() {
+void syan_init(int argc, char** argv) {
   int event_time_init_status = syan_event_time_init();
   if (event_time_init_status != 0) {
     fprintf(stderr,
@@ -41,8 +41,8 @@ void syan_init() {
     exit(EXIT_FAILURE);
   }
 
-  SyanDumpFileHeader dump_file_header;
-  int init_header_status = syan_init_dump_file_header(&dump_file_header);
+  SyanDumpFileHeader header;
+  int init_header_status = syan_init_dump_file_header(&header, argc, argv);
   if (init_header_status != 0) {
     fprintf(
         stderr,
@@ -51,9 +51,9 @@ void syan_init() {
     exit(EXIT_FAILURE);
   }
 
-  int num_written = fwrite(&dump_file_header, sizeof(SyanDumpFileHeader), 1,
-                           syan_output_file);
-  if (num_written != 1) {
+  int write_header_status =
+      syan_write_dump_file_header(syan_output_file, &header);
+  if (write_header_status != 0) {
     fprintf(stderr,
             "SyncAnalysis init: failed to write dump file header. ferror=%d, "
             "errno=%d\n",

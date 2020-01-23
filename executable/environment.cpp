@@ -24,12 +24,8 @@ void Environment::analyze() {
   file_header = dump_file_reader.get_header();
   tm* calendarTime = gmtime(&file_header.start_time.tv_sec);
   std::cout << "Sync analysis version " SYNC_ANALYSIS_VERSION "\n"
-            // TODO: Save executable name in the dump file header.
-            << "\tExecutable: "
-            << "\n"
-            // TODO: Save executable cmd line in the dump file header.
-            << "\tCommand line: "
-            << "\n"
+            << "\tExecutable: " << file_header.program_name << "\n"
+            << "\tCommand line: " << file_header.program_command << "\n"
 #ifdef SYNC_ANALYSIS_IS_MAC_OS_X
             << "\tExecutable load address: " << file_header.program_load_addr
             << " (0x" << std::hex << std::setfill('0') << std::setw(16)
@@ -40,7 +36,7 @@ void Environment::analyze() {
             << std::put_time(calendarTime, "%d/%m/%Y %H:%M:%S") << "."
             << std::setfill('0') << std::setw(6)
             << file_header.start_time.tv_nsec / 1000 << std::setw(0)
-            << std::setfill(' ') << "\n";
+            << std::setfill(' ') << "\n\n";
 
   for (auto* check : enabled_checks) {
     check->on_start(*this);

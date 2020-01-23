@@ -1,4 +1,13 @@
 #include "handle_event.h"
+#include "init.h"
+
+__attribute__((constructor)) static void syan_init_call(int argc, char** argv) {
+  syan_init(argc, argv);
+}
+
+__attribute__((destructor)) static void syan_shutdown_call() {
+  syan_shutdown();
+}
 
 // Thread
 
