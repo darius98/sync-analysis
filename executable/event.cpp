@@ -95,8 +95,7 @@ bool Event::is_create_event() const noexcept {
 }
 
 bool Event::is_destroy_event() const noexcept {
-  return type() == SA_EV_THREAD_ON_JOIN || type() == SA_EV_THREAD_ON_DETACH ||
-         type() == SA_EV_MUTEX_ON_DESTROY ||
+  return type() == SA_EV_THREAD_ON_JOIN || type() == SA_EV_MUTEX_ON_DESTROY ||
          type() == SA_EV_REC_MUTEX_ON_DESTROY ||
          type() == SA_EV_RWLOCK_ON_DESTROY;
 }

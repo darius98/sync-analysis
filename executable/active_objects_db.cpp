@@ -8,14 +8,6 @@ void ActiveObjectsDb::handle_event_before_checks(const Event& event) {
     active_objects.emplace(key, event);
     object_names.emplace(key, ++last_used_name[event.object_type()]);
   }
-
-  if (event.type() == SA_EV_THREAD_ON_CREATE) {
-    active_threads.emplace(event.object(), ThreadState{event, nullptr});
-  }
-
-  if (event.type() == SA_EV_THREAD_ON_DETACH) {
-    active_threads.at(event.object()).detach = event;
-  }
 }
 
 void ActiveObjectsDb::handle_event_after_checks(const Event& event) {
@@ -23,10 +15,6 @@ void ActiveObjectsDb::handle_event_after_checks(const Event& event) {
     auto key = std::pair{event.object_type(), event.object()};
     active_objects.erase(key);
     object_names.erase(key);
-  }
-
-  if (event.type() == SA_EV_THREAD_ON_JOIN) {
-    active_threads.erase(event.object());
   }
 }
 
@@ -49,19 +37,11 @@ std::string ActiveObjectsDb::object_name(ObjectType object_type,
 }
 
 Event ActiveObjectsDb::thread_create(ObjectId thread_id) const noexcept {
-  return active_threads.at(thread_id).create;
+  return active_objects.at({ObjectType::thread, thread_id});
 }
 
 Event ActiveObjectsDb::thread_create(const Event& event) const noexcept {
   return thread_create(event.thread());
-}
-
-Event ActiveObjectsDb::thread_detach(ObjectId thread_id) const noexcept {
-  return active_threads.at(thread_id).detach;
-}
-
-Event ActiveObjectsDb::thread_detach(const Event& event) const noexcept {
-  return thread_detach(event.thread());
 }
 
 Event ActiveObjectsDb::object_create(const Event& event) const noexcept {

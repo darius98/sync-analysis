@@ -30,12 +30,6 @@ void Report::send() {
     sections.emplace_back("Note: " + env->db().thread_name(thread_note) +
                               " was created here:",
                           env->db().thread_create(thread_note));
-    auto thread_detach_event = env->db().thread_detach(thread_note);
-    if (thread_detach_event != nullptr) {
-      sections.emplace_back("Note: " + env->db().thread_name(thread_note) +
-                                " was detached here:",
-                            thread_detach_event);
-    }
   }
 
   std::stringstream builder;

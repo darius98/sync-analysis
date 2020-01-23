@@ -20,9 +20,6 @@ public:
   Event thread_create(ObjectId thread_id) const noexcept;
   Event thread_create(const Event& event) const noexcept;
 
-  Event thread_detach(ObjectId thread_id) const noexcept;
-  Event thread_detach(const Event& event) const noexcept;
-
   std::string object_name(const Event& event) const;
 
   Event object_create(const Event& event) const noexcept;
@@ -30,11 +27,6 @@ public:
 private:
   std::string object_name(ObjectType object_type, ObjectId object_id) const;
 
-  struct ThreadState {
-    Event create;
-    Event detach;
-  };
-  std::map<ObjectId, ThreadState> active_threads;
   std::map<std::pair<ObjectType, ObjectId>, Event> active_objects;
   std::map<ObjectType, std::size_t> last_used_name;
   std::map<std::pair<ObjectType, ObjectId>, std::size_t> object_names;
