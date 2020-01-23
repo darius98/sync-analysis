@@ -12,7 +12,7 @@
 
 static int syan_get_load_addr(intptr_t* load_addr) {
   Dl_info info;
-  int status = dladdr(&syan_init_dump_file_header, &info);
+  int status = dladdr((void*)&syan_init_dump_file_header, &info);
   if (status == 0) {
     fprintf(
         stderr,
@@ -60,7 +60,7 @@ int syan_init_dump_file_header(SyanDumpFileHeader* header, int argc,
 
 int syan_write_dump_file_header(FILE* stream,
                                 const SyanDumpFileHeader* header) {
-  int num_written;
+  size_t num_written;
   num_written = fwrite(&header->start_time, sizeof(struct timespec), 1, stream);
   if (num_written != 1) {
     return 1;
@@ -100,7 +100,7 @@ int syan_write_dump_file_header(FILE* stream,
 }
 
 int syan_read_dump_file_header(FILE* stream, SyanDumpFileHeader* header) {
-  int num_read;
+  size_t num_read;
   num_read = fread(&header->start_time, sizeof(struct timespec), 1, stream);
   if (num_read != 1) {
     return 1;

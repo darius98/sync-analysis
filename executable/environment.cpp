@@ -73,7 +73,7 @@ const ActiveObjectsDb& Environment::db() const noexcept {
   return active_objects_db;
 }
 
-void Environment::send_report(Report::Level level, int code,
+void Environment::send_report(Report::Level level, int /*code*/,
                               const std::string& report_message) const {
   switch (level) {
   case Report::info:

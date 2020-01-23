@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(SYNC_ANALYSIS_VERSION "1.0")
 
+add_compile_options(-Werror -Wall -Wextra -Wpedantic)
+
 add_library(sync_analysis_lib STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/backtrace.c
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/src/buffer.c

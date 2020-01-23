@@ -5,7 +5,7 @@
 
 #include "event.h"
 
-#define SYAN_BUFFER_PAGE_SIZE ((1u << 15u) / sizeof(SyanEvent))
+#define SYAN_BUFFER_PAGE_SIZE ((int)((1u << 15u) / sizeof(SyanEvent)))
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,7 +20,7 @@ typedef struct {
 
 typedef SyanBufferPage* SyanBufferPagePtr;
 
-#define SYAN_BUFFER_NUM_PAGES (1u << 10u)
+#define SYAN_BUFFER_NUM_PAGES ((int)(1u << 10u))
 
 typedef struct {
   // Cannot have more than 1024 pages in memory.
