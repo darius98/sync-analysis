@@ -15,15 +15,14 @@ static atomic_bool syan_stop_token;
 static bool work(FILE* file) {
   SyanBufferPagePtr buf_page = syan_global_buffer_get_front_page();
   int_fast32_t front = buf_page->storage_front;
-  int_fast32_t back =
-      atomic_load_explicit(&buf_page->storage_back, memory_order_acquire);
+  int_fast32_t back = atomic_load(&buf_page->storage_back);
   if (back > SYAN_BUFFER_PAGE_SIZE) {
     back = SYAN_BUFFER_PAGE_SIZE;
   }
 
   for (int i = front; i < back; i++) {
-    while (atomic_load_explicit(&buf_page->storage[i].signature,
-                                memory_order_acquire) != SYAN_EVENT_SIGNATURE) {
+    while (atomic_load(&buf_page->storage[i].signature) !=
+           SYAN_EVENT_SIGNATURE) {
     }
   }
 
@@ -48,7 +47,7 @@ static bool work(FILE* file) {
 
 static void* loop(void* param) {
   FILE* file = (FILE*)param;
-  while (!atomic_load_explicit(&syan_stop_token, memory_order_acquire)) {
+  while (!atomic_load(&syan_stop_token)) {
     while (work(file)) {
     }
     usleep(5);
@@ -59,12 +58,12 @@ static void* loop(void* param) {
 }
 
 int syan_start_worker_thread(void* param) {
-  atomic_store_explicit(&syan_stop_token, false, memory_order_release);
+  atomic_store(&syan_stop_token, false);
   return pthread_create(&syan_worker_thread, NULL, loop, param);
 }
 
 int syan_stop_worker_thread() {
-  atomic_store_explicit(&syan_stop_token, true, memory_order_release);
+  atomic_store(&syan_stop_token, true);
   void* thread_output;
   return pthread_join(syan_worker_thread, &thread_output);
 }

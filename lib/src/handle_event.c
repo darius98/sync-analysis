@@ -16,6 +16,5 @@ void syan_handle_event(SyanEventType event_type, void* addr) {
   event->thread_id = (intptr_t)pthread_self();
   event->addr = (intptr_t)addr;
   syan_get_backtrace(event->backtrace);
-  atomic_store_explicit(&event->signature, SYAN_EVENT_SIGNATURE,
-                        memory_order_release);
+  atomic_store(&event->signature, SYAN_EVENT_SIGNATURE);
 }

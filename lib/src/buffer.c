@@ -5,7 +5,7 @@
 
 static void syan_reset_buffer_page(SyanBufferPagePtr page) {
   page->storage_front = 0;
-  atomic_store_explicit(&page->storage_back, 0, memory_order_release);
+  atomic_store(&page->storage_back, 0);
   memset(page->storage, 0, sizeof(page->storage));
 }
 
