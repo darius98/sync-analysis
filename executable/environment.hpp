@@ -14,7 +14,8 @@ class Check;
 
 class Environment {
 public:
-  Environment(std::string binary_file_path, std::string dump_file_path);
+  Environment(std::optional<std::string> binary_file_path,
+              std::string dump_file_path);
 
   void analyze();
 
@@ -30,7 +31,7 @@ private:
   void symbolize_backtrace_to_stream(const Event& event,
                                      std::ostream& stream) const;
 
-  std::string binary_file_path;
+  std::optional<std::string> binary_file_path;
   std::string dump_file_path;
   std::vector<Check*> enabled_checks;
   DumpFileHeader file_header;
@@ -39,6 +40,6 @@ private:
   friend class Report;
 };
 
-} // namespace syan
+}  // namespace syan
 
 #endif

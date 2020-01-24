@@ -8,7 +8,7 @@
 
 namespace syan {
 
-Environment::Environment(std::string binary_file_path,
+Environment::Environment(std::optional<std::string> binary_file_path,
                          std::string dump_file_path)
     : binary_file_path(std::move(binary_file_path)),
       dump_file_path(std::move(dump_file_path)) {
@@ -76,26 +76,33 @@ const ActiveObjectsDb& Environment::db() const noexcept {
 void Environment::send_report(Report::Level level, int /*code*/,
                               const std::string& report_message) const {
   switch (level) {
-  case Report::info:
-    std::cout << "INFO: " << report_message << "\n";
-    break;
+  case Report::info: std::cout << "INFO: " << report_message << "\n"; break;
   case Report::warning:
     std::cout << "WARNING: " << report_message << "\n";
     break;
-  case Report::error:
-    std::cout << "ERROR: " << report_message << "\n";
-    break;
+  case Report::error: std::cout << "ERROR: " << report_message << "\n"; break;
   }
 }
 
 void Environment::symbolize_backtrace_to_stream(const Event& event,
                                                 std::ostream& stream) const {
+  if (!binary_file_path.has_value()) {
+    for (const auto& pc : event.raw_backtrace()) {
+      if (pc != 0) {
+        stream << "\t\t " << pc << " (0x" << std::hex << std::setfill('0')
+               << std::setw(16) << pc << ")\n"
+               << std::dec;
+      }
+    }
+    return;
+  }
+
   // TODO: Implement this for Linux too.
 
 #ifdef SYNC_ANALYSIS_IS_MAC_OS_X
   std::stringstream atos_command_builder;
   // TODO: Don't hardcode architecture here!
-  atos_command_builder << "atos -o " << binary_file_path
+  atos_command_builder << "atos -o " << binary_file_path.value()
                        << " -arch x86_64 -l 0x" << std::hex << std::setfill('0')
                        << std::setw(16) << file_header.program_load_addr;
   for (const auto& pc : event.raw_backtrace()) {
@@ -118,4 +125,4 @@ void Environment::symbolize_backtrace_to_stream(const Event& event,
 #endif
 }
 
-} // namespace syan
+}  // namespace syan

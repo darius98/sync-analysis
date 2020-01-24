@@ -1,4 +1,23 @@
 ColumnLimit: 80
 TabWidth: 2
 PointerAlignment: Left
+AllowShortCaseLabelsOnASingleLine: true
+
 AllowShortFunctionsOnASingleLine: Empty
+AllowShortLambdasOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+
+AllowAllArgumentsOnNextLine: true
+AllowAllConstructorInitializersOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+
+ConstructorInitializerIndentWidth: 4
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+SpaceBeforeInheritanceColon: false
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceBeforeCtorInitializerColon: false
+SpacesBeforeTrailingComments: 2
+SpaceAfterTemplateKeyword: false
+NamespaceIndentation: None
