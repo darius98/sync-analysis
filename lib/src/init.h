@@ -2,23 +2,15 @@
 #define SYNC_ANALYSIS_LIB_SRC_INIT_H_
 
 #ifdef __cplusplus
-#define SYAN_CPP_NOEXCEPT noexcept
-#else
-#define SYAN_CPP_NOEXCEPT
-#endif
-
-#ifdef __cplusplus
 extern "C" {
 #endif
 
-void syan_init(int argc, char** argv) SYAN_CPP_NOEXCEPT;
+void syan_init(int argc, char** argv);
 
-void syan_shutdown() SYAN_CPP_NOEXCEPT;
+void syan_shutdown();
 
 #ifdef __cplusplus
 }
 #endif
-
-#undef SYAN_CPP_NOEXCEPT
 
 #endif
