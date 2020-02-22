@@ -104,7 +104,7 @@ void Environment::symbolize_backtrace_to_stream(const Event& event,
   // TODO: Don't hardcode architecture here!
   atos_command_builder << "atos -o " << binary_file_path.value()
                        << " -arch x86_64 -l 0x" << std::hex << std::setfill('0')
-                       << std::setw(16) << file_header.program_load_addr;
+                       << std::setw(16) << file_header.program_load_addr + 8;
   for (const auto& pc : event.raw_backtrace()) {
     if (pc != 0) {
       atos_command_builder << " 0x" << std::hex << std::setfill('0')

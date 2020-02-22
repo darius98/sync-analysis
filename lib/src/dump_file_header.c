@@ -40,6 +40,7 @@ int syan_init_dump_file_header(SyanDumpFileHeader* header, int argc,
   if (program_command == NULL) {
     return 1;
   }
+  program_command[0] = 0;
   strcat(program_command, argv[0]);
   for (int i = 1; i < argc; i++) {
     strcat(program_command, " ");
@@ -131,7 +132,7 @@ int syan_read_dump_file_header(FILE* stream, SyanDumpFileHeader* header) {
     return 1;
   }
 
-  char* program_command = malloc(header->program_name_length + 1);
+  char* program_command = malloc(header->program_command_length + 1);
   if (program_command == NULL) {
     free(program_name);
     return 1;
