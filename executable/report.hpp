@@ -43,6 +43,6 @@ private:
   std::set<Event> notes;
 };
 
-} // namespace syan
+}  // namespace syan
 
 #endif

@@ -15,15 +15,15 @@ extern "C" {
 // total size = 128B
 typedef struct {
 #ifndef SYNC_ANALYSIS_IS_IN_EXECUTABLE
-  atomic_int_fast32_t signature; // 4B
+  atomic_int_fast32_t signature;  // 4B
 #else
-  int32_t signature; // 4B
+  int32_t signature;  // 4B
 #endif
-  int32_t event_type;     // 4B
-  int64_t timestamp;      // 8B
-  intptr_t thread_id;     // 8B
-  intptr_t addr;          // 8B
-  intptr_t backtrace[12]; // 96B
+  int32_t event_type;      // 4B
+  int64_t timestamp;       // 8B
+  intptr_t thread_id;      // 8B
+  intptr_t addr;           // 8B
+  intptr_t backtrace[12];  // 96B
 } SyanEvent;
 
 #ifdef __cplusplus

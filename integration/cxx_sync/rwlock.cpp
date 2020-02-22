@@ -53,7 +53,7 @@ void RWLock::wr_unlock() {
   SyncException::throw_on_error("RWLock", "pthread_rwlock_unlock", status);
 }
 
-RWLockReadGuard::RWLockReadGuard(RWLock* rwlock) : rwlock(rwlock) {
+RWLockReadGuard::RWLockReadGuard(RWLock* rwlock): rwlock(rwlock) {
   rwlock->rd_lock();
 }
 
@@ -61,7 +61,7 @@ RWLockReadGuard::~RWLockReadGuard() {
   rwlock->rd_unlock();
 }
 
-RWLockWriteGuard::RWLockWriteGuard(RWLock* rwlock) : rwlock(rwlock) {
+RWLockWriteGuard::RWLockWriteGuard(RWLock* rwlock): rwlock(rwlock) {
   rwlock->wr_lock();
 }
 
@@ -69,4 +69,4 @@ RWLockWriteGuard::~RWLockWriteGuard() {
   rwlock->wr_unlock();
 }
 
-} // namespace sync
+}  // namespace sync

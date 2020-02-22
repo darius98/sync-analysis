@@ -5,7 +5,7 @@
 
 namespace sync {
 
-class SyncException : public std::exception {
+class SyncException: public std::exception {
 public:
   static void throw_on_error(const char* type, const char* function,
                              int error_code);
@@ -29,6 +29,6 @@ private:
   char* message;
 };
 
-} // namespace sync
+}  // namespace sync
 
 #endif

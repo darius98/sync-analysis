@@ -46,7 +46,7 @@ void RecursiveMutex::unlock() {
                                 status);
 }
 
-RecursiveMutexGuard::RecursiveMutexGuard(RecursiveMutex* mtx) : mtx(mtx) {
+RecursiveMutexGuard::RecursiveMutexGuard(RecursiveMutex* mtx): mtx(mtx) {
   mtx->lock();
 }
 
@@ -54,4 +54,4 @@ RecursiveMutexGuard::~RecursiveMutexGuard() {
   mtx->unlock();
 }
 
-} // namespace sync
+}  // namespace sync

@@ -15,7 +15,9 @@ void SyncException::throw_on_error(const char* type, const char* function,
 
 SyncException::SyncException(const char* type, const char* function,
                              int error_code)
-    : type(type), function(function), error_code(error_code),
+    : type(type),
+      function(function),
+      error_code(error_code),
       message(static_cast<char*>(std::malloc(
           std::strlen(type) + 2 + std::strlen(function) + 19 + 11))) {
   if (message == nullptr) {
@@ -45,4 +47,4 @@ const char* SyncException::what() const noexcept {
   return message;
 }
 
-} // namespace sync
+}  // namespace sync

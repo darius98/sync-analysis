@@ -31,6 +31,6 @@ private:
   Mutex* mtx;
 };
 
-} // namespace sync
+}  // namespace sync
 
 #endif

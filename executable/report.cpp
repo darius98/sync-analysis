@@ -55,4 +55,4 @@ void Report::send() {
 Report::ReportSection::ReportSection(std::string description, Event event)
     : description(std::move(description)), event(std::move(event)) {}
 
-} // namespace syan
+}  // namespace syan

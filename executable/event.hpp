@@ -83,6 +83,6 @@ private:
   EventPtrInternal* ptr;
 };
 
-} // namespace syan
+}  // namespace syan
 
 #endif

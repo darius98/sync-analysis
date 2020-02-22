@@ -36,6 +36,6 @@ private:
   DumpFileHeader file_header;
 };
 
-} // namespace syan
+}  // namespace syan
 
 #endif

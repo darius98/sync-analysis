@@ -5,7 +5,7 @@
 
 using namespace syan;
 
-class MutexLockOrderCheck : public Check {
+class MutexLockOrderCheck: public Check {
 public:
   void on_event(const Environment& env, Event event) final {
     switch (event.type()) {
@@ -58,8 +58,7 @@ public:
       thread_locked_objects[event.thread()].erase(event);
       break;
     }
-    default:
-      break;
+    default: break;
     }
   }
 

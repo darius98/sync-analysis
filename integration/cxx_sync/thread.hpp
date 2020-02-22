@@ -7,7 +7,8 @@ namespace sync {
 
 class Thread {
 public:
-  template <class Func> explicit Thread(Func callable) {
+  template<class Func>
+  explicit Thread(Func callable) {
     init_thread(&proxy<Func>, new Func(static_cast<Func&&>(callable)));
   }
 
@@ -20,7 +21,8 @@ public:
   void detach();
 
 private:
-  template <class Func> struct Context {
+  template<class Func>
+  struct Context {
     Thread* thread;
     Func callable;
   };
@@ -29,7 +31,8 @@ private:
 
   pthread_t pt_thread = nullptr;
 
-  template <class Func> static void* proxy(void* arg) {
+  template<class Func>
+  static void* proxy(void* arg) {
     auto func = static_cast<Func*>(arg);
     (*func)();
     delete func;
@@ -37,6 +40,6 @@ private:
   }
 };
 
-} // namespace sync
+}  // namespace sync
 
 #endif

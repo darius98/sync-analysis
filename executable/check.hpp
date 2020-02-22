@@ -20,7 +20,7 @@ public:
   virtual void on_end(const Environment&) {}
 };
 
-} // namespace syan
+}  // namespace syan
 
 #define INTERNAL_SYAN_REGISTER_CHECK_ID2(ID1, ID2) ID1##ID2
 #define INTERNAL_SYAN_REGISTER_CHECK_ID(ID1, ID2)                              \

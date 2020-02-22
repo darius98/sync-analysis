@@ -45,4 +45,4 @@ void Thread::init_thread(void* (*func)(void*), void* arg) {
   SyncException::throw_on_error("Thread", "pthread_create", status);
 }
 
-} // namespace sync
+}  // namespace sync

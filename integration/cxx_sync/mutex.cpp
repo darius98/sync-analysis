@@ -35,7 +35,7 @@ void Mutex::unlock() {
   SyncException::throw_on_error("Mutex", "pthread_mutex_unlock", status);
 }
 
-MutexGuard::MutexGuard(Mutex* mtx) : mtx(mtx) {
+MutexGuard::MutexGuard(Mutex* mtx): mtx(mtx) {
   mtx->lock();
 }
 
@@ -43,4 +43,4 @@ MutexGuard::~MutexGuard() {
   mtx->unlock();
 }
 
-} // namespace sync
+}  // namespace sync

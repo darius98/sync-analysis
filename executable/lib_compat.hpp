@@ -14,6 +14,6 @@ using ObjectId = decltype(::SyanEvent::addr);
 
 using RawBacktrace = intptr_t (&)[12];
 
-} // namespace syan
+}  // namespace syan
 
 #endif

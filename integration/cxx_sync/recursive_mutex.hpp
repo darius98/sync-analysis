@@ -31,6 +31,6 @@ private:
   RecursiveMutex* mtx;
 };
 
-} // namespace sync
+}  // namespace sync
 
 #endif

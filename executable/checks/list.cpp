@@ -2,7 +2,7 @@
 
 using namespace syan;
 
-class ListCheck : public Check {
+class ListCheck: public Check {
 public:
   void on_event(const syan::Environment& env, Event event) final {
     env.create_report(syan::Report::info, 1,

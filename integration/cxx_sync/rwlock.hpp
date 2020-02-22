@@ -47,6 +47,6 @@ private:
   RWLock* rwlock;
 };
 
-} // namespace sync
+}  // namespace sync
 
 #endif

@@ -5,8 +5,10 @@
 namespace syan {
 
 EventFileReader::EventFileReader(std::string fn, std::size_t buffer_cap)
-    : file_name(std::move(fn)), file(std::fopen(file_name.c_str(), "rb")),
-      buffer_cap(buffer_cap), buffer_cursor(buffer_cap),
+    : file_name(std::move(fn)),
+      file(std::fopen(file_name.c_str(), "rb")),
+      buffer_cap(buffer_cap),
+      buffer_cursor(buffer_cap),
       is_done_reading_file(false) {
   auto buf = std::make_unique<::SyanEvent[]>(buffer_cap);
   if (file == nullptr) {
@@ -57,4 +59,4 @@ void EventFileReader::CloseFileDeleter::operator()(std::FILE* f) const
   std::fclose(f);
 }
 
-} // namespace syan
+}  // namespace syan

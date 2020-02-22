@@ -32,6 +32,6 @@ private:
   std::map<std::pair<ObjectType, ObjectId>, std::size_t> object_names;
 };
 
-} // namespace syan
+}  // namespace syan
 
 #endif

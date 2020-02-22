@@ -48,4 +48,4 @@ Event ActiveObjectsDb::object_create(const Event& event) const noexcept {
   return active_objects.at(std::pair{event.object_type(), event.object()});
 }
 
-} // namespace syan
+}  // namespace syan

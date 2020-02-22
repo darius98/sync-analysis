@@ -19,7 +19,8 @@ struct RegisteredCheck {
   }
 };
 
-template <class DerivedCheck> class Registerer {
+template<class DerivedCheck>
+class Registerer {
   DerivedCheck check{};
 
 public:
@@ -30,6 +31,6 @@ public:
   }
 };
 
-} // namespace syan::internal
+}  // namespace syan::internal
 
 #endif
