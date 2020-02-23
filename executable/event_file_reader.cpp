@@ -22,8 +22,8 @@ EventFileReader::EventFileReader(std::string fn, std::size_t buffer_cap)
   read_next_chunk();
 }
 
-DumpFileHeader EventFileReader::get_header() const noexcept {
-  return file_header;
+::SyanDumpFileHeader&& EventFileReader::release_header() noexcept {
+  return std::move(file_header);
 }
 
 bool EventFileReader::done() const noexcept {

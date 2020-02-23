@@ -57,10 +57,9 @@ int main(int argc, char** argv) {
     binary_file_path = binary_arg->getValue();
   }
 
-  auto syan_environment =
-      syan::Environment{binary_file_path, positional_args[1]};
+  auto env = syan::Environment{binary_file_path, positional_args[1]};
 
-  syan_environment.analyze();
+  env.analyze();
 
   return 0;
 }

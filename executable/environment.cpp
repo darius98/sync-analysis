@@ -2,7 +2,6 @@
 
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 
 #include "check.hpp"
 
@@ -21,7 +20,7 @@ Environment::Environment(std::optional<std::string> binary_file_path,
 
 void Environment::analyze() {
   EventFileReader dump_file_reader(dump_file_path);
-  file_header = dump_file_reader.get_header();
+  file_header.load(std::move(dump_file_reader.release_header()));
   tm* calendarTime = gmtime(&file_header.start_time.tv_sec);
   std::cout << "Sync analysis version " SYNC_ANALYSIS_VERSION "\n"
             << "\tExecutable: " << file_header.program_name << "\n"
@@ -65,7 +64,7 @@ void Environment::analyze() {
 }
 
 Report Environment::create_report(Report::Level level, int code,
-                                  std::string description) const {
+                                  std::string description) {
   return Report{this, level, code, std::move(description)};
 }
 
@@ -84,45 +83,24 @@ void Environment::send_report(Report::Level level, int /*code*/,
   }
 }
 
-void Environment::symbolize_backtrace_to_stream(const Event& event,
-                                                std::ostream& stream) const {
+void Environment::symbolize_stacktrace(const Event& event, std::ostream& out) {
   if (!binary_file_path.has_value()) {
     for (const auto& pc : event.raw_backtrace()) {
       if (pc != 0) {
-        stream << "\t\t " << pc << " (0x" << std::hex << std::setfill('0')
-               << std::setw(16) << pc << ")\n"
-               << std::dec;
+        out << "\t\t " << pc << " (0x" << std::hex << std::setfill('0')
+            << std::setw(16) << pc << ")\n"
+            << std::dec;
       }
     }
     return;
   }
 
-  // TODO: Implement this for Linux too.
+  if (stacktrace_symbolizer == nullptr) {
+    stacktrace_symbolizer =
+        StacktraceSymbolizer::Create(*binary_file_path, file_header);
+  }
 
-#ifdef SYNC_ANALYSIS_IS_MAC_OS_X
-  std::stringstream atos_command_builder;
-  // TODO: Don't hardcode architecture here!
-  atos_command_builder << "atos -o " << binary_file_path.value()
-                       << " -arch x86_64 -l 0x" << std::hex << std::setfill('0')
-                       << std::setw(16) << file_header.program_load_addr + 8;
-  for (const auto& pc : event.raw_backtrace()) {
-    if (pc != 0) {
-      atos_command_builder << " 0x" << std::hex << std::setfill('0')
-                           << std::setw(16) << pc;
-    }
-  }
-  stream << "\t\t";
-  auto atos_command = atos_command_builder.str();
-  std::FILE* atos_process = popen(atos_command.c_str(), "r");
-  char ch;
-  while ((ch = std::fgetc(atos_process)) != EOF) {
-    stream << ch;
-    if (ch == '\n') {
-      stream << "\t\t";
-    }
-  }
-  pclose(atos_process);
-#endif
+  stacktrace_symbolizer->symbolize_stacktrace(event, out);
 }
 
 }  // namespace syan

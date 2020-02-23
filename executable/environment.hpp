@@ -7,6 +7,7 @@
 #include "active_objects_db.hpp"
 #include "event_file_reader.hpp"
 #include "report.hpp"
+#include "stacktrace_symbolizer.hpp"
 
 namespace syan {
 
@@ -19,8 +20,7 @@ public:
 
   void analyze();
 
-  Report create_report(Report::Level level, int code,
-                       std::string description) const;
+  Report create_report(Report::Level level, int code, std::string description);
 
   const ActiveObjectsDb& db() const noexcept;
 
@@ -28,14 +28,14 @@ private:
   void send_report(Report::Level level, int code,
                    const std::string& report_message) const;
 
-  void symbolize_backtrace_to_stream(const Event& event,
-                                     std::ostream& stream) const;
+  void symbolize_stacktrace(const Event& event, std::ostream& stream);
 
   std::optional<std::string> binary_file_path;
   std::string dump_file_path;
   std::vector<Check*> enabled_checks;
   DumpFileHeader file_header;
   ActiveObjectsDb active_objects_db;
+  std::unique_ptr<StacktraceSymbolizer> stacktrace_symbolizer;
 
   friend class Report;
 };

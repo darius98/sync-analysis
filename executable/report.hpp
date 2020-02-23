@@ -19,8 +19,7 @@ public:
     error,
   };
 
-  explicit Report(const Environment* env, Level level, int code,
-                  std::string description);
+  Report(Environment* env, Level level, int code, std::string description);
 
   void add_section(std::string section_description, Event event);
 
@@ -34,7 +33,7 @@ private:
     ReportSection(std::string description, Event event);
   };
 
-  const Environment* env;
+  Environment* env;
   Level level;
   int code;
   std::string description;

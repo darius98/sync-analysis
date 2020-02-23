@@ -40,6 +40,11 @@ add_library(cxx_sync_lib STATIC
 target_include_directories(cxx_sync_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/integration)
 target_link_libraries(cxx_sync_lib PUBLIC pthread sync_analysis_lib)
 
+set(sync_analysis_PLATFORM_SPECIFIC_SRC)
+if (APPLE)
+    set(sync_analysis_PLATFORM_SPECIFIC_SRC
+            ${CMAKE_CURRENT_SOURCE_DIR}/executable/stacktrace_symbolizer_macos.cpp)
+endif ()
 add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/active_objects_db.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/environment.cpp
@@ -50,6 +55,8 @@ add_executable(sync_analysis
 
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/checks/list.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/checks/mutex_lock_order.cpp
+
+        ${sync_analysis_PLATFORM_SPECIFIC_SRC}
         )
 target_link_libraries(sync_analysis PUBLIC sync_analysis_lib)
 target_include_directories(sync_analysis

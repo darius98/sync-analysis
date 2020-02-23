@@ -7,8 +7,7 @@
 
 namespace syan {
 
-Report::Report(const Environment* env, Level level, int code,
-               std::string description)
+Report::Report(Environment* env, Level level, int code, std::string description)
     : env(env), level(level), code(code), description(std::move(description)) {}
 
 void Report::add_section(std::string section_description, Event event) {
@@ -47,7 +46,7 @@ void Report::send() {
             << "." << std::setfill('0') << std::setw(6)
             << timestamp.tv_nsec / 1000 << std::setw(0) << std::setfill(' ')
             << "] " << section.description << "\n";
-    env->symbolize_backtrace_to_stream(section.event, builder);
+    env->symbolize_stacktrace(section.event, builder);
   }
   env->send_report(level, code, builder.str());
 }

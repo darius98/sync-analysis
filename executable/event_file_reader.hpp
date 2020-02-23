@@ -14,7 +14,7 @@ class EventFileReader {
 public:
   explicit EventFileReader(std::string file_name, std::size_t buffer_cap = 256);
 
-  DumpFileHeader get_header() const noexcept;
+  ::SyanDumpFileHeader&& release_header() noexcept;
 
   bool done() const noexcept;
 
@@ -33,7 +33,7 @@ private:
   std::size_t buffer_cursor;
   std::unique_ptr<::SyanEvent[]> buffer;
   bool is_done_reading_file;
-  DumpFileHeader file_header;
+  ::SyanDumpFileHeader file_header;
 };
 
 }  // namespace syan

@@ -13,11 +13,11 @@ class Check {
 public:
   virtual ~Check() = default;
 
-  virtual void on_start(const Environment&) {}
+  virtual void on_start(Environment&) {}
 
-  virtual void on_event(const Environment& env, Event event) = 0;
+  virtual void on_event(Environment& env, Event event) = 0;
 
-  virtual void on_end(const Environment&) {}
+  virtual void on_end(Environment&) {}
 };
 
 }  // namespace syan

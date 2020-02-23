@@ -7,7 +7,7 @@ using namespace syan;
 
 class MutexLockOrderCheck: public Check {
 public:
-  void on_event(const Environment& env, Event event) final {
+  void on_event(Environment& env, Event event) final {
     switch (event.type()) {
     case SA_EV_MUTEX_BEFORE_LOCK: {
       auto& locked_on_thread = thread_locked_objects[event.thread()];
