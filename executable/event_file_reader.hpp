@@ -6,7 +6,8 @@
 #include <memory>
 #include <string>
 
-#include "lib_compat.hpp"
+#include "dump_file_header_compat.hpp"
+#include <lib/src/event.h>
 
 namespace syan {
 

@@ -40,6 +40,9 @@ private:
   friend class Report;
 };
 
+void run_analysis(std::optional<std::string> binary_file_path,
+                  std::string dump_file_path);
+
 }  // namespace syan
 
 #endif

@@ -46,21 +46,22 @@ if (APPLE)
             ${CMAKE_CURRENT_SOURCE_DIR}/executable/stacktrace_symbolizer_macos.cpp)
 endif ()
 add_executable(sync_analysis
+        ${CMAKE_CURRENT_SOURCE_DIR}/executable/check_api.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/database.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/environment.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/event_file_reader.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/report.cpp
-
-        ${CMAKE_CURRENT_SOURCE_DIR}/executable/checks/list.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/executable/checks/mutex_lock_order.cpp
-
         ${sync_analysis_PLATFORM_SPECIFIC_SRC}
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/checks/list.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/checks/mutex_lock_order.cpp
         )
 target_link_libraries(sync_analysis PUBLIC sync_analysis_lib)
 target_include_directories(sync_analysis
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/executable/include
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/third_party/mcga-cli/include
         )
 target_compile_definitions(sync_analysis PUBLIC

@@ -2,9 +2,10 @@
 #define SYNC_ANALYSIS_EXE_STACKTRACE_SYMBOLIZER_H_
 
 #include <memory>
+#include <string>
 
+#include "dump_file_header_compat.hpp"
 #include "include/check_api/event.hpp"
-#include "lib_compat.hpp"
 
 namespace syan {
 

@@ -1,23 +1,26 @@
-#ifndef SYNC_ANALYSIS_EXE_CHECK_H_
-#define SYNC_ANALYSIS_EXE_CHECK_H_
+#ifndef SYNC_ANALYSIS_EXE_CHECK_API_CHECK_API_H_
+#define SYNC_ANALYSIS_EXE_CHECK_API_CHECK_API_H_
 
-#include <type_traits>
+#include "database.hpp"
+#include "report.hpp"
 
-#include "environment.hpp"
-#include "include/check_api/event.hpp"
-#include "internal_check_registerer.hpp"
+#include <executable/internal_check_registerer.hpp>
 
 namespace syan {
+
+const Database& database() noexcept;
+
+Report create_report(Report::Level level, int code, std::string description);
 
 class Check {
 public:
   virtual ~Check() = default;
 
-  virtual void on_start(Environment&) {}
+  virtual void on_start() {}
 
-  virtual void on_event(Environment& env, Event event) = 0;
+  virtual void on_event(Event event) = 0;
 
-  virtual void on_end(Environment&) {}
+  virtual void on_end() {}
 };
 
 }  // namespace syan
@@ -35,5 +38,15 @@ public:
                 "::syan::Check::on_event() method.");                          \
   ::syan::internal::Registerer<DerivedCheck> INTERNAL_SYAN_REGISTER_CHECK_ID(  \
       DerivedCheck, _registerer) {}
+
+/*
+
+[[optional]] void syan_check_init();
+
+[[required]] void syan_check_on_event(syan::Event);
+
+[[optional]] void syan_check_destroy();
+
+*/
 
 #endif

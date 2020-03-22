@@ -3,7 +3,8 @@
 #include <iomanip>
 #include <iostream>
 
-#include "check.hpp"
+#include "include/check_api/check_api.hpp"
+#include "internal_check_registerer.hpp"
 
 namespace syan {
 
@@ -38,11 +39,12 @@ void Environment::analyze() {
             << std::setfill(' ') << "\n\n";
 
   for (auto* check : enabled_checks) {
-    check->on_start(*this);
+    check->on_start();
   }
 
   while (!dump_file_reader.done()) {
-    Event event = Event::make(dump_file_reader.read());
+    auto syan_event = dump_file_reader.read();
+    Event event = Event::make(&syan_event);
     if (!event) {
       // It's ok for the last event to be corrupt, maybe something was broken.
       if (!dump_file_reader.done()) {
@@ -53,13 +55,13 @@ void Environment::analyze() {
     }
     active_objects_db.handle_event_before_checks(event);
     for (auto* check : enabled_checks) {
-      check->on_event(*this, event);
+      check->on_event(event);
     }
     active_objects_db.handle_event_after_checks(event);
   }
 
   for (auto* check : enabled_checks) {
-    check->on_end(*this);
+    check->on_end();
   }
 }
 

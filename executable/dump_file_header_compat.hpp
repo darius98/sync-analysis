@@ -4,8 +4,6 @@
 #include <string>
 
 #include <lib/src/dump_file_header.h>
-#include <lib/src/event.h>
-#include <lib/src/event_type.h>
 
 namespace syan {
 

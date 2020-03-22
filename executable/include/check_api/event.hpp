@@ -5,8 +5,6 @@
 
 #include <string_view>
 
-#include "executable/lib_compat.hpp"
-
 namespace syan {
 
 enum class EventType {
@@ -54,8 +52,6 @@ using RawBacktrace = intptr_t (&)[12];
 // - without support for taking ownership of an existing pointer
 class Event {
 public:
-  static Event make(const ::SyanEvent& event);
-
   explicit Event() noexcept;
   Event(decltype(nullptr)) noexcept;
 
@@ -102,7 +98,10 @@ public:
   bool operator!=(const Event& other) const noexcept;
 
 private:
+  static Event make(const void* syan_event);
+
   struct EventPtrInternal;
+  friend class Environment;
 
   EventPtrInternal* ptr;
 };

@@ -32,6 +32,7 @@ private:
 
     ReportSection(std::string description, Event event);
   };
+  friend class Environment;
 
   Environment* env;
   Level level;
@@ -40,8 +41,6 @@ private:
   std::vector<ReportSection> sections;
   std::set<ObjectId> thread_notes;
   std::set<Event> notes;
-
-  friend class Environment;
 };
 
 }  // namespace syan

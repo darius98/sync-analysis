@@ -1,6 +1,6 @@
 #include "executable/include/check_api/event.hpp"
 
-#include "lib_compat.hpp"
+#include <lib/src/event.h>
 
 namespace {
 
@@ -18,7 +18,8 @@ struct Event::EventPtrInternal {
   ::SyanEvent event;
 };
 
-Event Event::make(const ::SyanEvent& event) {
+Event Event::make(const void* syan_event) {
+  const ::SyanEvent& event = *static_cast<const ::SyanEvent*>(syan_event);
   if (event.signature != SYAN_EVENT_SIGNATURE) {
     return Event{};
   }
