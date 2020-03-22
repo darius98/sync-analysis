@@ -4,9 +4,9 @@
 #include <ostream>
 #include <string>
 
-#include "active_objects_db.hpp"
 #include "event_file_reader.hpp"
-#include "report.hpp"
+#include "executable/include/check_api/report.hpp"
+#include "include/check_api/database.hpp"
 #include "stacktrace_symbolizer.hpp"
 
 namespace syan {
@@ -22,7 +22,7 @@ public:
 
   Report create_report(Report::Level level, int code, std::string description);
 
-  const ActiveObjectsDb& db() const noexcept;
+  const Database& db() const noexcept;
 
 private:
   void send_report(Report::Level level, int code,
@@ -34,7 +34,7 @@ private:
   std::string dump_file_path;
   std::vector<Check*> enabled_checks;
   DumpFileHeader file_header;
-  ActiveObjectsDb active_objects_db;
+  Database active_objects_db;
   std::unique_ptr<StacktraceSymbolizer> stacktrace_symbolizer;
 
   friend class Report;

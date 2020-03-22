@@ -9,7 +9,7 @@
 
 namespace syan {
 
-class ActiveObjectsDb {
+class Database {
 public:
   void handle_event_before_checks(const Event& event);
   void handle_event_after_checks(const Event& event);

@@ -4,7 +4,7 @@
 #include <type_traits>
 
 #include "environment.hpp"
-#include "event.hpp"
+#include "include/check_api/event.hpp"
 #include "internal_check_registerer.hpp"
 
 namespace syan {

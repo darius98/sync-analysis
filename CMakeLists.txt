@@ -46,7 +46,7 @@ if (APPLE)
             ${CMAKE_CURRENT_SOURCE_DIR}/executable/stacktrace_symbolizer_macos.cpp)
 endif ()
 add_executable(sync_analysis
-        ${CMAKE_CURRENT_SOURCE_DIR}/executable/active_objects_db.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/executable/database.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/environment.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/event_file_reader.cpp

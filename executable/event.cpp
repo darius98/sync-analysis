@@ -1,6 +1,22 @@
-#include "event.hpp"
+#include "executable/include/check_api/event.hpp"
+
+#include "lib_compat.hpp"
+
+namespace {
+
+constexpr std::string_view thread_object_type = "thread";
+constexpr std::string_view mutex_object_type = "mutex";
+constexpr std::string_view rec_mutex_object_type = "recursive mutex";
+constexpr std::string_view rwlock_object_type = "read-write lock";
+
+}  // namespace
 
 namespace syan {
+
+struct Event::EventPtrInternal {
+  int ref_count = 1;
+  ::SyanEvent event;
+};
 
 Event Event::make(const ::SyanEvent& event) {
   if (event.signature != SYAN_EVENT_SIGNATURE) {
@@ -89,44 +105,46 @@ RawBacktrace Event::raw_backtrace() const noexcept {
 }
 
 bool Event::is_create_event() const noexcept {
-  return type() == SA_EV_THREAD_ON_CREATE || type() == SA_EV_MUTEX_ON_CREATE ||
-         type() == SA_EV_REC_MUTEX_ON_CREATE ||
-         type() == SA_EV_RWLOCK_ON_CREATE;
+  return type() == EventType::thread_on_create ||
+         type() == EventType::mutex_on_create ||
+         type() == EventType::rec_mutex_on_create ||
+         type() == EventType::rwlock_on_create;
 }
 
 bool Event::is_destroy_event() const noexcept {
-  return type() == SA_EV_THREAD_ON_JOIN || type() == SA_EV_MUTEX_ON_DESTROY ||
-         type() == SA_EV_REC_MUTEX_ON_DESTROY ||
-         type() == SA_EV_RWLOCK_ON_DESTROY;
+  return type() == EventType::thread_on_join ||
+         type() == EventType::mutex_on_destroy ||
+         type() == EventType::rec_mutex_on_destroy ||
+         type() == EventType::rwlock_on_destroy;
 }
 
 ObjectType Event::object_type() const noexcept {
   switch (type()) {
-  case SA_EV_THREAD_ON_CREATE:
-  case SA_EV_THREAD_ON_JOIN:
-  case SA_EV_THREAD_ON_DETACH: return ObjectType::thread;
-  case SA_EV_MUTEX_ON_CREATE:
-  case SA_EV_MUTEX_BEFORE_LOCK:
-  case SA_EV_MUTEX_AFTER_LOCK:
-  case SA_EV_MUTEX_ON_TRY_LOCK:
-  case SA_EV_MUTEX_ON_UNLOCK:
-  case SA_EV_MUTEX_ON_DESTROY: return ObjectType::mutex;
-  case SA_EV_REC_MUTEX_ON_CREATE:
-  case SA_EV_REC_MUTEX_BEFORE_LOCK:
-  case SA_EV_REC_MUTEX_AFTER_LOCK:
-  case SA_EV_REC_MUTEX_ON_TRY_LOCK:
-  case SA_EV_REC_MUTEX_ON_UNLOCK:
-  case SA_EV_REC_MUTEX_ON_DESTROY: return ObjectType::rec_mutex;
-  case SA_EV_RWLOCK_ON_CREATE:
-  case SA_EV_RWLOCK_BEFORE_RD_LOCK:
-  case SA_EV_RWLOCK_AFTER_RD_LOCK:
-  case SA_EV_RWLOCK_ON_RD_UNLOCK:
-  case SA_EV_RWLOCK_ON_TRY_RD_LOCK:
-  case SA_EV_RWLOCK_BEFORE_WR_LOCK:
-  case SA_EV_RWLOCK_AFTER_WR_LOCK:
-  case SA_EV_RWLOCK_ON_WR_UNLOCK:
-  case SA_EV_RWLOCK_ON_TRY_WR_LOCK:
-  case SA_EV_RWLOCK_ON_DESTROY: return ObjectType::rwlock;
+  case EventType::thread_on_create:
+  case EventType::thread_on_join:
+  case EventType::thread_on_detach: return ObjectType::thread;
+  case EventType::mutex_on_create:
+  case EventType::mutex_before_lock:
+  case EventType::mutex_after_lock:
+  case EventType::mutex_on_try_lock:
+  case EventType::mutex_on_unlock:
+  case EventType::mutex_on_destroy: return ObjectType::mutex;
+  case EventType::rec_mutex_on_create:
+  case EventType::rec_mutex_before_lock:
+  case EventType::rec_mutex_after_lock:
+  case EventType::rec_mutex_on_try_lock:
+  case EventType::rec_mutex_on_unlock:
+  case EventType::rec_mutex_on_destroy: return ObjectType::rec_mutex;
+  case EventType::rwlock_on_create:
+  case EventType::rwlock_before_rd_lock:
+  case EventType::rwlock_after_rd_lock:
+  case EventType::rwlock_on_rd_unlock:
+  case EventType::rwlock_on_try_rd_lock:
+  case EventType::rwlock_before_wr_lock:
+  case EventType::rwlock_after_wr_lock:
+  case EventType::rwlock_on_wr_unlock:
+  case EventType::rwlock_on_try_wr_lock:
+  case EventType::rwlock_on_destroy: return ObjectType::rwlock;
   }
   std::abort();
 }
@@ -146,31 +164,36 @@ std::string_view Event::object_type_str() const noexcept {
 
 std::string_view Event::type_str() const noexcept {
   switch (type()) {
-  case SA_EV_THREAD_ON_CREATE: return "thread_create";
-  case SA_EV_THREAD_ON_JOIN: return "thread_join";
-  case SA_EV_THREAD_ON_DETACH: return "thread_detach";
-  case SA_EV_MUTEX_ON_CREATE: return "mutex_create";
-  case SA_EV_MUTEX_BEFORE_LOCK: return "mutex_before_lock";
-  case SA_EV_MUTEX_AFTER_LOCK: return "mutex_after_lock";
-  case SA_EV_MUTEX_ON_TRY_LOCK: return "mutex_try_lock";
-  case SA_EV_MUTEX_ON_UNLOCK: return "mutex_unlock";
-  case SA_EV_MUTEX_ON_DESTROY: return "mutex_destroy";
-  case SA_EV_REC_MUTEX_ON_CREATE: return "recursive_mutex_create";
-  case SA_EV_REC_MUTEX_BEFORE_LOCK: return "recursive_mutex_before_lock";
-  case SA_EV_REC_MUTEX_AFTER_LOCK: return "recursive_mutex_after_lock";
-  case SA_EV_REC_MUTEX_ON_TRY_LOCK: return "recursive_mutex_try_lock";
-  case SA_EV_REC_MUTEX_ON_UNLOCK: return "recursive_mutex_unlock";
-  case SA_EV_REC_MUTEX_ON_DESTROY: return "recursive_mutex_destroy";
-  case SA_EV_RWLOCK_ON_CREATE: return "read_write_lock_create";
-  case SA_EV_RWLOCK_BEFORE_RD_LOCK: return "read_write_lock_before_read_lock";
-  case SA_EV_RWLOCK_AFTER_RD_LOCK: return "read_write_lock_after_read_lock";
-  case SA_EV_RWLOCK_ON_RD_UNLOCK: return "read_write_lock_read_unlock";
-  case SA_EV_RWLOCK_ON_TRY_RD_LOCK: return "read_write_lock_try_read_lock";
-  case SA_EV_RWLOCK_BEFORE_WR_LOCK: return "read_write_lock_before_write_lock";
-  case SA_EV_RWLOCK_AFTER_WR_LOCK: return "read_write_lock_after_write_lock";
-  case SA_EV_RWLOCK_ON_WR_UNLOCK: return "read_write_lock_write_unlock";
-  case SA_EV_RWLOCK_ON_TRY_WR_LOCK: return "read_write_lock_try_write_lock";
-  case SA_EV_RWLOCK_ON_DESTROY: return "read_write_lock_destroy";
+  case EventType::thread_on_create: return "thread_create";
+  case EventType::thread_on_join: return "thread_join";
+  case EventType::thread_on_detach: return "thread_detach";
+  case EventType::mutex_on_create: return "mutex_create";
+  case EventType::mutex_before_lock: return "mutex_before_lock";
+  case EventType::mutex_after_lock: return "mutex_after_lock";
+  case EventType::mutex_on_try_lock: return "mutex_try_lock";
+  case EventType::mutex_on_unlock: return "mutex_unlock";
+  case EventType::mutex_on_destroy: return "mutex_destroy";
+  case EventType::rec_mutex_on_create: return "recursive_mutex_create";
+  case EventType::rec_mutex_before_lock: return "recursive_mutex_before_lock";
+  case EventType::rec_mutex_after_lock: return "recursive_mutex_after_lock";
+  case EventType::rec_mutex_on_try_lock: return "recursive_mutex_try_lock";
+  case EventType::rec_mutex_on_unlock: return "recursive_mutex_unlock";
+  case EventType::rec_mutex_on_destroy: return "recursive_mutex_destroy";
+  case EventType::rwlock_on_create: return "read_write_lock_create";
+  case EventType::rwlock_before_rd_lock:
+    return "read_write_lock_before_read_lock";
+  case EventType::rwlock_after_rd_lock:
+    return "read_write_lock_after_read_lock";
+  case EventType::rwlock_on_rd_unlock: return "read_write_lock_read_unlock";
+  case EventType::rwlock_on_try_rd_lock: return "read_write_lock_try_read_lock";
+  case EventType::rwlock_before_wr_lock:
+    return "read_write_lock_before_write_lock";
+  case EventType::rwlock_after_wr_lock:
+    return "read_write_lock_after_write_lock";
+  case EventType::rwlock_on_wr_unlock: return "read_write_lock_write_unlock";
+  case EventType::rwlock_on_try_wr_lock:
+    return "read_write_lock_try_write_lock";
+  case EventType::rwlock_on_destroy: return "read_write_lock_destroy";
   }
   std::abort();
 }

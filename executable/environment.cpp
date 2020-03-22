@@ -68,7 +68,7 @@ Report Environment::create_report(Report::Level level, int code,
   return Report{this, level, code, std::move(description)};
 }
 
-const ActiveObjectsDb& Environment::db() const noexcept {
+const Database& Environment::db() const noexcept {
   return active_objects_db;
 }
 

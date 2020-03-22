@@ -9,7 +9,7 @@ class MutexLockOrderCheck: public Check {
 public:
   void on_event(Environment& env, Event event) final {
     switch (event.type()) {
-    case SA_EV_MUTEX_BEFORE_LOCK: {
+    case EventType::mutex_before_lock: {
       auto& locked_on_thread = thread_locked_objects[event.thread()];
       for (const auto& prev_lock_event : locked_on_thread) {
         auto it =
@@ -44,7 +44,7 @@ public:
       }
       break;
     }
-    case SA_EV_MUTEX_AFTER_LOCK: {
+    case EventType::mutex_after_lock: {
       thread_locked_objects[event.thread()].insert(event);
       auto& locked_on_thread = thread_locked_objects[event.thread()];
       for (const auto& prev_lock_event : locked_on_thread) {
@@ -54,7 +54,7 @@ public:
       }
       break;
     }
-    case SA_EV_MUTEX_ON_UNLOCK: {
+    case EventType::mutex_on_unlock: {
       thread_locked_objects[event.thread()].erase(event);
       break;
     }

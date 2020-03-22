@@ -19,13 +19,13 @@ public:
     error,
   };
 
-  Report(Environment* env, Level level, int code, std::string description);
-
   void add_section(std::string section_description, Event event);
 
   void send();
 
 private:
+  Report(Environment* env, Level level, int code, std::string description);
+
   struct ReportSection {
     std::string description;
     Event event;
@@ -40,6 +40,8 @@ private:
   std::vector<ReportSection> sections;
   std::set<ObjectId> thread_notes;
   std::set<Event> notes;
+
+  friend class Environment;
 };
 
 }  // namespace syan

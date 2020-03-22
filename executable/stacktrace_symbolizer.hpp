@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "event.hpp"
+#include "include/check_api/event.hpp"
 #include "lib_compat.hpp"
 
 namespace syan {
