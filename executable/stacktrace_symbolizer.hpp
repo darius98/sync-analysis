@@ -4,8 +4,8 @@
 #include <memory>
 #include <string>
 
+#include "check_api/event.hpp"
 #include "dump_file_header_compat.hpp"
-#include "include/check_api/event.hpp"
 
 namespace syan {
 
@@ -13,9 +13,8 @@ namespace syan {
 
 class StacktraceSymbolizer {
 public:
-  static std::unique_ptr<StacktraceSymbolizer>
-  Create(const std::string& binary_file_path,
-         const DumpFileHeader& dump_file_header);
+  static StacktraceSymbolizer* Create(const std::string& binary_file_path,
+                                      const DumpFileHeader& dump_file_header);
 
   virtual ~StacktraceSymbolizer() = default;
 

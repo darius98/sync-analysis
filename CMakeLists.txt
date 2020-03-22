@@ -46,13 +46,12 @@ if (APPLE)
             ${CMAKE_CURRENT_SOURCE_DIR}/executable/stacktrace_symbolizer_macos.cpp)
 endif ()
 add_executable(sync_analysis
-        ${CMAKE_CURRENT_SOURCE_DIR}/executable/check_api.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/database.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/executable/environment.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/event_file_reader.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/executable/report.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/executable/run_analysis.cpp
         ${sync_analysis_PLATFORM_SPECIFIC_SRC}
 
         ${CMAKE_CURRENT_SOURCE_DIR}/checks/list.cpp

@@ -1,4 +1,4 @@
-#include "executable/include/check_api/event.hpp"
+#include "check_api/event.hpp"
 
 #include <lib/src/event.h>
 

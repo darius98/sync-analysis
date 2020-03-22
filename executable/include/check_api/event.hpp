@@ -101,7 +101,7 @@ private:
   static Event make(const void* syan_event);
 
   struct EventPtrInternal;
-  friend class Environment;
+  friend class EventFileReader;
 
   EventPtrInternal* ptr;
 };

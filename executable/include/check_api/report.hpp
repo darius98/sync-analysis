@@ -9,8 +9,6 @@
 
 namespace syan {
 
-class Environment;
-
 class Report {
 public:
   enum Level {
@@ -19,22 +17,21 @@ public:
     error,
   };
 
-  void add_section(std::string section_description, Event event);
+  Report(Level level, int code, std::string description);
 
-  void send();
+  ~Report();
+
+  Report& add_section(std::string section_description, Event event);
 
 private:
-  Report(Environment* env, Level level, int code, std::string description);
-
   struct ReportSection {
     std::string description;
     Event event;
 
-    ReportSection(std::string description, Event event);
+    ReportSection(std::string description, Event event)
+        : description(std::move(description)), event(std::move(event)) {}
   };
-  friend class Environment;
 
-  Environment* env;
   Level level;
   int code;
   std::string description;

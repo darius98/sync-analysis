@@ -30,14 +30,14 @@ bool EventFileReader::done() const noexcept {
   return is_done_reading_file && buffer_cursor == buffer_cap;
 }
 
-::SyanEvent EventFileReader::read() {
+Event EventFileReader::read() {
   if (done()) {
     throw std::runtime_error("File " + file_name + " is done.");
   }
   if (buffer_cursor == buffer_cap) {
     read_next_chunk();
   }
-  return buffer[buffer_cursor++];
+  return Event::make(&buffer[buffer_cursor++]);
 }
 
 void EventFileReader::read_next_chunk() {

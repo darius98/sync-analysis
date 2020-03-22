@@ -17,8 +17,8 @@ public:
         if (it != ordered_objects.end()) {
           const auto& [mtx1_lock, mtx2_lock] = it->second;
 
-          auto report = create_report(Report::error, 1,
-                                      "Mutex lock order inconsistency found");
+          Report report(Report::error, 1,
+                        "Mutex lock order inconsistency found");
 
           report.add_section(database().thread_name(mtx1_lock) + " locked " +
                                  database().object_name(mtx1_lock) +
@@ -38,8 +38,6 @@ public:
               database().thread_name(event) + " attempted to lock " +
                   database().object_name(event) + " second here:",
               event);
-
-          report.send();
         }
       }
       break;

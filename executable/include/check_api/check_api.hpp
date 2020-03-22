@@ -8,10 +8,6 @@
 
 namespace syan {
 
-const Database& database() noexcept;
-
-Report create_report(Report::Level level, int code, std::string description);
-
 class Check {
 public:
   virtual ~Check() = default;

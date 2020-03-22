@@ -2,7 +2,8 @@
 
 #include <mcga/cli.hpp>
 
-#include "environment.hpp"
+#include "internal_check_registerer.hpp"
+#include "run_analysis.hpp"
 
 constexpr auto help_menu_header =
     "Synchronization primitives analysis version " SYNC_ANALYSIS_VERSION "\n\n";
@@ -57,7 +58,14 @@ int main(int argc, char** argv) {
     binary_file_path = binary_arg->getValue();
   }
 
-  syan::run_analysis(std::move(binary_file_path), positional_args[1]);
+  std::vector<syan::Check*> checks;
+  for (auto* registered_check = syan::internal::RegisteredCheck::get_head();
+       registered_check != nullptr;
+       registered_check = registered_check->next_check) {
+    checks.push_back(registered_check->check);
+  }
+
+  syan::run_analysis(std::move(binary_file_path), positional_args[1], checks);
 
   return 0;
 }

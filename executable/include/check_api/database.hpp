@@ -21,16 +21,17 @@ public:
   Event thread_create(const Event& event) const noexcept;
 
   std::string object_name(const Event& event) const;
+  std::string object_name(ObjectType object_type, ObjectId object_id) const;
 
   Event object_create(const Event& event) const noexcept;
 
 private:
-  std::string object_name(ObjectType object_type, ObjectId object_id) const;
-
   std::map<std::pair<ObjectType, ObjectId>, Event> active_objects;
   std::map<ObjectType, std::size_t> last_used_name;
   std::map<std::pair<ObjectType, ObjectId>, std::size_t> object_names;
 };
+
+const Database& database() noexcept;
 
 }  // namespace syan
 

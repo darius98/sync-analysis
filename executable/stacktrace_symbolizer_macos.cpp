@@ -140,11 +140,10 @@ private:
   DumpFileHeader dump_file_header;
 };
 
-std::unique_ptr<StacktraceSymbolizer>
+StacktraceSymbolizer*
 StacktraceSymbolizer::Create(const std::string& binary_file_path,
                              const DumpFileHeader& dump_file_header) {
-  return std::make_unique<StacktraceSymbolizerImpl>(binary_file_path,
-                                                    dump_file_header);
+  return new StacktraceSymbolizerImpl(binary_file_path, dump_file_header);
 }
 
 }  // namespace syan

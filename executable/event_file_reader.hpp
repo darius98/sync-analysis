@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include "check_api/event.hpp"
 #include "dump_file_header_compat.hpp"
 #include <lib/src/event.h>
 
@@ -19,7 +20,7 @@ public:
 
   bool done() const noexcept;
 
-  ::SyanEvent read();
+  Event read();
 
 private:
   void read_next_chunk();
