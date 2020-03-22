@@ -9,6 +9,7 @@
 namespace {
 
 struct timespec start_time;
+syan::Event cur_event;
 syan::Database* active_objects_db = nullptr;
 syan::StacktraceSymbolizer* stacktrace_symbolizer = nullptr;
 
@@ -22,6 +23,10 @@ const Database& database() noexcept {
 
 struct timespec execution_start_time() noexcept {
   return start_time;
+}
+
+Event current_event() noexcept {
+  return cur_event;
 }
 
 void symbolize_stacktrace(const Event& event, std::ostream& stream) {
@@ -90,9 +95,11 @@ void run_analysis(std::optional<std::string> binary_file_path,
         return;
       }
     }
+    cur_event = event;
+
     active_objects_db->handle_event_before_checks(event);
     for (auto* check : checks) {
-      check->on_event(event);
+      check->on_event();
     }
     active_objects_db->handle_event_after_checks(event);
   }

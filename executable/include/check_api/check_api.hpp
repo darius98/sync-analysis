@@ -14,7 +14,7 @@ public:
 
   virtual void on_start() {}
 
-  virtual void on_event(Event event) = 0;
+  virtual void on_event() = 0;
 
   virtual void on_end() {}
 };

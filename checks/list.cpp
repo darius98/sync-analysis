@@ -4,7 +4,8 @@ using namespace syan;
 
 class ListCheck: public Check {
 public:
-  void on_event(Event event) final {
+  void on_event() final {
+    auto event = current_event();
     Report(syan::Report::info, 1,
            std::string{event.type_str()} + " -> " +
                database().object_name(event) + ", from " +
