@@ -21,12 +21,6 @@ public:
   void detach();
 
 private:
-  template<class Func>
-  struct Context {
-    Thread* thread;
-    Func callable;
-  };
-
   void init_thread(void* (*func)(void*), void* arg);
 
   pthread_t pt_thread = nullptr;
