@@ -1,8 +1,8 @@
-#include <filesystem>
 #include <iostream>
 
 #include <mcga/cli.hpp>
 
+#include "find_extensions.hpp"
 #include "run_analysis.hpp"
 
 constexpr auto help_menu_header =
@@ -58,12 +58,11 @@ int main(int argc, char** argv) {
     binary_file_path = binary_arg->getValue();
   }
 
-  std::vector<syan::Extension> extensions;
-  const std::vector<std::filesystem::path> dso_search_paths{
-      ".build/cmake_asan/syan-ext"};
-  for (auto extension_name : {"list", "mutex_lock_order"}) {
-    extensions.emplace_back(extension_name, dso_search_paths);
-  }
+  auto extensions = syan::find_extensions({
+      ".",
+      "./syan-ext",
+      "/usr/local/lib/syan-ext",
+  });
   syan::run_analysis(std::move(binary_file_path), positional_args[1],
                      extensions);
 

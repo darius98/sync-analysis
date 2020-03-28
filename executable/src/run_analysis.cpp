@@ -10,9 +10,10 @@
 namespace {
 
 struct timespec start_time;
-syan::Event cur_event;
+syan::Event cur_event = nullptr;
 syan::Database* active_objects_db = nullptr;
 syan::StacktraceSymbolizer* stacktrace_symbolizer = nullptr;
+const syan::Extension* active_extension = nullptr;
 
 }  // namespace
 
@@ -30,6 +31,10 @@ Event current_event() noexcept {
   return cur_event;
 }
 
+std::string_view active_extension_name() noexcept {
+  return active_extension->get_name();
+}
+
 void symbolize_stacktrace(const Event& event, std::ostream& stream) {
   if (stacktrace_symbolizer == nullptr) {
     stream << "\t\tNote: stacktrace not available without access to the "
@@ -39,15 +44,8 @@ void symbolize_stacktrace(const Event& event, std::ostream& stream) {
   stacktrace_symbolizer->symbolize_stacktrace(event.raw_backtrace(), stream);
 }
 
-void send_report(Report::Level level, int /*code*/,
-                 const std::string& report_message) {
-  switch (level) {
-  case Report::info: std::cout << "INFO: " << report_message << "\n"; break;
-  case Report::warning:
-    std::cout << "WARNING: " << report_message << "\n";
-    break;
-  case Report::error: std::cout << "ERROR: " << report_message << "\n"; break;
-  }
+void send_report(Report::Level, const std::string& report_message) {
+  std::cout << report_message << "\n";
 }
 
 void run_analysis(std::optional<std::string> binary_file_path,
@@ -83,7 +81,9 @@ void run_analysis(std::optional<std::string> binary_file_path,
   }
 
   for (const auto& extension : extensions) {
+    active_extension = &extension;
     extension.start_up();
+    active_extension = nullptr;
   }
 
   while (!dump_file_reader.done()) {
@@ -96,17 +96,22 @@ void run_analysis(std::optional<std::string> binary_file_path,
         return;
       }
     }
-    cur_event = event;
 
     active_objects_db->handle_event_before_extensions(event);
     for (const auto& extension : extensions) {
+      cur_event = event;
+      active_extension = &extension;
       extension.on_event();
+      active_extension = nullptr;
+      cur_event = nullptr;
     }
     active_objects_db->handle_event_after_extensions(event);
   }
 
   for (const auto& extension : extensions) {
+    active_extension = &extension;
     extension.shut_down();
+    active_extension = nullptr;
   }
 
   delete active_objects_db;

@@ -8,8 +8,8 @@
 
 namespace syan {
 
-Report::Report(Level level, int code, std::string description)
-    : level(level), code(code), description(std::move(description)) {}
+Report::Report(Level level, std::string description)
+    : level(level), description(std::move(description)) {}
 
 Report& Report::add_section(std::string section_description, Event event) {
   thread_notes.insert(event.thread());
@@ -33,7 +33,12 @@ Report::~Report() {
   }
 
   std::stringstream builder;
-  builder << description << " (E" << code << ")";
+  switch (level) {
+  case Report::info: builder << "INFO"; break;
+  case Report::warning: builder << "WARNING"; break;
+  case Report::error: std::cout << "ERROR"; break;
+  }
+  builder << " (" << active_extension_name() << "): " << description;
   for (auto& section : sections) {
     auto timestamp = execution_start_time();
 
@@ -50,7 +55,7 @@ Report::~Report() {
     symbolize_stacktrace(section.event, builder);
   }
 
-  send_report(level, code, builder.str());
+  send_report(level, builder.str());
 }
 
 }  // namespace syan

@@ -17,7 +17,7 @@ public:
     error,
   };
 
-  Report(Level level, int code, std::string description);
+  Report(Level level, std::string description);
 
   ~Report();
 
@@ -33,7 +33,6 @@ private:
   };
 
   Level level;
-  int code;
   std::string description;
   std::vector<ReportSection> sections;
   std::set<ObjectId> thread_notes;

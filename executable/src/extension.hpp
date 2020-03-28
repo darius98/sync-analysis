@@ -1,9 +1,8 @@
 #ifndef SYNC_ANALYSIS_EXECUTABLE_SRC_EXTENSION_H_
 #define SYNC_ANALYSIS_EXECUTABLE_SRC_EXTENSION_H_
 
-#include <filesystem>
+#include <memory>
 #include <string>
-#include <vector>
 
 namespace syan {
 
@@ -11,8 +10,7 @@ class Extension {
   using func = void (*)();
 
 public:
-  Extension(const std::string& extension_name,
-            const std::vector<std::filesystem::path>& dso_search_paths);
+  Extension(void* dso_handle, std::string name);
 
   Extension(const Extension&) = delete;
   Extension& operator=(const Extension&) = delete;
@@ -31,6 +29,8 @@ public:
   void shut_down() const noexcept;
 
 private:
+  func find_func_in_dso(const char* symbol) const noexcept;
+
   struct DsoClose {
     void operator()(void* dso_handle) const noexcept;
   };
