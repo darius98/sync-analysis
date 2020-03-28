@@ -1,10 +1,10 @@
-#include <check_api/report.hpp>
+#include <syan_extension_api/report.hpp>
 
 #include <iomanip>
 #include <sstream>
 
 #include "run_analysis.hpp"
-#include <check_api/check_api.hpp>
+#include <syan_extension_api/syan_extension_api.hpp>
 
 namespace syan {
 

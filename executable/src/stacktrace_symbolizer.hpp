@@ -1,11 +1,11 @@
-#ifndef SYNC_ANALYSIS_EXE_STACKTRACE_SYMBOLIZER_H_
-#define SYNC_ANALYSIS_EXE_STACKTRACE_SYMBOLIZER_H_
+#ifndef SYNC_ANALYSIS_EXECUTABLE_SRC_STACKTRACE_SYMBOLIZER_H_
+#define SYNC_ANALYSIS_EXECUTABLE_SRC_STACKTRACE_SYMBOLIZER_H_
 
 #include <memory>
 #include <string>
 
-#include "check_api/event.hpp"
 #include "dump_file_header_compat.hpp"
+#include <syan_extension_api/event.hpp>
 
 namespace syan {
 
@@ -18,7 +18,8 @@ public:
 
   virtual ~StacktraceSymbolizer() = default;
 
-  virtual void symbolize_stacktrace(const Event& event, std::ostream& out) = 0;
+  virtual void symbolize_stacktrace(RawBacktrace stack_trace,
+                                    std::ostream& out) = 0;
 };
 
 }  // namespace syan

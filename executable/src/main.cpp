@@ -1,8 +1,8 @@
+#include <filesystem>
 #include <iostream>
 
 #include <mcga/cli.hpp>
 
-#include "internal_check_registerer.hpp"
 #include "run_analysis.hpp"
 
 constexpr auto help_menu_header =
@@ -58,14 +58,14 @@ int main(int argc, char** argv) {
     binary_file_path = binary_arg->getValue();
   }
 
-  std::vector<syan::Check*> checks;
-  for (auto* registered_check = syan::internal::RegisteredCheck::get_head();
-       registered_check != nullptr;
-       registered_check = registered_check->next_check) {
-    checks.push_back(registered_check->check);
+  std::vector<syan::Extension> extensions;
+  const std::vector<std::filesystem::path> dso_search_paths{
+      ".build/cmake_asan/syan-ext"};
+  for (auto extension_name : {"list", "mutex_lock_order"}) {
+    extensions.emplace_back(extension_name, dso_search_paths);
   }
-
-  syan::run_analysis(std::move(binary_file_path), positional_args[1], checks);
+  syan::run_analysis(std::move(binary_file_path), positional_args[1],
+                     extensions);
 
   return 0;
 }

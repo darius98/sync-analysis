@@ -88,9 +88,9 @@ public:
     close(atos_stdout);
   }
 
-  void symbolize_stacktrace(const Event& event, std::ostream& out) final {
+  void symbolize_stacktrace(RawBacktrace stack_trace, std::ostream& out) final {
     std::stringstream atos_command_builder;
-    for (const auto& pc : event.raw_backtrace()) {
+    for (const auto& pc : stack_trace) {
       if (pc != 0) {
         atos_command_builder << "0x" << std::hex << std::setfill('0')
                              << std::setw(16) << pc << " ";
@@ -110,11 +110,10 @@ public:
       total_written += written;
     }
 
-    int num_lines_expected =
-        std::count_if(std::begin(event.raw_backtrace()),
-                      std::end(event.raw_backtrace()), [](auto pc) {
-                        return pc != 0;
-                      });
+    int num_lines_expected = std::count_if(std::begin(stack_trace),
+                                           std::end(stack_trace), [](auto pc) {
+                                             return pc != 0;
+                                           });
 
     int num_lines = 0;
     out << "\t\t";

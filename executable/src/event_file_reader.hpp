@@ -1,14 +1,14 @@
-#ifndef SYNC_ANALYSIS_EXE_EVENT_FILE_READER_H_
-#define SYNC_ANALYSIS_EXE_EVENT_FILE_READER_H_
+#ifndef SYNC_ANALYSIS_EXECUTABLE_SRC_EVENT_FILE_READER_H_
+#define SYNC_ANALYSIS_EXECUTABLE_SRC_EVENT_FILE_READER_H_
 
 #include <cstdio>
 
 #include <memory>
 #include <string>
 
-#include "check_api/event.hpp"
 #include "dump_file_header_compat.hpp"
 #include <lib/src/event.h>
+#include <syan_extension_api/event.hpp>
 
 namespace syan {
 

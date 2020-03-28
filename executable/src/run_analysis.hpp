@@ -1,11 +1,13 @@
-#ifndef SYNC_ANALYSIS_EXE_RUN_ANALYSIS_H_
-#define SYNC_ANALYSIS_EXE_RUN_ANALYSIS_H_
+#ifndef SYNC_ANALYSIS_EXECUTABLE_SRC_RUN_ANALYSIS_H_
+#define SYNC_ANALYSIS_EXECUTABLE_SRC_RUN_ANALYSIS_H_
 
 #include <iostream>
 #include <optional>
 #include <string>
 
-#include "check_api/check_api.hpp"
+#include "extension.hpp"
+#include <syan_extension_api/event.hpp>
+#include <syan_extension_api/report.hpp>
 
 namespace syan {
 
@@ -18,7 +20,7 @@ void send_report(Report::Level level, int /*code*/,
 
 void run_analysis(std::optional<std::string> binary_file_path,
                   std::string dump_file_path,
-                  const std::vector<Check*>& checks);
+                  const std::vector<Extension>& extensions);
 
 }  // namespace syan
 

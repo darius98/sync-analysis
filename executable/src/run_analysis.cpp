@@ -1,9 +1,10 @@
-#include "check_api/check_api.hpp"
+#include "executable/include/syan_extension_api/syan_extension_api.hpp"
 
 #include <iomanip>
 #include <iostream>
 
 #include "event_file_reader.hpp"
+#include "extension.hpp"
 #include "stacktrace_symbolizer.hpp"
 
 namespace {
@@ -35,7 +36,7 @@ void symbolize_stacktrace(const Event& event, std::ostream& stream) {
               "original binary.\n";
     return;
   }
-  stacktrace_symbolizer->symbolize_stacktrace(event, stream);
+  stacktrace_symbolizer->symbolize_stacktrace(event.raw_backtrace(), stream);
 }
 
 void send_report(Report::Level level, int /*code*/,
@@ -51,7 +52,7 @@ void send_report(Report::Level level, int /*code*/,
 
 void run_analysis(std::optional<std::string> binary_file_path,
                   std::string dump_file_path,
-                  const std::vector<Check*>& checks) {
+                  const std::vector<Extension>& extensions) {
   EventFileReader dump_file_reader(dump_file_path);
   DumpFileHeader file_header(std::move(dump_file_reader.release_header()));
   tm* calendarTime = gmtime(&file_header.start_time.tv_sec);
@@ -81,8 +82,8 @@ void run_analysis(std::optional<std::string> binary_file_path,
     stacktrace_symbolizer = nullptr;
   }
 
-  for (auto* check : checks) {
-    check->on_start();
+  for (const auto& extension : extensions) {
+    extension.start_up();
   }
 
   while (!dump_file_reader.done()) {
@@ -97,15 +98,15 @@ void run_analysis(std::optional<std::string> binary_file_path,
     }
     cur_event = event;
 
-    active_objects_db->handle_event_before_checks(event);
-    for (auto* check : checks) {
-      check->on_event();
+    active_objects_db->handle_event_before_extensions(event);
+    for (const auto& extension : extensions) {
+      extension.on_event();
     }
-    active_objects_db->handle_event_after_checks(event);
+    active_objects_db->handle_event_after_extensions(event);
   }
 
-  for (auto* check : checks) {
-    check->on_end();
+  for (const auto& extension : extensions) {
+    extension.shut_down();
   }
 
   delete active_objects_db;
