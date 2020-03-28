@@ -9,9 +9,9 @@
 
 namespace {
 
-struct timespec start_time;
 syan::Event cur_event = nullptr;
 syan::Database* active_objects_db = nullptr;
+struct timespec start_time;
 syan::StacktraceSymbolizer* stacktrace_symbolizer = nullptr;
 const syan::Extension* active_extension = nullptr;
 
@@ -19,16 +19,20 @@ const syan::Extension* active_extension = nullptr;
 
 namespace syan {
 
+Event current_event() noexcept {
+  return cur_event;
+}
+
 const Database& database() noexcept {
   return *active_objects_db;
 }
 
-struct timespec execution_start_time() noexcept {
-  return start_time;
+Report create_report() {
+  return Report{};
 }
 
-Event current_event() noexcept {
-  return cur_event;
+struct timespec execution_start_time() noexcept {
+  return start_time;
 }
 
 std::string_view active_extension_name() noexcept {

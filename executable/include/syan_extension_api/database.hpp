@@ -31,8 +31,6 @@ private:
   std::map<std::pair<ObjectType, ObjectId>, std::size_t> object_names;
 };
 
-const Database& database() noexcept;
-
 }  // namespace syan
 
 #endif

@@ -8,8 +8,15 @@
 
 namespace syan {
 
-Report::Report(Level level, std::string description)
-    : level(level), description(std::move(description)) {}
+Report& Report::set_level(Level new_level) noexcept {
+  level = new_level;
+  return *this;
+}
+
+Report& Report::set_description(std::string new_description) noexcept {
+  description = std::move(new_description);
+  return *this;
+}
 
 Report& Report::add_section(std::string section_description, Event event) {
   thread_notes.insert(event.thread());

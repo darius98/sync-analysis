@@ -106,8 +106,6 @@ private:
   EventPtrInternal* ptr;
 };
 
-Event current_event() noexcept;
-
 }  // namespace syan
 
 #endif

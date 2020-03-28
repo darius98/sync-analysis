@@ -17,13 +17,15 @@ public:
     error,
   };
 
-  Report(Level level, std::string description);
-
   ~Report();
 
+  Report& set_level(Level new_level) noexcept;
+  Report& set_description(std::string new_description) noexcept;
   Report& add_section(std::string section_description, Event event);
 
 private:
+  Report() = default;
+
   struct ReportSection {
     std::string description;
     Event event;
@@ -32,11 +34,13 @@ private:
         : description(std::move(description)), event(std::move(event)) {}
   };
 
-  Level level;
+  Level level{Level::info};
   std::string description;
   std::vector<ReportSection> sections;
   std::set<ObjectId> thread_notes;
   std::set<Event> notes;
+
+  friend Report create_report();
 };
 
 }  // namespace syan

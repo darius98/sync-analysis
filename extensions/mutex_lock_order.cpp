@@ -22,8 +22,9 @@ SYAN_EXT_API void syan_extension_on_event() {
       if (it != ordered_objects.end()) {
         const auto& [mtx1_lock, mtx2_lock] = it->second;
 
-        Report report(Report::error, "Mutex lock order inconsistency found");
-
+        auto report = create_report();
+        report.set_level(Report::error);
+        report.set_description("Mutex lock order inconsistency found");
         report.add_section(database().thread_name(mtx1_lock) + " locked " +
                                database().object_name(mtx1_lock) +
                                " first here:",
@@ -32,12 +33,10 @@ SYAN_EXT_API void syan_extension_on_event() {
                                database().object_name(mtx2_lock) +
                                " second here:",
                            mtx2_lock);
-
         report.add_section(
             database().thread_name(prev_lock_event) + " locked " +
                 database().object_name(prev_lock_event) + " first here:",
             prev_lock_event);
-
         report.add_section(database().thread_name(event) +
                                " attempted to lock " +
                                database().object_name(event) + " second here:",

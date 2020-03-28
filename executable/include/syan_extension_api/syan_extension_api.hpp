@@ -7,27 +7,38 @@
 
 #if defined _WIN32 || defined __CYGWIN__
 #ifdef __GNUC__
-#define SYAN_EXT_API __attribute__((dllexport)) extern "C"
+#define SYAN_EXT_API __attribute__((dllexport)) extern "C" [[maybe_unused]]
 #else
-#define SYAN_EXT_API __declspec(dllexport) extern "C"
+#define SYAN_EXT_API __declspec(dllexport) extern "C" [[maybe_unused]]
 #endif
 #else
 #if __GNUC__ >= 4
-#define SYAN_EXT_API __attribute__((visibility("default"))) extern "C"
+#define SYAN_EXT_API                                                           \
+  __attribute__((visibility("default"))) extern "C" [[maybe_unused]]
 #else
-#define SYAN_EXT_API extern "C"
+#define SYAN_EXT_API extern "C" [[maybe_unused]]
 #endif
 #endif
+
+namespace syan {
+
+Event current_event() noexcept;
+
+const Database& database() noexcept;
+
+Report create_report();
+
+}  // namespace syan
 
 /*
+Extension ABI:
 
-[[required]] const char* syan_extension;
-
+const char* syan_extension; (REQUIRED)
 void syan_extension_init();
-
 void syan_extension_on_event(syan::Event);
-
 void syan_extension_destroy();
+
+Everything symbol must have C linkage to be detected.
 
 */
 
