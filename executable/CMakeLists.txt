@@ -19,6 +19,7 @@ target_include_directories(sync_analysis
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../
         SYSTEM PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/mcga-cli/include
         )
+target_link_libraries(sync_analysis PRIVATE mcga_cli)
 target_compile_definitions(sync_analysis PUBLIC
         -DSYNC_ANALYSIS_IS_IN_EXECUTABLE
         -DSYNC_ANALYSIS_VERSION="${SYNC_ANALYSIS_VERSION}"

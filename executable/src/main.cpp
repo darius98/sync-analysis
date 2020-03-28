@@ -30,32 +30,32 @@ constexpr auto binary_arg_description =
 int main(int argc, char** argv) {
   mcga::cli::Parser parser{cli_message_header};
 
-  parser.addTerminalFlag(
-      mcga::cli::FlagSpec("help").setShortName("h").setDescription(
+  parser.add_terminal_flag(
+      mcga::cli::FlagSpec("help").set_short_name("h").set_description(
           help_description),
       [&parser]() {
-        std::cout << help_menu_header << parser.renderHelp();
+        std::cout << help_menu_header << parser.render_help();
       });
-  parser.addTerminalFlag(
-      mcga::cli::FlagSpec("version").setShortName("v").setDescription(
+  parser.add_terminal_flag(
+      mcga::cli::FlagSpec("version").set_short_name("v").set_description(
           version_description),
       cli_message_header);
   auto binary_arg =
-      parser.addArgument(mcga::cli::ArgumentSpec("binary")
-                             .setShortName("b")
-                             .setDescription(binary_arg_description)
-                             .setDefaultValue("UNKNOWN"));
+      parser.add_argument(mcga::cli::ArgumentSpec("binary")
+                              .set_short_name("b")
+                              .set_description(binary_arg_description)
+                              .set_default_value("UNKNOWN"));
 
   auto positional_args = parser.parse(argc, argv);
 
   if (positional_args.size() != 2) {
-    std::cout << "Invalid number of arguments.\n\n" << parser.renderHelp();
+    std::cout << "Invalid number of arguments.\n\n" << parser.render_help();
     return 1;
   }
 
   std::optional<std::string> binary_file_path = std::nullopt;
   if (binary_arg->appeared()) {
-    binary_file_path = binary_arg->getValue();
+    binary_file_path = binary_arg->get_value();
   }
 
   auto extensions = syan::find_extensions({
