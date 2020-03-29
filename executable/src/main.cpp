@@ -27,6 +27,13 @@ constexpr auto binary_arg_description =
     "\t\tbinary), file and line information will also be printed where\n"
     "\t\tavailable.";
 
+constexpr auto extension_search_paths_arg_description =
+    "\n"
+    "\t\tExtra paths to search for extensions. The current working\n"
+    "\t\tdirectory, the sub-directory 'syan-ext' in the current\n"
+    "\t\tdirectory (if it exists) and '/usr/local/lib/syan-ext'\n"
+    "\t\t(if it exists) will always be searched.";
+
 int main(int argc, char** argv) {
   mcga::cli::Parser parser{cli_message_header};
 
@@ -45,6 +52,12 @@ int main(int argc, char** argv) {
                               .set_short_name("b")
                               .set_description(binary_arg_description)
                               .set_default_value("UNKNOWN"));
+  auto extension_search_paths_arg = parser.add_list_argument(
+      mcga::cli::ListArgumentSpec("extension-search-path")
+          .set_short_name("E")
+          .set_description(extension_search_paths_arg_description)
+          .set_default_value({})
+          .set_implicit_value({}));
 
   auto positional_args = parser.parse(argc, argv);
 
@@ -58,11 +71,17 @@ int main(int argc, char** argv) {
     binary_file_path = binary_arg->get_value();
   }
 
-  auto extensions = syan::find_extensions({
+  auto extension_search_path_strings = extension_search_paths_arg->get_value();
+  std::vector<std::filesystem::path> extension_search_paths = {
       ".",
       "./syan-ext",
       "/usr/local/lib/syan-ext",
-  });
+  };
+  for (const auto& path_str : extension_search_path_strings) {
+    extension_search_paths.emplace_back(path_str);
+  }
+
+  auto extensions = syan::find_extensions(extension_search_paths);
   syan::run_analysis(std::move(binary_file_path), positional_args[1],
                      extensions);
 
