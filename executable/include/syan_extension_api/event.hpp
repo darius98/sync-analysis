@@ -85,17 +85,41 @@ public:
 
   std::string_view type_str() const noexcept;
 
-  explicit operator bool() const noexcept;
+  explicit operator bool() const noexcept {
+    return ptr != nullptr;
+  }
 
-  bool operator==(decltype(nullptr)) const noexcept;
-  bool operator!=(decltype(nullptr)) const noexcept;
+  bool operator==(decltype(nullptr)) const noexcept {
+    return ptr == nullptr;
+  }
 
-  bool operator<(const Event& other) const noexcept;
-  bool operator>(const Event& other) const noexcept;
-  bool operator<=(const Event& other) const noexcept;
-  bool operator>=(const Event& other) const noexcept;
-  bool operator==(const Event& other) const noexcept;
-  bool operator!=(const Event& other) const noexcept;
+  bool operator!=(decltype(nullptr)) const noexcept {
+    return ptr != nullptr;
+  }
+
+  bool operator<(const Event& other) const noexcept {
+    return ptr < other.ptr;
+  }
+
+  bool operator>(const Event& other) const noexcept {
+    return ptr > other.ptr;
+  }
+
+  bool operator<=(const Event& other) const noexcept {
+    return ptr <= other.ptr;
+  }
+
+  bool operator>=(const Event& other) const noexcept {
+    return ptr >= other.ptr;
+  }
+
+  bool operator==(const Event& other) const noexcept {
+    return ptr == other.ptr;
+  }
+
+  bool operator!=(const Event& other) const noexcept {
+    return ptr != other.ptr;
+  }
 
 private:
   static Event make(const void* syan_event);

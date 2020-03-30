@@ -199,40 +199,4 @@ std::string_view Event::type_str() const noexcept {
   std::abort();
 }
 
-Event::operator bool() const noexcept {
-  return ptr != nullptr;
-}
-
-bool Event::operator==(decltype(nullptr)) const noexcept {
-  return ptr == nullptr;
-}
-
-bool Event::operator!=(decltype(nullptr)) const noexcept {
-  return ptr != nullptr;
-}
-
-bool Event::operator<(const Event& other) const noexcept {
-  return ptr < other.ptr;
-}
-
-bool Event::operator>(const Event& other) const noexcept {
-  return ptr > other.ptr;
-}
-
-bool Event::operator<=(const Event& other) const noexcept {
-  return ptr <= other.ptr;
-}
-
-bool Event::operator>=(const Event& other) const noexcept {
-  return ptr >= other.ptr;
-}
-
-bool Event::operator==(const Event& other) const noexcept {
-  return ptr == other.ptr;
-}
-
-bool Event::operator!=(const Event& other) const noexcept {
-  return ptr != other.ptr;
-}
-
 }  // namespace syan
