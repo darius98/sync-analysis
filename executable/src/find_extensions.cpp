@@ -43,8 +43,8 @@ find_extensions(const std::vector<std::filesystem::path>& directories) {
         dlclose(handle);
         continue;
       }
-      extensions.emplace_back(handle,
-                              *static_cast<const char**>(syan_extension_name));
+      extensions.emplace_back(*static_cast<const char**>(syan_extension_name),
+                              handle);
     }
   }
   return extensions;
