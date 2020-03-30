@@ -82,8 +82,6 @@ int main(int argc, char** argv) {
   }
 
   auto extensions = syan::find_extensions(extension_search_paths);
-  syan::run_analysis(std::move(binary_file_path), positional_args[1],
-                     extensions);
-
-  return 0;
+  return syan::run_analysis(std::move(binary_file_path), positional_args[1],
+                            extensions);
 }

@@ -9,6 +9,7 @@
 
 namespace {
 
+int exit_code;
 syan::Event cur_event = nullptr;
 syan::Database* active_objects_db = nullptr;
 struct timespec start_time;
@@ -48,13 +49,16 @@ void symbolize_stacktrace(const Event& event, std::ostream& stream) {
   stacktrace_symbolizer->symbolize_stacktrace(event.raw_backtrace(), stream);
 }
 
-void send_report(Report::Level, const std::string& report_message) {
+void send_report(Report::Level level, const std::string& report_message) {
   std::cout << report_message << "\n";
+  if (level != Report::Level::info) {
+    exit_code = 1;
+  }
 }
 
-void run_analysis(std::optional<std::string> binary_file_path,
-                  std::string dump_file_path,
-                  const std::vector<Extension>& extensions) {
+int run_analysis(std::optional<std::string> binary_file_path,
+                 std::string dump_file_path,
+                 const std::vector<Extension>& extensions) {
   EventFileReader dump_file_reader(dump_file_path);
   DumpFileHeader file_header(std::move(dump_file_reader.release_header()));
   tm* calendarTime = gmtime(&file_header.start_time.tv_sec);
@@ -84,6 +88,8 @@ void run_analysis(std::optional<std::string> binary_file_path,
     stacktrace_symbolizer = nullptr;
   }
 
+  exit_code = 0;
+
   for (const auto& extension : extensions) {
     active_extension = &extension;
     extension.start_up();
@@ -97,7 +103,7 @@ void run_analysis(std::optional<std::string> binary_file_path,
       if (!dump_file_reader.done()) {
         std::cout << "FATAL: Dump file " << dump_file_path << " is corrupt.\n";
       } else {
-        return;
+        break;
       }
     }
 
@@ -123,6 +129,8 @@ void run_analysis(std::optional<std::string> binary_file_path,
 
   delete stacktrace_symbolizer;
   stacktrace_symbolizer = nullptr;
+
+  return exit_code;
 }
 
 }  // namespace syan
