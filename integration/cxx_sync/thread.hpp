@@ -7,10 +7,22 @@ namespace sync {
 
 class Thread {
 public:
+  static void sleep_ns(long long nanoseconds);
+
+  static void yield();
+
+  Thread() = default;
+
   template<class Func>
   explicit Thread(Func callable) {
     init_thread(&proxy<Func>, new Func(static_cast<Func&&>(callable)));
   }
+
+  Thread(const Thread& other) = delete;
+  Thread& operator=(const Thread& other) = delete;
+
+  Thread(Thread&& other) noexcept;
+  Thread& operator=(Thread&& other) noexcept;
 
   ~Thread();
 

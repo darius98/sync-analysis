@@ -19,7 +19,11 @@ Mutex::~Mutex() {
 
 bool Mutex::try_lock() noexcept {
   syan_mutex_on_try_lock(this);
-  return pthread_mutex_trylock(&pt_mutex) == 0;
+  if (pthread_mutex_trylock(&pt_mutex) == 0) {
+    syan_mutex_after_lock(this);
+    return true;
+  }
+  return false;
 }
 
 void Mutex::lock() {

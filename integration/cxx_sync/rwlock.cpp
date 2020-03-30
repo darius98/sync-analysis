@@ -19,7 +19,11 @@ RWLock::~RWLock() {
 
 bool RWLock::try_rd_lock() noexcept {
   syan_rwlock_on_try_rd_lock(this);
-  return pthread_rwlock_tryrdlock(&pt_rwlock) == 0;
+  if (pthread_rwlock_tryrdlock(&pt_rwlock) == 0) {
+    syan_rwlock_after_rd_lock(this);
+    return true;
+  }
+  return false;
 }
 
 void RWLock::rd_lock() {
@@ -37,7 +41,11 @@ void RWLock::rd_unlock() {
 
 bool RWLock::try_wr_lock() noexcept {
   syan_rwlock_on_try_wr_lock(this);
-  return pthread_rwlock_trywrlock(&pt_rwlock) == 0;
+  if (pthread_rwlock_trywrlock(&pt_rwlock) == 0) {
+    syan_rwlock_after_wr_lock(this);
+    return true;
+  }
+  return false;
 }
 
 void RWLock::wr_lock() {

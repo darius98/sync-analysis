@@ -29,7 +29,11 @@ RecursiveMutex::~RecursiveMutex() {
 
 bool RecursiveMutex::try_lock() noexcept {
   syan_rec_mutex_on_try_lock(this);
-  return pthread_mutex_trylock(&pt_mutex) == 0;
+  if (pthread_mutex_trylock(&pt_mutex) == 0) {
+    syan_rec_mutex_after_lock(this);
+    return true;
+  }
+  return false;
 }
 
 void RecursiveMutex::lock() {

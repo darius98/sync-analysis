@@ -6,10 +6,36 @@
 
 namespace sync {
 
+void Thread::sleep_ns(long long nanoseconds) {
+  timespec sleep_duration{};
+  sleep_duration.tv_sec = nanoseconds / 1000000000;
+  sleep_duration.tv_nsec = nanoseconds % 1000000000;
+  nanosleep(&sleep_duration, NULL);
+}
+
+void Thread::yield() {
+  pthread_yield_np();
+}
+
 Thread::~Thread() {
   if (!is_null()) {
     join();
   }
+}
+
+Thread::Thread(Thread&& other) noexcept: pt_thread(other.pt_thread) {
+  other.pt_thread = nullptr;
+}
+
+Thread& Thread::operator=(Thread&& other) noexcept {
+  if (this != &other) {
+    if (!is_null()) {
+      join();
+    }
+    pt_thread = other.pt_thread;
+    other.pt_thread = nullptr;
+  }
+  return *this;
 }
 
 bool Thread::is_null() const noexcept {
