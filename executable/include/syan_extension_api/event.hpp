@@ -52,16 +52,43 @@ using RawBacktrace = intptr_t (&)[12];
 // - without support for taking ownership of an existing pointer
 class Event {
 public:
-  explicit Event() noexcept;
-  Event(decltype(nullptr)) noexcept;
+  Event() noexcept: ptr(nullptr) {}
 
-  Event(const Event& other) noexcept;
-  Event(Event&& other) noexcept;
+  Event(decltype(nullptr)) noexcept: ptr(nullptr) {}
 
-  Event& operator=(const Event& other) noexcept;
-  Event& operator=(Event&& other) noexcept;
+  Event(const Event& other) noexcept: ptr(other.ptr) {
+    inc_ref_count();
+  }
 
-  ~Event() noexcept;
+  Event(Event&& other) noexcept: ptr(other.ptr) {
+    other.ptr = nullptr;
+  }
+
+  Event& operator=(const Event& other) noexcept {
+    if (this == &other) {
+      return *this;
+    }
+
+    dec_ref_count();
+    ptr = other.ptr;
+    inc_ref_count();
+    return *this;
+  }
+
+  Event& operator=(Event&& other) noexcept {
+    if (this == &other) {
+      return *this;
+    }
+
+    dec_ref_count();
+    ptr = other.ptr;
+    other.ptr = nullptr;
+    return *this;
+  }
+
+  ~Event() noexcept {
+    dec_ref_count();
+  }
 
   EventType type() const noexcept;
 
@@ -123,6 +150,9 @@ public:
 
 private:
   static Event make(const void* syan_event);
+
+  void inc_ref_count();
+  void dec_ref_count();
 
   struct EventPtrInternal;
   friend class EventFileReader;

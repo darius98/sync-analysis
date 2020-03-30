@@ -18,73 +18,6 @@ struct Event::EventPtrInternal {
   ::SyanEvent event;
 };
 
-Event Event::make(const void* syan_event) {
-  const ::SyanEvent& event = *static_cast<const ::SyanEvent*>(syan_event);
-  if (event.signature != SYAN_EVENT_SIGNATURE) {
-    return Event{};
-  }
-  Event event_ptr;
-  event_ptr.ptr = new EventPtrInternal{1, event};
-  return event_ptr;
-}
-
-Event::Event() noexcept: ptr(nullptr) {}
-
-Event::Event(decltype(nullptr)) noexcept: ptr(nullptr) {}
-
-Event::Event(const Event& other) noexcept: ptr(other.ptr) {
-  if (ptr != nullptr) {
-    ptr->ref_count += 1;
-  }
-}
-
-Event::Event(Event&& other) noexcept: ptr(other.ptr) {
-  other.ptr = nullptr;
-}
-
-Event& Event::operator=(const Event& other) noexcept {
-  if (this == &other) {
-    return *this;
-  }
-
-  if (ptr != nullptr) {
-    ptr->ref_count -= 1;
-    if (ptr->ref_count == 0) {
-      delete ptr;
-    }
-  }
-  ptr = other.ptr;
-  if (ptr != nullptr) {
-    ptr->ref_count += 1;
-  }
-  return *this;
-}
-
-Event& Event::operator=(Event&& other) noexcept {
-  if (this == &other) {
-    return *this;
-  }
-
-  if (ptr != nullptr) {
-    ptr->ref_count -= 1;
-    if (ptr->ref_count == 0) {
-      delete ptr;
-    }
-  }
-  ptr = other.ptr;
-  other.ptr = nullptr;
-  return *this;
-}
-
-Event::~Event() noexcept {
-  if (ptr != nullptr) {
-    ptr->ref_count -= 1;
-    if (ptr->ref_count == 0) {
-      delete ptr;
-    }
-  }
-}
-
 EventType Event::type() const noexcept {
   return static_cast<EventType>(ptr->event.event_type);
 }
@@ -197,6 +130,31 @@ std::string_view Event::type_str() const noexcept {
   case EventType::rwlock_on_destroy: return "read_write_lock_destroy";
   }
   std::abort();
+}
+
+Event Event::make(const void* syan_event) {
+  const ::SyanEvent& event = *static_cast<const ::SyanEvent*>(syan_event);
+  if (event.signature != SYAN_EVENT_SIGNATURE) {
+    return Event{};
+  }
+  Event event_ptr;
+  event_ptr.ptr = new EventPtrInternal{1, event};
+  return event_ptr;
+}
+
+void Event::inc_ref_count() {
+  if (ptr != nullptr) {
+    ptr->ref_count += 1;
+  }
+}
+
+void Event::dec_ref_count() {
+  if (ptr != nullptr) {
+    ptr->ref_count -= 1;
+    if (ptr->ref_count == 0) {
+      delete ptr;
+    }
+  }
 }
 
 }  // namespace syan
