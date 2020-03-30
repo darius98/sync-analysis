@@ -7,18 +7,17 @@ using namespace syan;
 
 std::map<std::pair<ObjectId, ObjectId>, std::pair<Event, Event>>
     ordered_objects;
-std::map<ObjectId, std::set<Event>> thread_locked_objects;
+std::map<ObjectId, std::set<Event>> thread_owned_mutexes;
 
-SYAN_EXT_API const char* syan_extension = "mutex_lock_order";
+SYAN_EXT_API const char* syan_extension = "mutex-lock-order";
 
 SYAN_EXT_API void syan_extension_on_event() {
   auto event = current_event();
   switch (event.type()) {
   case EventType::mutex_before_lock: {
-    auto& locked_on_thread = thread_locked_objects[event.thread()];
-    for (const auto& prev_lock_event : locked_on_thread) {
-      auto it =
-          ordered_objects.find({event.object(), prev_lock_event.object()});
+    auto& owned = thread_owned_mutexes[event.thread()];
+    for (const auto& owned_obj : owned) {
+      auto it = ordered_objects.find({event.object(), owned_obj.object()});
       if (it != ordered_objects.end()) {
         const auto& [mtx1_lock, mtx2_lock] = it->second;
 
@@ -33,10 +32,10 @@ SYAN_EXT_API void syan_extension_on_event() {
                                database().object_name(mtx2_lock) +
                                " second here:",
                            mtx2_lock);
-        report.add_section(
-            database().thread_name(prev_lock_event) + " locked " +
-                database().object_name(prev_lock_event) + " first here:",
-            prev_lock_event);
+        report.add_section(database().thread_name(owned_obj) + " locked " +
+                               database().object_name(owned_obj) +
+                               " first here:",
+                           owned_obj);
         report.add_section(database().thread_name(event) +
                                " attempted to lock " +
                                database().object_name(event) + " second here:",
@@ -46,17 +45,16 @@ SYAN_EXT_API void syan_extension_on_event() {
     break;
   }
   case EventType::mutex_after_lock: {
-    thread_locked_objects[event.thread()].insert(event);
-    auto& locked_on_thread = thread_locked_objects[event.thread()];
-    for (const auto& prev_lock_event : locked_on_thread) {
-      ordered_objects.try_emplace(
-          std::pair{prev_lock_event.object(), event.object()},
-          std::pair{prev_lock_event, event});
+    thread_owned_mutexes[event.thread()].insert(event);
+    auto& owned = thread_owned_mutexes[event.thread()];
+    for (const auto& owned_obj : owned) {
+      ordered_objects.try_emplace(std::pair{owned_obj.object(), event.object()},
+                                  std::pair{owned_obj, event});
     }
     break;
   }
   case EventType::mutex_on_unlock: {
-    thread_locked_objects[event.thread()].erase(event);
+    thread_owned_mutexes[event.thread()].erase(event);
     break;
   }
   default: break;

@@ -7,12 +7,12 @@ namespace {
 bool is_extension_filename(const std::filesystem::path& path) {
 #ifdef SYNC_ANALYSIS_IS_MAC_OS_X
   return path.extension() == ".dylib" &&
-         std::string_view{path.filename().c_str()}.substr(0, 12) ==
-             "libsyan_ext_";
+         std::string_view{path.filename().c_str()}.substr(0, 11) ==
+             "libsyanext-";
 #elif SYNC_ANALYSIS_IS_LINUX
   return path.extension() == ".so" &&
-         std::string_view{path.filename().c_str()}.substr(0, 12) ==
-             "libsyan_ext_";
+         std::string_view{path.filename().c_str()}.substr(0, 11) ==
+             "libsyanext-";
 #endif
 }
 

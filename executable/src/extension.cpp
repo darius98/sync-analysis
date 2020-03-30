@@ -2,8 +2,6 @@
 
 #include <dlfcn.h>
 
-namespace {}
-
 namespace syan {
 
 Extension::Extension(std::string name, void* dso_handle)
