@@ -2,10 +2,12 @@
 
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 
+#include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
+
+#include "debug.hpp"
 
 #define PIPE_READ 0
 #define PIPE_WRITE 1
@@ -38,10 +40,27 @@ public:
       std::abort();
     }
     if (atos_pid > 0) {  // parent is done.
-      atos_stdin = stdin_pipe[PIPE_WRITE];
-      atos_stdout = stdout_pipe[PIPE_READ];
       close(stdin_pipe[PIPE_READ]);
       close(stdout_pipe[PIPE_WRITE]);
+      atos_stdin = stdin_pipe[PIPE_WRITE];
+      atos_stdout = stdout_pipe[PIPE_READ];
+
+      int flags = fcntl(atos_stdout, F_GETFL, 0);
+      if (flags < 0) {
+        std::cerr << "Failed to set atos stdout non-blocking."
+                  << "fcntl(atos_stdout, F_GETFL, 0): errno=" << errno << " ("
+                  << strerror(errno) << ")\n";
+        std::abort();
+      }
+      flags |= O_NONBLOCK;
+      int status = fcntl(atos_stdout, F_SETFL, flags);
+      if (status < 0) {
+        std::cerr << "Failed to set atos stdout non-blocking."
+                  << "fcntl(atos_stdout, F_SETFL, flags): errno=" << errno
+                  << " (" << strerror(errno) << ")\n";
+        std::abort();
+      }
+
       return;
     }
 
@@ -116,18 +135,37 @@ public:
                                            });
 
     int num_lines = 0;
-    out << "\t\t";
     char ch;
-    while (true) {
-      read(atos_stdout, &ch, 1);
-      out << ch;
+    int num_consecutive_read_failures = 0;
+    std::stringstream formatter;
+    formatter << "\n\t\t";
+    while (num_consecutive_read_failures < 2000) {
+      errno = 0;
+      auto read_status = read(atos_stdout, &ch, 1);
+      if (read_status < 1) {
+        if (errno == 0 || errno == EAGAIN) {
+          num_consecutive_read_failures += 1;
+          usleep(10);
+          continue;
+        }
+        std::cerr << "Failed to read output of stacktrace symbolizer"
+                  << " errno=" << errno << " (" << strerror(errno) << ")\n";
+        std::abort();
+      }
+      num_consecutive_read_failures = 0;
+      formatter << ch;
       if (ch == '\n') {
         num_lines += 1;
         if (num_lines == num_lines_expected) {
           break;
         }
-        out << "\t\t";
+        formatter << "\t\t";
       }
+    }
+    if (num_consecutive_read_failures == 2000) {
+      out << "\n\t\tFailed to symbolize stacktrace.";
+    } else {
+      out << formatter.str();
     }
   }
 

@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <iostream>
 
+#include "debug.hpp"
 #include "event_file_reader.hpp"
 #include "extension.hpp"
 #include "stacktrace_symbolizer.hpp"
@@ -42,7 +43,7 @@ std::string_view active_extension_name() noexcept {
 
 void symbolize_stacktrace(const Event& event, std::ostream& stream) {
   if (stacktrace_symbolizer == nullptr) {
-    stream << "\t\tNote: stacktrace not available without access to the "
+    stream << "\n\t\tNote: stacktrace not available without access to the "
               "original binary.\n";
     return;
   }
@@ -59,7 +60,9 @@ void send_report(Report::Level level, const std::string& report_message) {
 int run_analysis(std::optional<std::string> binary_file_path,
                  std::string dump_file_path,
                  const std::vector<Extension>& extensions) {
+  debug_cout << "Reading dump file at " << dump_file_path;
   EventFileReader dump_file_reader(dump_file_path);
+  debug_cout << "Finished reading dump file";
   DumpFileHeader file_header(std::move(dump_file_reader.release_header()));
   tm* calendarTime = gmtime(&file_header.start_time.tv_sec);
   std::cout << "Sync analysis version " SYNC_ANALYSIS_VERSION "\n"
@@ -75,11 +78,17 @@ int run_analysis(std::optional<std::string> binary_file_path,
             << std::put_time(calendarTime, "%d/%m/%Y %H:%M:%S") << "."
             << std::setfill('0') << std::setw(6)
             << file_header.start_time.tv_nsec / 1000 << std::setw(0)
-            << std::setfill(' ') << "\n\n";
-
+            << std::setfill(' ') << "\n";
+  debug_cout << "Parsed dump file header";
+  if (extensions.empty()) {
+    std::cout << "\nNo extensions enabled. Nothing to do.\n";
+    return 0;
+  }
   start_time = file_header.start_time;
 
   active_objects_db = new Database();
+
+  debug_cout << "Created database";
 
   if (binary_file_path.has_value()) {
     stacktrace_symbolizer =
@@ -87,6 +96,8 @@ int run_analysis(std::optional<std::string> binary_file_path,
   } else {
     stacktrace_symbolizer = nullptr;
   }
+
+  debug_cout << "Created stacktrace symbolizer process";
 
   exit_code = 0;
 

@@ -2,6 +2,7 @@
 
 #include <mcga/cli.hpp>
 
+#include "debug.hpp"
 #include "find_extensions.hpp"
 #include "run_analysis.hpp"
 
@@ -61,6 +62,8 @@ int main(int argc, char** argv) {
 
   auto positional_args = parser.parse(argc, argv);
 
+  debug_cout << "Loaded command line arguments";
+
   if (positional_args.size() != 2) {
     std::cout << "Invalid number of arguments.\n\n" << parser.render_help();
     return 1;
@@ -81,7 +84,15 @@ int main(int argc, char** argv) {
     extension_search_paths.emplace_back(path_str);
   }
 
+  debug_cout << "Loading extensions...";
   auto extensions = syan::find_extensions(extension_search_paths);
-  return syan::run_analysis(std::move(binary_file_path), positional_args[1],
-                            extensions);
+  debug_cout << "Loaded extensions:";
+  for (const auto& extension : extensions) {
+    debug_cout << "\t* " << extension.get_name();
+  }
+  debug_cout << "Running analysis...";
+  int status = syan::run_analysis(std::move(binary_file_path),
+                                  positional_args[1], extensions);
+  debug_cout << "Analysis done. Exit status = " << status;
+  return status;
 }

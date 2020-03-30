@@ -58,7 +58,7 @@ Report::~Report() {
     builder << "\n\t[" << std::put_time(calendarTime, "%d/%m/%Y %H:%M:%S")
             << "." << std::setfill('0') << std::setw(6)
             << timestamp.tv_nsec / 1000 << std::setw(0) << std::setfill(' ')
-            << "] " << section.description << "\n";
+            << "] " << section.description;
     symbolize_stacktrace(section.event, builder);
   }
 
