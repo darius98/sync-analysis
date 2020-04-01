@@ -67,10 +67,12 @@ SYAN_EXT_API void syan_extension_on_event() {
 
 SYAN_EXT_API void syan_extension_shut_down() {
   for (const auto& [rec_mutex_id, state] : recursive_mutexes) {
-    auto report = create_report();
-    report.set_level(Report::Level::warning);
-    report.set_description(
-        "Recursive mutex is redundant. Can be replaced with simple mutex.");
-    report.add_section("Recursive mutex created here", state.create_event);
+    if (state.was_ever_locked) {
+      auto report = create_report();
+      report.set_level(Report::Level::warning);
+      report.set_description(
+          "Recursive mutex is redundant. Can be replaced with simple mutex.");
+      report.add_section("Recursive mutex created here", state.create_event);
+    }
   }
 }

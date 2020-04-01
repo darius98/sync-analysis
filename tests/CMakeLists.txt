@@ -31,8 +31,12 @@ function(add_extension_test EXTENSION TYPE DESCRIPTION)
     add_dependencies(tests.extensions ${TEST_NAME}.exe)
 endfunction()
 
-add_extension_test(mutex-lock-order positive direct)
+add_extension_test(mutex-lock-order positive two_mutexes)
+#TODO: Fix this!
+#add_extension_test(mutex-lock-order positive three_mutexes)
+add_extension_test(mutex-lock-order negative three_mutexes_ordered_correctly)
 add_extension_test(redundant-recursive-mutex positive on_mutex_destroyed)
 add_extension_test(redundant-recursive-mutex positive on_mutex_leaked)
 add_extension_test(redundant-recursive-mutex negative rec_mutex_used_correctly)
+add_extension_test(redundant-recursive-mutex negative unused_leaked_mutex)
 add_extension_test(redundant-recursive-mutex negative unused_mutex)

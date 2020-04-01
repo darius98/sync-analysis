@@ -5,8 +5,7 @@
 
 using namespace syan;
 
-std::map<std::pair<ObjectId, ObjectId>, std::pair<Event, Event>>
-    ordered_objects;
+std::map<std::pair<ObjectId, ObjectId>, std::pair<Event, Event>> edges;
 std::map<ObjectId, std::set<Event>> thread_owned_mutexes;
 
 SYAN_EXT_API const char* syan_extension = "mutex-lock-order";
@@ -17,8 +16,8 @@ SYAN_EXT_API void syan_extension_on_event() {
   case EventType::mutex_before_lock: {
     auto& owned = thread_owned_mutexes[event.thread()];
     for (const auto& owned_obj : owned) {
-      auto it = ordered_objects.find({event.object(), owned_obj.object()});
-      if (it != ordered_objects.end()) {
+      auto it = edges.find({event.object(), owned_obj.object()});
+      if (it != edges.end()) {
         const auto& [mtx1_lock, mtx2_lock] = it->second;
 
         auto report = create_report();
@@ -48,8 +47,8 @@ SYAN_EXT_API void syan_extension_on_event() {
     thread_owned_mutexes[event.thread()].insert(event);
     auto& owned = thread_owned_mutexes[event.thread()];
     for (const auto& owned_obj : owned) {
-      ordered_objects.try_emplace(std::pair{owned_obj.object(), event.object()},
-                                  std::pair{owned_obj, event});
+      edges.try_emplace(std::pair{owned_obj.object(), event.object()},
+                        std::pair{owned_obj, event});
     }
     break;
   }
