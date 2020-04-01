@@ -13,6 +13,8 @@ include(cmake/SyanExtension.cmake)
 
 add_subdirectory(third_party/mcga-cli)
 
+add_compile_options(-fno-exceptions)
+
 add_subdirectory(lib)
 add_subdirectory(integration)
 add_subdirectory(executable)

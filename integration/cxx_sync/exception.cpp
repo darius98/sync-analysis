@@ -4,12 +4,22 @@
 #include <cstdlib>
 #include <cstring>
 
+#ifndef __EXCEPTIONS
+#include <iostream>
+#endif
+
 namespace sync {
 
 void SyncException::throw_on_error(const char* type, const char* function,
                                    int error_code) {
   if (error_code != 0) {
-    throw SyncException(type, function, error_code);
+    auto exception = SyncException(type, function, error_code);
+#ifdef __EXCEPTIONS
+    throw exception;
+#else
+    std::cerr << exception.what() << std::endl;
+    std::abort();
+#endif
   }
 }
 
