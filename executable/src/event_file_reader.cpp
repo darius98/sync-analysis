@@ -32,10 +32,13 @@ bool EventFileReader::done() const noexcept {
 
 Event EventFileReader::read() {
   if (done()) {
-    throw std::runtime_error("File " + file_name + " is done.");
+    return Event{};
   }
   if (buffer_cursor == buffer_cap) {
     read_next_chunk();
+  }
+  if (done()) {
+    return Event{};
   }
   return Event::make(&buffer[buffer_cursor++]);
 }
