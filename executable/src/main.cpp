@@ -36,6 +36,8 @@ constexpr auto extension_search_paths_arg_description =
     "\t\t(if it exists) will always be searched.";
 
 int main(int argc, char** argv) {
+  syan::debugging::install_abort_handler();
+
   mcga::cli::Parser parser{cli_message_header};
 
   parser.add_terminal_flag(

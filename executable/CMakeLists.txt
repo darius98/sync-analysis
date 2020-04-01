@@ -5,6 +5,7 @@ if (APPLE)
 endif ()
 add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/src/database.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/debug.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/event_file_reader.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/extension.cpp
