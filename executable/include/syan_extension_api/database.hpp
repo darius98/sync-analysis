@@ -24,6 +24,8 @@ public:
   std::string object_name(ObjectType object_type, ObjectId object_id) const;
 
   Event object_create(const Event& event) const noexcept;
+  Event object_create(ObjectType object_type, ObjectId object_id) const
+      noexcept;
 
 private:
   std::map<std::pair<ObjectType, ObjectId>, Event> active_objects;

@@ -45,7 +45,12 @@ Event Database::thread_create(const Event& event) const noexcept {
 }
 
 Event Database::object_create(const Event& event) const noexcept {
-  return active_objects.at(std::pair{event.object_type(), event.object()});
+  return object_create(event.object_type(), event.object());
+}
+
+Event Database::object_create(ObjectType object_type, ObjectId object_id) const
+    noexcept {
+  return active_objects.at(std::pair{object_type, object_id});
 }
 
 }  // namespace syan

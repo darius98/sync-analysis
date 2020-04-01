@@ -31,6 +31,12 @@ function(add_extension_test EXTENSION TYPE DESCRIPTION)
     add_dependencies(tests.extensions ${TEST_NAME}.exe)
 endfunction()
 
+add_extension_test(lock-shadow negative rwlock_rd_outside_shadow)
+add_extension_test(lock-shadow negative sometimes_not_shadowed)
+add_extension_test(lock-shadow negative single_mutex)
+add_extension_test(lock-shadow positive mutex_and_rw_lock)
+add_extension_test(lock-shadow positive three_locks)
+add_extension_test(lock-shadow positive two_mutexes)
 add_extension_test(mutex-lock-order negative three_mutexes_ordered_correctly)
 #TODO: Fix this!
 #add_extension_test(mutex-lock-order positive three_mutexes)
