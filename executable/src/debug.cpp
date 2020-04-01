@@ -38,7 +38,6 @@ void install_abort_handler() {
     } else {
       std::cerr << "Unexpected signal " << signal << " received\n";
     }
-    std::_Exit(6);
   });
 }
 

@@ -11,8 +11,16 @@ __attribute__((destructor)) static void syan_shutdown_call() {
 
 // Thread
 
+void* syan_thread_on_create_init() {
+  return syan_prepare_event(SA_EV_THREAD_ON_CREATE);
+}
+
+void syan_thread_on_create_finalize(void* event, void* addr) {
+  syan_finish_event((SyanEvent*)event, addr);
+}
+
 void syan_thread_on_create(void* addr) {
-  syan_handle_event(SA_EV_THREAD_ON_CREATE, addr);
+  syan_finish_event((SyanEvent*)syan_thread_on_create_init(), addr);
 }
 
 void syan_thread_on_join(void* addr) {

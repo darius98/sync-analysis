@@ -6,7 +6,10 @@ extern "C" {
 #endif
 
 // Thread
+void* syan_thread_on_create_init();
+void syan_thread_on_create_finalize(void* event, void* addr);
 void syan_thread_on_create(void* addr);
+
 void syan_thread_on_join(void* addr);
 void syan_thread_on_detach(void* addr);
 
