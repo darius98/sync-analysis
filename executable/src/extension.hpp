@@ -7,13 +7,10 @@
 namespace syan {
 
 class Extension {
-  using func = void (*)(void*);
+  using func = void (*)();
 
 public:
   Extension(std::string name, void* dso_handle);
-
-  Extension(std::string name, void* context, func start_up_impl,
-            func on_event_impl, func shut_down_impl);
 
   Extension(const Extension&) = delete;
   Extension& operator=(const Extension&) = delete;
@@ -40,7 +37,6 @@ private:
 
   std::string name;
   std::unique_ptr<void, DsoClose> dso_handle;
-  void* context;
   func start_up_impl;
   func on_event_impl;
   func shut_down_impl;

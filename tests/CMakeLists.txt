@@ -26,8 +26,11 @@ function(add_extension_test EXTENSION TYPE DESCRIPTION)
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
             )
     if (TYPE STREQUAL "positive")
-        set_tests_properties(${TEST_NAME} PROPERTIES WILL_FAIL TRUE)
+        set_tests_properties(${TEST_NAME} PROPERTIES
+                WILL_FAIL TRUE)
     endif ()
+    set_tests_properties(${TEST_NAME} PROPERTIES
+            ENVIRONMENT UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1)
     add_dependencies(tests.extensions ${TEST_NAME}.exe)
 endfunction()
 
