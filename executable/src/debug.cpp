@@ -1,8 +1,19 @@
 #include "debug.hpp"
 
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+
 #include <execinfo.h>
 
 #include <csignal>
+
+namespace {
+
+bool debug_flag = false;
+
+}
 
 namespace syan::debugging {
 
@@ -39,6 +50,14 @@ void install_abort_handler() {
       std::cerr << "Unexpected signal " << signal << " received\n";
     }
   });
+}
+
+void set_debug_enabled(bool enabled) {
+  debug_flag = enabled;
+}
+
+bool is_debug_enabled() {
+  return debug_flag;
 }
 
 }  // namespace syan::debugging

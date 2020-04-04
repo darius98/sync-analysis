@@ -79,8 +79,13 @@ int main(int argc, char** argv) {
           .set_description(extension_rules_arg_description)
           .set_default_value({"*"})
           .set_implicit_value({"*"}));
+  auto debug_flag = parser.add_flag(
+      mcga::cli::FlagSpec("debug").set_short_name("d").set_description(
+          "Enable debug logging"));
 
   auto positional_args = parser.parse(argc, argv);
+
+  syan::debugging::set_debug_enabled(debug_flag->get_value());
 
   debug_cout << "Loaded command line arguments";
 
