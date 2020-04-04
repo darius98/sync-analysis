@@ -10,9 +10,7 @@ namespace syan::debugging {
 struct NewlineAppender {
   std::ostream& out;
 
-  ~NewlineAppender() {
-    out << std::endl;
-  }
+  ~NewlineAppender();
 
   template<class T>
   NewlineAppender& operator<<(T&& value) {
@@ -20,9 +18,7 @@ struct NewlineAppender {
     return *this;
   }
 
-  explicit operator bool() const {
-    return out.operator bool();
-  }
+  explicit operator bool() const;
 };
 
 std::string formatted_time();
@@ -35,10 +31,18 @@ bool is_debug_enabled();
 
 }  // namespace syan::debugging
 
+#define SYAN_CURRENT_FILE                                                      \
+  (__builtin_strrchr(__FILE__, '/')                                            \
+       ? __builtin_strrchr(__FILE__, '/') + 1                                  \
+       : __builtin_strrchr(__FILE__, '\\')                                     \
+             ? __builtin_strrchr(__FILE__, '\\') + 1                           \
+             : __FILE__)
+
 #define debug_cout                                                             \
   ::syan::debugging::is_debug_enabled() &&                                     \
       ::syan::debugging::NewlineAppender{::std::cout}                          \
-          << "(debug, " << ::syan::debugging::formatted_time() << ") "
+          << "[" << ::syan::debugging::formatted_time() << " "                 \
+          << SYAN_CURRENT_FILE << ":" << __LINE__ << "] "
 #else
 #define debug_cout false && ::std::cout
 #endif

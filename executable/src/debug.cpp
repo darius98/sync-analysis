@@ -17,6 +17,14 @@ bool debug_flag = false;
 
 namespace syan::debugging {
 
+NewlineAppender::~NewlineAppender() {
+  out << std::endl;
+}
+
+NewlineAppender::operator bool() const {
+  return static_cast<bool>(out);
+}
+
 std::string formatted_time() {
   auto timestamp = std::chrono::system_clock::now();
   auto timestamp_c_style = std::chrono::system_clock::to_time_t(timestamp);
