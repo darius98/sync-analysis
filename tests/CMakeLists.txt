@@ -22,7 +22,7 @@ function(add_extension_test EXTENSION TYPE DESCRIPTION)
             --test_binary=$<TARGET_FILE:${TEST_NAME}.exe>
             --sync_analysis_binary=$<TARGET_FILE:sync_analysis>
             --sync_analysis_extension_dir=${PROJECT_BINARY_DIR}/syan-ext
-            --extension=${EXTENSION}
+            --sync_analysis_extension_name=${EXTENSION}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
             )
     if (TYPE STREQUAL "positive")

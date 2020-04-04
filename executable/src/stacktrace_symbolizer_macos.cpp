@@ -139,7 +139,7 @@ public:
     int num_consecutive_read_failures = 0;
     std::stringstream formatter;
     formatter << "\n\t\t";
-    while (num_consecutive_read_failures < 2000) {
+    while (num_consecutive_read_failures < 20000) {
       errno = 0;
       auto read_status = read(atos_stdout, &ch, 1);
       if (read_status < 1) {

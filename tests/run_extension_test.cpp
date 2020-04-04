@@ -17,6 +17,8 @@ int main(int argc, char** argv) {
       parser.add_argument(cli::ArgumentSpec("sync_analysis_binary"));
   auto sync_analysis_extension_dir_arg =
       parser.add_argument(cli::ArgumentSpec("sync_analysis_extension_dir"));
+  auto sync_analysis_extension_name_arg =
+      parser.add_argument(cli::ArgumentSpec("sync_analysis_extension_name"));
 
   parser.parse(argc, argv);
 
@@ -24,6 +26,8 @@ int main(int argc, char** argv) {
   auto sync_analysis_binary = sync_analysis_binary_arg->get_value();
   auto sync_analysis_extension_dir =
       sync_analysis_extension_dir_arg->get_value();
+  auto sync_analysis_extension_name =
+      sync_analysis_extension_name_arg->get_value();
 
   int child = fork();
   if (child < 0) {
@@ -124,7 +128,8 @@ int main(int argc, char** argv) {
                      nullptr};
   std::cout << "Executing sync analysis binary: " << sync_analysis_binary
             << " -b " << test_binary << " -E " << sync_analysis_extension_dir
-            << " " << sync_analysis_dump_path << std::endl;
+            << " -e " << sync_analysis_extension_name << " "
+            << sync_analysis_dump_path << std::endl;
   int status = execv(sync_analysis_binary.c_str(), args);
   std::cerr << "execv failed for sync analysis process. return=" << status
             << ", errno=" << errno << "\n";

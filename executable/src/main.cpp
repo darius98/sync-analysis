@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 
 #include <mcga/cli.hpp>
@@ -31,9 +32,20 @@ constexpr auto binary_arg_description =
 constexpr auto extension_search_paths_arg_description =
     "\n"
     "\t\tExtra paths to search for extensions. The current working\n"
-    "\t\tdirectory, the sub-directory 'syan-ext' in the current\n"
-    "\t\tdirectory (if it exists) and '/usr/local/lib/syan-ext'\n"
-    "\t\t(if it exists) will always be searched.";
+    "\t\tdirectory, the sub-directory 'syan-ext' in the current directory\n"
+    "\t\t(if it exists) and '/usr/local/lib/syan-ext' (if it exists) will\n"
+    "\t\talways be searched.";
+
+constexpr auto extension_rules_arg_description =
+    "\n"
+    "\t\tA list of patterns to filter extensions based on their names.\n"
+    "\t\tPatterns can contain '*' characters to denote a group of \n"
+    "\t\tarbitrary characters. Patterns starting with '-' are negative.\n"
+    "\t\tFor example, './sync_analysis -e -* -e mutex-*' will enable all\n"
+    "\t\textensions starting with 'mutex-', while disabling all other\n"
+    "\t\textensions. The last rule to match an extension determines\n"
+    "\t\twhether the extension is enabled or disabled. If no rule matches\n"
+    "\t\tan extension name, that extension is not enabled.";
 
 int main(int argc, char** argv) {
   syan::debugging::install_abort_handler();
@@ -61,6 +73,12 @@ int main(int argc, char** argv) {
           .set_description(extension_search_paths_arg_description)
           .set_default_value({})
           .set_implicit_value({}));
+  auto extension_rules_arg = parser.add_list_argument(
+      mcga::cli::ListArgumentSpec("extension")
+          .set_short_name("e")
+          .set_description(extension_rules_arg_description)
+          .set_default_value({"*"})
+          .set_implicit_value({"*"}));
 
   auto positional_args = parser.parse(argc, argv);
 
@@ -86,8 +104,11 @@ int main(int argc, char** argv) {
     extension_search_paths.emplace_back(path_str);
   }
 
+  auto rules = extension_rules_arg->get_value();
+  std::reverse(rules.begin(), rules.end());
+
   debug_cout << "Loading extensions...";
-  auto extensions = syan::find_extensions(extension_search_paths);
+  auto extensions = syan::find_extensions(extension_search_paths, rules);
   debug_cout << "Loaded extensions:";
   for (const auto& extension : extensions) {
     debug_cout << "\t* " << extension.get_name();
