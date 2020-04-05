@@ -131,9 +131,9 @@ void send_report(Report::Level level, const std::string& report_message) {
 int run_analysis(std::optional<std::string> binary_file_path,
                  std::string dump_file_path, std::vector<Extension> extensions,
                  std::ostream* report_stream) {
-  debug_cout << "Reading dump file at " << dump_file_path;
+  DOUT << "Reading dump file at " << dump_file_path;
   EventFileReader dump_file_reader(dump_file_path);
-  debug_cout << "Finished reading dump file";
+  DOUT << "Finished reading dump file";
   DumpFileHeader file_header(std::move(dump_file_reader.release_header()));
   tm* calendarTime = gmtime(&file_header.start_time.tv_sec);
   std::cout << "Sync analysis version " SYNC_ANALYSIS_VERSION "\n"
@@ -150,7 +150,7 @@ int run_analysis(std::optional<std::string> binary_file_path,
             << std::setfill('0') << std::setw(6)
             << file_header.start_time.tv_nsec / 1000 << std::setw(0)
             << std::setfill(' ') << "\n";
-  debug_cout << "Parsed dump file header";
+  DOUT << "Parsed dump file header";
   if (extensions.empty()) {
     std::cout << "\nNo extensions enabled. Nothing to do.\n";
     return 0;
@@ -159,7 +159,7 @@ int run_analysis(std::optional<std::string> binary_file_path,
   environment = new Environment(binary_file_path, file_header,
                                 std::move(extensions), report_stream);
 
-  debug_cout << "Created stacktrace symbolizer process";
+  DOUT << "Created stacktrace symbolizer process";
 
   environment->start_up();
 

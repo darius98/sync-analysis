@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
 
   syan::debugging::set_debug_enabled(debug_flag->get_value());
 
-  debug_cout << "Loaded command line arguments";
+  DOUT << "Loaded command line arguments";
 
   if (positional_args.size() != 2) {
     std::cout << "Invalid number of arguments.\n\n" << parser.render_help();
@@ -141,16 +141,16 @@ int main(int argc, char** argv) {
   auto rules = extension_rules_arg->get_value();
   std::reverse(rules.begin(), rules.end());
 
-  debug_cout << "Loading extensions...";
+  DOUT << "Loading extensions...";
   auto extensions = syan::find_extensions(extension_search_paths, rules);
-  debug_cout << "Loaded extensions:";
+  DOUT << "Loaded extensions:";
   for (const auto& extension : extensions) {
-    debug_cout << "\t* " << extension.get_name();
+    DOUT << "\t* " << extension.get_name();
   }
-  debug_cout << "Running analysis...";
+  DOUT << "Running analysis...";
   int status =
       syan::run_analysis(std::move(binary_file_path), positional_args[1],
                          std::move(extensions), report_stream);
-  debug_cout << "Analysis done. Exit status = " << status;
+  DOUT << "Analysis done. Exit status = " << status;
   return status;
 }

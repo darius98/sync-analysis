@@ -37,7 +37,7 @@ bool is_debug_enabled();
              ? __builtin_strrchr(__FILE__, '\\') + 1                           \
              : __FILE__)
 
-#define debug_cout                                                             \
+#define DOUT                                                                   \
   ::syan::debugging::is_debug_enabled() &&                                     \
       ::syan::debugging::NewlineAppender{::std::cout}                          \
           << "[DBG " << ::syan::debugging::formatted_time() << " "             \
