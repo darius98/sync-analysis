@@ -6,12 +6,11 @@
 #include <vector>
 
 #include "extension.hpp"
+#include "options.hpp"
 
 namespace syan {
 
-std::vector<Extension>
-find_extensions(const std::vector<std::filesystem::path>& directories,
-                const std::vector<std::string>& rules);
+std::vector<Extension> find_extensions(const Options& options);
 
 }
 

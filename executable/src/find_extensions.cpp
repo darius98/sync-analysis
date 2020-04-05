@@ -2,6 +2,8 @@
 
 #include <dlfcn.h>
 
+#include "debug.hpp"
+
 namespace {
 
 bool is_extension_filename(const std::filesystem::path& path) {
@@ -55,12 +57,11 @@ bool respects_extension_name_rules(std::string_view name,
 
 namespace syan {
 
-std::vector<Extension>
-find_extensions(const std::vector<std::filesystem::path>& directories,
-                const std::vector<std::string>& rules) {
+std::vector<Extension> find_extensions(const Options& options) {
   std::vector<Extension> extensions;
-  for (const auto& directory : directories) {
+  for (const auto& directory : options.extension_search_paths) {
     if (!std::filesystem::is_directory(directory)) {
+      DOUT << "Path " << directory.string() << " is not a directory, skipping.";
       continue;
     }
     for (const auto& relative_path :
@@ -81,7 +82,8 @@ find_extensions(const std::vector<std::filesystem::path>& directories,
       }
       std::string_view syan_extension_name =
           *static_cast<const char**>(syan_extension_name_symbol);
-      if (respects_extension_name_rules(syan_extension_name, rules)) {
+      if (respects_extension_name_rules(syan_extension_name,
+                                        options.extension_name_rules)) {
         extensions.emplace_back(std::string{syan_extension_name}, handle);
       }
     }

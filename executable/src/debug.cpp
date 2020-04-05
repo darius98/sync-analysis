@@ -62,6 +62,9 @@ void install_abort_handler() {
 
 void set_debug_enabled(bool enabled) {
   debug_flag = enabled;
+  if (enabled) {
+    syan::debugging::install_abort_handler();
+  }
 }
 
 bool is_debug_enabled() {

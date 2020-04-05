@@ -1,5 +1,7 @@
+#include "run_analysis.hpp"
 #include "syan_extension_api/syan_extension_api.hpp"
 
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 
@@ -43,16 +45,26 @@ void send_report(Report::Level level, const std::string& report_message) {
   environment->send_report(level, report_message);
 }
 
-int run_analysis(std::optional<std::string> binary_file_path,
-                 std::string dump_file_path, std::vector<Extension> extensions,
-                 std::ostream* report_stream,
-                 std::string_view report_stream_name, bool print_header) {
-  DOUT << "Reading dump file at " << dump_file_path;
-  EventFileReader dump_file_reader(dump_file_path);
+int run_analysis(const Options& options, std::vector<Extension> extensions) {
+  std::ostream* report_stream = &std::cout;
+  std::unique_ptr<std::ostream> own_report_stream;
+  if (options.report_file_path.has_value()) {
+    own_report_stream.reset(
+        new std::ofstream(options.report_file_path.value().c_str()));
+    if (!*own_report_stream) {
+      std::cout << "Cannot open path to report_file for test writing: "
+                << options.report_file_path.value() << "\n";
+      std::abort();
+    }
+    report_stream = own_report_stream.get();
+  }
+
+  DOUT << "Reading dump file at " << options.dump_file_path;
+  EventFileReader dump_file_reader(options.dump_file_path);
   DOUT << "Finished reading dump file";
   DumpFileHeader file_header(std::move(dump_file_reader.release_header()));
 
-  if (print_header) {
+  if (options.print_header) {
     tm* calendarTime = gmtime(&file_header.start_time.tv_sec);
     std::cout << "Sync analysis version " SYNC_ANALYSIS_VERSION "\n"
               << "\tExecutable: " << file_header.program_name << "\n"
@@ -68,8 +80,9 @@ int run_analysis(std::optional<std::string> binary_file_path,
               << std::setfill('0') << std::setw(6)
               << file_header.start_time.tv_nsec / 1000 << std::setw(0)
               << std::setfill(' ') << "\n"
-              << "\tDump file: " << dump_file_path << "\n"
-              << "\tReports are written to: " << report_stream_name << "\n";
+              << "\tDump file: " << options.dump_file_path << "\n"
+              << "\tReports are written to: "
+              << options.report_file_path.value_or("STDOUT") << "\n";
   }
   DOUT << "Parsed dump file header";
   if (extensions.empty()) {
@@ -77,7 +90,7 @@ int run_analysis(std::optional<std::string> binary_file_path,
     return 0;
   }
 
-  environment = new Environment(binary_file_path, file_header,
+  environment = new Environment(options.binary_file_path, file_header,
                                 std::move(extensions), report_stream);
 
   DOUT << "Created stacktrace symbolizer process";
@@ -89,7 +102,8 @@ int run_analysis(std::optional<std::string> binary_file_path,
     if (!event) {
       // It's ok for the last event to be corrupt, maybe something was broken.
       if (!dump_file_reader.done()) {
-        std::cout << "FATAL: Dump file " << dump_file_path << " is corrupt.\n";
+        std::cout << "FATAL: Dump file " << options.dump_file_path
+                  << " is corrupt.\n";
       } else {
         break;
       }

@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
                      (char*)"--print-header",
                      (char*)"-e",
                      sync_analysis_extension_name.data(),
-                     (char*)"-o",
+                     (char*)"-r",
                      sync_analysis_output_file.data(),
                      sync_analysis_dump_path.data(),
                      nullptr};

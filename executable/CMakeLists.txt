@@ -12,6 +12,7 @@ add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/src/extension.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/find_extensions.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/report.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/run_analysis.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/stacktrace_symbolizer.cpp
