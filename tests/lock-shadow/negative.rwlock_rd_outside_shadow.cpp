@@ -24,6 +24,6 @@ int main() {
     MutexGuard g1(&m);
     RWLockWriteGuard g3(&rwl);
   });
-  RWLockReadGuard g3(&rwl);
+  { RWLockReadGuard g3(&rwl); }
   return 0;
 }
