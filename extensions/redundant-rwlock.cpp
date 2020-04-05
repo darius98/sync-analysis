@@ -44,7 +44,7 @@ SYAN_EXT_API void syan_extension_on_event() {
   if (event.object_type() != ObjectType::rwlock) {
     return;
   }
-  if (event.type() == EventType::rwlock_on_create) {
+  if (event.is_create_event()) {
     rwlocks.emplace(event.object(), event);
     return;
   }

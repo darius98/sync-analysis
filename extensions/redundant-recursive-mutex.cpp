@@ -23,7 +23,7 @@ SYAN_EXT_API void syan_extension_on_event() {
   if (event.object_type() != ObjectType::rec_mutex) {
     return;
   }
-  if (event.type() == EventType::rec_mutex_on_create) {
+  if (event.is_create_event()) {
     recursive_mutexes.emplace(event.object(), event);
     return;
   }
