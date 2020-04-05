@@ -32,71 +32,70 @@ struct LockState {
   }
 };
 
-std::map<ObjectId, std::multiset<Event>> thread_locks;
-std::map<ObjectId, LockState> locks;
+struct LockShadowExtension {
+  static constexpr const char* name = "lock-shadow";
 
-SYAN_EXT_API const char* syan_extension = "lock-shadow";
+  std::map<ObjectId, std::multiset<Event>> thread_locks;
+  std::map<ObjectId, LockState> locks;
 
-SYAN_EXT_API void syan_extension_on_event() {
-  auto event = current_event();
-  auto& current_thread_locks = thread_locks[event.thread()];
+  void operator()(Event event) {
+    auto& current_thread_locks = thread_locks[event.thread()];
 
-  if (event.type() == EventType::mutex_on_create ||
-      event.type() == EventType::rec_mutex_on_create ||
-      event.type() == EventType::rwlock_on_create) {
-    locks.emplace(event.object(),
-                  LockState{event.object_type(), event.object()});
-    return;
-  }
-
-  if (event.type() == EventType::mutex_on_unlock ||
-      event.type() == EventType::rec_mutex_on_unlock ||
-      event.type() == EventType::rwlock_on_wr_unlock) {
-    auto first_occurrence =
-        current_thread_locks.find(database().object_create(event));
-    if (first_occurrence != current_thread_locks.end()) {
-      current_thread_locks.erase(first_occurrence);
+    if (event.type() == EventType::mutex_on_create ||
+        event.type() == EventType::rec_mutex_on_create ||
+        event.type() == EventType::rwlock_on_create) {
+      locks.emplace(event.object(),
+                    LockState{event.object_type(), event.object()});
+      return;
     }
-    return;
-  }
 
-  auto it = locks.find(event.object());
-
-  if (event.type() == EventType::mutex_after_lock ||
-      event.type() == EventType::rec_mutex_after_lock ||
-      event.type() == EventType::rwlock_after_wr_lock ||
-      event.type() == EventType::rwlock_after_rd_lock) {
-    if (it != locks.end()) {
-      if (!it->second.was_ever_locked) {
-        it->second.shadows.insert(current_thread_locks.begin(),
-                                  current_thread_locks.end());
-      } else {
-        std::set<Event> intersection;
-        std::set_intersection(
-            it->second.shadows.begin(), it->second.shadows.end(),
-            current_thread_locks.begin(), current_thread_locks.end(),
-            std::inserter(intersection, intersection.begin()));
-        it->second.shadows = intersection;
+    if (event.type() == EventType::mutex_on_unlock ||
+        event.type() == EventType::rec_mutex_on_unlock ||
+        event.type() == EventType::rwlock_on_wr_unlock) {
+      auto first_occurrence =
+          current_thread_locks.find(database().object_create(event));
+      if (first_occurrence != current_thread_locks.end()) {
+        current_thread_locks.erase(first_occurrence);
       }
-      it->second.was_ever_locked = true;
-      if (it->second.shadows.empty()) {
+      return;
+    }
+
+    auto it = locks.find(event.object());
+
+    if (event.type() == EventType::mutex_after_lock ||
+        event.type() == EventType::rec_mutex_after_lock ||
+        event.type() == EventType::rwlock_after_wr_lock ||
+        event.type() == EventType::rwlock_after_rd_lock) {
+      if (it != locks.end()) {
+        if (!it->second.was_ever_locked) {
+          it->second.shadows.insert(current_thread_locks.begin(),
+                                    current_thread_locks.end());
+        } else {
+          std::set<Event> intersection;
+          std::set_intersection(
+              it->second.shadows.begin(), it->second.shadows.end(),
+              current_thread_locks.begin(), current_thread_locks.end(),
+              std::inserter(intersection, intersection.begin()));
+          it->second.shadows = intersection;
+        }
+        it->second.was_ever_locked = true;
+        if (it->second.shadows.empty()) {
+          locks.erase(it);
+        }
+      }
+      if (event.type() != EventType::rwlock_after_rd_lock) {
+        current_thread_locks.insert(database().object_create(event));
+      }
+    }
+
+    if (event.type() == EventType::mutex_on_destroy ||
+        event.type() == EventType::rec_mutex_on_destroy ||
+        event.type() == EventType::rwlock_on_destroy) {
+      if (it != locks.end()) {
         locks.erase(it);
       }
     }
-    if (event.type() != EventType::rwlock_after_rd_lock) {
-      current_thread_locks.insert(database().object_create(event));
-    }
   }
+};
 
-  if (event.type() == EventType::mutex_on_destroy ||
-      event.type() == EventType::rec_mutex_on_destroy ||
-      event.type() == EventType::rwlock_on_destroy) {
-    if (it != locks.end()) {
-      locks.erase(it);
-    }
-  }
-}
-
-SYAN_EXT_API void syan_extension_shut_down() {
-  locks.clear();
-}
+SYAN_EXTENSION_SET_CLASS(LockShadowExtension);

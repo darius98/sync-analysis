@@ -5,21 +5,6 @@
 #include <syan_extension_api/event.hpp>
 #include <syan_extension_api/report.hpp>
 
-#if defined _WIN32 || defined __CYGWIN__
-#ifdef __GNUC__
-#define SYAN_EXT_API __attribute__((dllexport)) extern "C" [[maybe_unused]]
-#else
-#define SYAN_EXT_API __declspec(dllexport) extern "C" [[maybe_unused]]
-#endif
-#else
-#if __GNUC__ >= 4
-#define SYAN_EXT_API                                                           \
-  __attribute__((visibility("default"))) extern "C" [[maybe_unused]]
-#else
-#define SYAN_EXT_API extern "C" [[maybe_unused]]
-#endif
-#endif
-
 namespace syan {
 
 Event current_event();
@@ -30,16 +15,27 @@ Report create_report();
 
 }  // namespace syan
 
-/*
-Extension ABI:
+#if __GNUC__ >= 4
+#define SYAN_EXT_API                                                           \
+  __attribute__((visibility("default"))) extern "C" [[maybe_unused]]
+#else
+#define SYAN_EXT_API extern "C" [[maybe_unused]]
+#endif
 
-const char* syan_extension; (REQUIRED)
-void syan_extension_init();
-void syan_extension_on_event(syan::Event);
-void syan_extension_destroy();
-
-Everything symbol must have C linkage to be detected.
-
-*/
+#define SYAN_EXTENSION_SET_CLASS(cls)                                          \
+  namespace {                                                                  \
+  cls* instance = nullptr;                                                     \
+  }                                                                            \
+  SYAN_EXT_API void syan_extension_start_up() {                                \
+    instance = new cls();                                                      \
+  }                                                                            \
+  SYAN_EXT_API void syan_extension_on_event() {                                \
+    (*instance)(::syan::current_event());                                      \
+  }                                                                            \
+  SYAN_EXT_API void syan_extension_shut_down() {                               \
+    delete instance;                                                           \
+    instance = nullptr;                                                        \
+  }                                                                            \
+  SYAN_EXT_API const char* syan_extension = cls::name
 
 #endif

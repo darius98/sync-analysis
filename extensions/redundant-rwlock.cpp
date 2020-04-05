@@ -35,45 +35,48 @@ struct RWLockState {
   }
 };
 
-std::map<ObjectId, RWLockState> rwlocks;
+struct RedundantRWLockExtension {
+  static constexpr const char* name = "redundant-rwlock";
 
-SYAN_EXT_API const char* syan_extension = "redundant-rwlock";
+  std::map<ObjectId, RWLockState> rwlocks;
 
-SYAN_EXT_API void syan_extension_on_event() {
-  auto event = current_event();
-  if (event.object_type() != ObjectType::rwlock) {
-    return;
-  }
-  if (event.is_create_event()) {
-    rwlocks.emplace(event.object(), event);
-    return;
+  void operator()(Event event) {
+    if (event.object_type() != ObjectType::rwlock) {
+      return;
+    }
+    if (event.is_create_event()) {
+      rwlocks.emplace(event.object(), event);
+      return;
+    }
+
+    auto it = rwlocks.find(event.object());
+    if (it == rwlocks.end()) {
+      return;
+    }
+
+    switch (event.type()) {
+    case EventType::rwlock_after_rd_lock: {
+      it->second.was_ever_rd_locked = true;
+      break;
+    }
+    case EventType::rwlock_after_wr_lock: {
+      it->second.was_ever_wr_locked = true;
+      break;
+    }
+    case EventType::rwlock_on_destroy: {
+      it->second.check();
+      rwlocks.erase(it);
+      break;
+    }
+    default: break;
+    }
   }
 
-  auto it = rwlocks.find(event.object());
-  if (it == rwlocks.end()) {
-    return;
+  ~RedundantRWLockExtension() {
+    for (const auto& [rwlock_id, state] : rwlocks) {
+      state.check();
+    }
   }
+};
 
-  switch (event.type()) {
-  case EventType::rwlock_after_rd_lock: {
-    it->second.was_ever_rd_locked = true;
-    break;
-  }
-  case EventType::rwlock_after_wr_lock: {
-    it->second.was_ever_wr_locked = true;
-    break;
-  }
-  case EventType::rwlock_on_destroy: {
-    it->second.check();
-    rwlocks.erase(it);
-    break;
-  }
-  default: break;
-  }
-}
-
-SYAN_EXT_API void syan_extension_shut_down() {
-  for (const auto& [rwlock_id, state] : rwlocks) {
-    state.check();
-  }
-}
+SYAN_EXTENSION_SET_CLASS(RedundantRWLockExtension);
