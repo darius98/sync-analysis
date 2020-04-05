@@ -11,19 +11,21 @@ add_custom_target(tests.extensions
 add_dependencies(tests.extensions clear_coverage_data run_extension_test sync_analysis all_extensions)
 
 function(add_extension_test EXTENSION TYPE DESCRIPTION)
-    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME})
     set(TEST_NAME "extension.${EXTENSION}.${TYPE}.${DESCRIPTION}")
+    set(TEST_DIR ${PROJECT_SOURCE_DIR}/.test-run/${TEST_NAME})
+    file(MAKE_DIRECTORY ${TEST_DIR})
     add_executable(${TEST_NAME}.exe "${CMAKE_CURRENT_SOURCE_DIR}/${EXTENSION}/${TYPE}.${DESCRIPTION}.cpp")
     set_target_properties(${TEST_NAME}.exe PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
+            RUNTIME_OUTPUT_DIRECTORY ${TEST_DIR}
             RUNTIME_OUTPUT_NAME test_binary)
     target_link_libraries(${TEST_NAME}.exe PUBLIC cxx_sync_lib)
     add_test(NAME ${TEST_NAME} COMMAND run_extension_test
-            --test_binary=$<TARGET_FILE:${TEST_NAME}.exe>
+            --test_binary=${TEST_DIR}/test_binary
             --sync_analysis_binary=$<TARGET_FILE:sync_analysis>
             --sync_analysis_extension_dir=${PROJECT_BINARY_DIR}/syan-ext
             --sync_analysis_extension_name=${EXTENSION}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${TEST_NAME}
+            --sync_analysis_output_file=${TEST_DIR}/report.txt
+            WORKING_DIRECTORY ${TEST_DIR}
             )
     if (TYPE STREQUAL "positive")
         set_tests_properties(${TEST_NAME} PROPERTIES

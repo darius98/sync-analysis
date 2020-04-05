@@ -8,8 +8,6 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include "debug.hpp"
-
 #define PIPE_READ 0
 #define PIPE_WRITE 1
 
@@ -163,7 +161,7 @@ public:
         formatter << "\t\t";
       }
     }
-    if (num_consecutive_read_failures == 2000) {
+    if (num_consecutive_read_failures == 20000) {
       out << "\n\t\tFailed to symbolize stacktrace.";
     } else {
       out << formatter.str();

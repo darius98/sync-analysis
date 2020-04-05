@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <fstream>
 #include <iostream>
+#include <memory>
 
 #include <mcga/cli.hpp>
 
@@ -47,6 +49,14 @@ constexpr auto extension_rules_arg_description =
     "\t\twhether the extension is enabled or disabled. If no rule matches\n"
     "\t\tan extension name, that extension is not enabled.";
 
+constexpr auto debug_flag_description = "\n"
+                                        "\t\tEnable debug logging.";
+
+constexpr auto output_path_arg_description =
+    "\n"
+    "\t\tPath to a file where to report outputs. By default, reports are\n"
+    "\t\twritten to stdout.";
+
 int main(int argc, char** argv) {
   syan::debugging::install_abort_handler();
 
@@ -81,7 +91,13 @@ int main(int argc, char** argv) {
           .set_implicit_value({"*"}));
   auto debug_flag = parser.add_flag(
       mcga::cli::FlagSpec("debug").set_short_name("d").set_description(
-          "Enable debug logging"));
+          debug_flag_description));
+  auto output_path_arg =
+      parser.add_argument(mcga::cli::ArgumentSpec("output")
+                              .set_short_name("o")
+                              .set_description(output_path_arg_description)
+                              .set_default_value("STDOUT")
+                              .set_implicit_value("STDOUT"));
 
   auto positional_args = parser.parse(argc, argv);
 
@@ -92,6 +108,19 @@ int main(int argc, char** argv) {
   if (positional_args.size() != 2) {
     std::cout << "Invalid number of arguments.\n\n" << parser.render_help();
     return 1;
+  }
+
+  std::ostream* report_stream = &std::cout;
+  std::unique_ptr<std::ostream> own_report_stream;
+  auto output_path = output_path_arg->get_value();
+  if (output_path != "STDOUT") {
+    own_report_stream.reset(new std::ofstream(output_path.c_str()));
+    if (!*own_report_stream) {
+      std::cout << "Cannot open path to report_file for test writing: "
+                << output_path << "\n";
+      return 1;
+    }
+    report_stream = own_report_stream.get();
   }
 
   std::optional<std::string> binary_file_path = std::nullopt;
@@ -119,8 +148,9 @@ int main(int argc, char** argv) {
     debug_cout << "\t* " << extension.get_name();
   }
   debug_cout << "Running analysis...";
-  int status = syan::run_analysis(std::move(binary_file_path),
-                                  positional_args[1], extensions);
+  int status =
+      syan::run_analysis(std::move(binary_file_path), positional_args[1],
+                         extensions, report_stream);
   debug_cout << "Analysis done. Exit status = " << status;
   return status;
 }

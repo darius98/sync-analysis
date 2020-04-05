@@ -21,7 +21,8 @@ void send_report(Report::Level level, const std::string& report_message);
 
 int run_analysis(std::optional<std::string> binary_file_path,
                  std::string dump_file_path,
-                 const std::vector<Extension>& extensions);
+                 const std::vector<Extension>& extensions,
+                 std::ostream* report_stream);
 
 }  // namespace syan
 

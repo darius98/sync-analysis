@@ -16,6 +16,7 @@ syan::Database* active_objects_db = nullptr;
 struct timespec start_time;
 syan::StacktraceSymbolizer* stacktrace_symbolizer = nullptr;
 const syan::Extension* active_extension = nullptr;
+std::ostream* report_dst = nullptr;
 
 }  // namespace
 
@@ -51,7 +52,7 @@ void symbolize_stacktrace(const Event& event, std::ostream& stream) {
 }
 
 void send_report(Report::Level level, const std::string& report_message) {
-  std::cout << report_message << "\n";
+  (*report_dst) << report_message << "\n";
   if (level != Report::Level::info) {
     exit_code = 1;
   }
@@ -59,7 +60,8 @@ void send_report(Report::Level level, const std::string& report_message) {
 
 int run_analysis(std::optional<std::string> binary_file_path,
                  std::string dump_file_path,
-                 const std::vector<Extension>& extensions) {
+                 const std::vector<Extension>& extensions,
+                 std::ostream* report_stream) {
   debug_cout << "Reading dump file at " << dump_file_path;
   EventFileReader dump_file_reader(dump_file_path);
   debug_cout << "Finished reading dump file";
@@ -101,6 +103,8 @@ int run_analysis(std::optional<std::string> binary_file_path,
 
   exit_code = 0;
 
+  report_dst = report_stream;
+
   for (const auto& extension : extensions) {
     active_extension = &extension;
     extension.start_up();
@@ -134,6 +138,8 @@ int run_analysis(std::optional<std::string> binary_file_path,
     extension.shut_down();
     active_extension = nullptr;
   }
+
+  report_dst = nullptr;
 
   delete active_objects_db;
   active_objects_db = nullptr;
