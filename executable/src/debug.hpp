@@ -41,7 +41,7 @@ bool is_debug_enabled();
 #define debug_cout                                                             \
   ::syan::debugging::is_debug_enabled() &&                                     \
       ::syan::debugging::NewlineAppender{::std::cout}                          \
-          << "[" << ::syan::debugging::formatted_time() << " "                 \
+          << "[DBG " << ::syan::debugging::formatted_time() << " "             \
           << SYAN_CURRENT_FILE << ":" << __LINE__ << "] "
 #else
 #define debug_cout false && ::std::cout
