@@ -2,8 +2,7 @@
 #define SYNC_ANALYSIS_EXECUTABLE_SRC_DEBUG_H_
 
 #include <iostream>
-
-#ifdef SYNC_ANALYSIS_DEBUG_MODE
+#include <string>
 
 namespace syan::debugging {
 
@@ -43,8 +42,5 @@ bool is_debug_enabled();
       ::syan::debugging::NewlineAppender{::std::cout}                          \
           << "[DBG " << ::syan::debugging::formatted_time() << " "             \
           << SYAN_CURRENT_FILE << ":" << __LINE__ << "] "
-#else
-#define debug_cout false && ::std::cout
-#endif
 
 #endif

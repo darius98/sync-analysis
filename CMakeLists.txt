@@ -5,7 +5,6 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
 set(SYNC_ANALYSIS_VERSION "1.0")
-add_definitions(-DSYNC_ANALYSIS_DEBUG_MODE)
 
 add_compile_options(-Werror -Wall -Wextra -Wpedantic)
 
