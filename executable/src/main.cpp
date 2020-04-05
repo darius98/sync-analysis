@@ -57,6 +57,10 @@ constexpr auto output_path_arg_description =
     "\t\tPath to a file where to report outputs. By default, reports are\n"
     "\t\twritten to stdout.";
 
+constexpr auto print_header_flag_description =
+    "\n"
+    "\t\tPrint some execution metadata to STDOUT before running analysis.";
+
 int main(int argc, char** argv) {
   syan::debugging::install_abort_handler();
 
@@ -98,6 +102,9 @@ int main(int argc, char** argv) {
                               .set_description(output_path_arg_description)
                               .set_default_value("STDOUT")
                               .set_implicit_value("STDOUT"));
+  auto print_header_flag =
+      parser.add_flag(mcga::cli::FlagSpec("print-header")
+                          .set_description(print_header_flag_description));
 
   auto positional_args = parser.parse(argc, argv);
 
@@ -148,9 +155,9 @@ int main(int argc, char** argv) {
     DOUT << "\t* " << extension.get_name();
   }
   DOUT << "Running analysis...";
-  int status =
-      syan::run_analysis(std::move(binary_file_path), positional_args[1],
-                         std::move(extensions), report_stream);
+  int status = syan::run_analysis(
+      std::move(binary_file_path), positional_args[1], std::move(extensions),
+      report_stream, output_path, print_header_flag->get_value());
   DOUT << "Analysis done. Exit status = " << status;
   return status;
 }

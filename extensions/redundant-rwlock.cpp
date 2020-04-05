@@ -13,7 +13,7 @@ struct RWLockState {
   explicit RWLockState(Event create_event)
       : create_event(std::move(create_event)) {}
 
-  void check() const {
+  ~RWLockState() {
     // Don't report if the lock is unused instead.
     if (!was_ever_rd_locked && !was_ever_wr_locked) {
       return;
@@ -64,17 +64,10 @@ struct RedundantRWLockExtension {
       break;
     }
     case EventType::rwlock_on_destroy: {
-      it->second.check();
       rwlocks.erase(it);
       break;
     }
     default: break;
-    }
-  }
-
-  ~RedundantRWLockExtension() {
-    for (const auto& [rwlock_id, state] : rwlocks) {
-      state.check();
     }
   }
 };

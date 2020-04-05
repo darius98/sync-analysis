@@ -8,10 +8,22 @@ using namespace syan;
 struct RecursiveMutexState {
   Event create_event;
   bool was_ever_locked{false};
+  bool was_recursively_locked{false};
   std::optional<ObjectId> thread_owner;
 
   explicit RecursiveMutexState(Event create_event)
       : create_event(std::move(create_event)) {}
+
+  ~RecursiveMutexState() {
+    // Don't report if the mutex is unused instead.
+    if (was_ever_locked && !was_recursively_locked) {
+      auto report = create_report();
+      report.set_level(Report::Level::warning);
+      report.set_description(
+          "Recursive mutex is redundant. Can be replaced with simple mutex.");
+      report.add_section("Recursive mutex created here", create_event);
+    }
+  }
 };
 
 struct RedundantRecursiveMutexExtension {
@@ -38,6 +50,7 @@ struct RedundantRecursiveMutexExtension {
       it->second.was_ever_locked = true;
       if (it->second.thread_owner.has_value()) {
         // Found a legitimate use of a recursive mutex. Backing off.
+        it->second.was_recursively_locked = true;
         recursive_mutexes.erase(it);
         return;
       }
@@ -49,31 +62,9 @@ struct RedundantRecursiveMutexExtension {
       break;
     }
     case EventType::rec_mutex_on_destroy: {
-      // Don't report if the mutex is unused instead.
-      if (it->second.was_ever_locked) {
-        // Found a recursive mutex that is only used as a mutex.
-        auto report = create_report();
-        report.set_level(Report::Level::warning);
-        report.set_description(
-            "Recursive mutex is redundant. Can be replaced with simple mutex.");
-        report.add_section("Recursive mutex created here",
-                           it->second.create_event);
-      }
       recursive_mutexes.erase(it);
     }
     default: break;
-    }
-  }
-
-  ~RedundantRecursiveMutexExtension() {
-    for (const auto& [rec_mutex_id, state] : recursive_mutexes) {
-      if (state.was_ever_locked) {
-        auto report = create_report();
-        report.set_level(Report::Level::warning);
-        report.set_description(
-            "Recursive mutex is redundant. Can be replaced with simple mutex.");
-        report.add_section("Recursive mutex created here", state.create_event);
-      }
     }
   }
 };

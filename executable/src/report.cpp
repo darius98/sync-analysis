@@ -1,6 +1,7 @@
 #include "syan_extension_api/report.hpp"
 
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 
 #include "run_analysis.hpp"

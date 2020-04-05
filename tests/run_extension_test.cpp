@@ -127,15 +127,16 @@ int main(int argc, char** argv) {
                      test_binary.data(),
                      (char*)"-E",
                      sync_analysis_extension_dir.data(),
-                     (char*)"-o",
-                     sync_analysis_output_file.data(),
+                     (char*)"--print-header",
                      (char*)"-e",
                      sync_analysis_extension_name.data(),
+                     (char*)"-o",
+                     sync_analysis_output_file.data(),
                      sync_analysis_dump_path.data(),
                      nullptr};
   std::cout << "Executing sync analysis binary: " << sync_analysis_binary
             << " -b " << test_binary << " -E " << sync_analysis_extension_dir
-            << " -e " << sync_analysis_extension_name << " -o "
+            << " --print-header -e " << sync_analysis_extension_name << " -o "
             << sync_analysis_output_file << " " << sync_analysis_dump_path
             << std::endl;
   int status = execv(sync_analysis_binary.c_str(), args);

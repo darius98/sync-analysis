@@ -45,26 +45,32 @@ void send_report(Report::Level level, const std::string& report_message) {
 
 int run_analysis(std::optional<std::string> binary_file_path,
                  std::string dump_file_path, std::vector<Extension> extensions,
-                 std::ostream* report_stream) {
+                 std::ostream* report_stream,
+                 std::string_view report_stream_name, bool print_header) {
   DOUT << "Reading dump file at " << dump_file_path;
   EventFileReader dump_file_reader(dump_file_path);
   DOUT << "Finished reading dump file";
   DumpFileHeader file_header(std::move(dump_file_reader.release_header()));
-  tm* calendarTime = gmtime(&file_header.start_time.tv_sec);
-  std::cout << "Sync analysis version " SYNC_ANALYSIS_VERSION "\n"
-            << "\tExecutable: " << file_header.program_name << "\n"
-            << "\tCommand line: " << file_header.program_command << "\n"
+
+  if (print_header) {
+    tm* calendarTime = gmtime(&file_header.start_time.tv_sec);
+    std::cout << "Sync analysis version " SYNC_ANALYSIS_VERSION "\n"
+              << "\tExecutable: " << file_header.program_name << "\n"
+              << "\tCommand line: " << file_header.program_command << "\n"
 #ifdef SYNC_ANALYSIS_IS_MAC_OS_X
-            << "\tExecutable load address: " << file_header.program_load_addr
-            << " (0x" << std::hex << std::setfill('0') << std::setw(16)
-            << file_header.program_load_addr << std::setfill(' ') << std::dec
-            << ")\n"
+              << "\tExecutable load address: " << file_header.program_load_addr
+              << " (0x" << std::hex << std::setfill('0') << std::setw(16)
+              << file_header.program_load_addr << std::setfill(' ') << std::dec
+              << ")\n"
 #endif
-            << "\tExecution start time: "
-            << std::put_time(calendarTime, "%d/%m/%Y %H:%M:%S") << "."
-            << std::setfill('0') << std::setw(6)
-            << file_header.start_time.tv_nsec / 1000 << std::setw(0)
-            << std::setfill(' ') << "\n";
+              << "\tExecution start time: "
+              << std::put_time(calendarTime, "%d/%m/%Y %H:%M:%S") << "."
+              << std::setfill('0') << std::setw(6)
+              << file_header.start_time.tv_nsec / 1000 << std::setw(0)
+              << std::setfill(' ') << "\n"
+              << "\tDump file: " << dump_file_path << "\n"
+              << "\tReports are written to: " << report_stream_name << "\n";
+  }
   DOUT << "Parsed dump file header";
   if (extensions.empty()) {
     std::cout << "\nNo extensions enabled. Nothing to do.\n";
