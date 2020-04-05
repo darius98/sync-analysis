@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
   debug_cout << "Running analysis...";
   int status =
       syan::run_analysis(std::move(binary_file_path), positional_args[1],
-                         extensions, report_stream);
+                         std::move(extensions), report_stream);
   debug_cout << "Analysis done. Exit status = " << status;
   return status;
 }

@@ -10,57 +10,126 @@
 
 namespace {
 
-int exit_code;
-syan::Event cur_event = nullptr;
-syan::Database* active_objects_db = nullptr;
-struct timespec start_time;
-syan::StacktraceSymbolizer* stacktrace_symbolizer = nullptr;
-const syan::Extension* active_extension = nullptr;
-std::ostream* report_dst = nullptr;
+using namespace syan;
+
+class Environment {
+public:
+  Environment(const std::optional<std::string>& binary_file_path,
+              const DumpFileHeader& header, std::vector<Extension>&& extensions,
+              std::ostream* report_stream)
+      : start_time(header.start_time),
+        report_stream(report_stream),
+        extensions(std::move(extensions)),
+        stacktrace_symbolizer(
+            StacktraceSymbolizer::create(binary_file_path, header)) {}
+
+  void start_up() {
+    for (const auto& extension : extensions) {
+      active_extension = &extension;
+      extension.start_up();
+      active_extension = nullptr;
+    }
+  }
+
+  void handle_event(Event event) {
+    cur_event = std::move(event);
+    database->handle_event_before_extensions(cur_event);
+    for (const auto& extension : extensions) {
+      active_extension = &extension;
+      extension.on_event();
+      active_extension = nullptr;
+    }
+    database->handle_event_after_extensions(cur_event);
+    cur_event = nullptr;
+  }
+
+  void shut_down() {
+    for (const auto& extension : extensions) {
+      active_extension = &extension;
+      extension.shut_down();
+      active_extension = nullptr;
+    }
+  }
+
+  void send_report(Report::Level level, const std::string& report_message) {
+    *report_stream << report_message << "\n";
+    if (level != Report::Level::info) {
+      exit_code = 1;
+    }
+  }
+
+  void symbolize_stacktrace(const Event& event, std::ostream& stream) const {
+    stacktrace_symbolizer->symbolize_stacktrace(event.raw_backtrace(), stream);
+  }
+
+  const Database& get_database() const {
+    return *database;
+  }
+
+  Event current_event() const {
+    return cur_event;
+  }
+
+  struct timespec execution_start_time() const {
+    return start_time;
+  }
+
+  std::string_view active_extension_name() const {
+    return active_extension->get_name();
+  }
+
+  int get_exit_code() const {
+    return exit_code;
+  }
+
+private:
+  struct timespec const start_time;
+  std::ostream* const report_stream;
+  std::vector<Extension> const extensions;
+  std::unique_ptr<StacktraceSymbolizer> const stacktrace_symbolizer;
+  std::unique_ptr<Database> database = std::make_unique<Database>();
+
+  Event cur_event;
+  const Extension* active_extension = nullptr;
+  int exit_code = 0;
+};
+
+Environment* environment = nullptr;
 
 }  // namespace
 
 namespace syan {
 
-Event current_event() noexcept {
-  return cur_event;
+Event current_event() {
+  return environment->current_event();
 }
 
-const Database& database() noexcept {
-  return *active_objects_db;
+const Database& database() {
+  return environment->get_database();
 }
 
 Report create_report() {
   return Report{};
 }
 
-struct timespec execution_start_time() noexcept {
-  return start_time;
+struct timespec execution_start_time() {
+  return environment->execution_start_time();
 }
 
-std::string_view active_extension_name() noexcept {
-  return active_extension->get_name();
+std::string_view active_extension_name() {
+  return environment->active_extension_name();
 }
 
 void symbolize_stacktrace(const Event& event, std::ostream& stream) {
-  if (stacktrace_symbolizer == nullptr) {
-    stream << "\n\t\tNote: stacktrace not available without access to the "
-              "original binary.\n";
-    return;
-  }
-  stacktrace_symbolizer->symbolize_stacktrace(event.raw_backtrace(), stream);
+  environment->symbolize_stacktrace(event, stream);
 }
 
 void send_report(Report::Level level, const std::string& report_message) {
-  (*report_dst) << report_message << "\n";
-  if (level != Report::Level::info) {
-    exit_code = 1;
-  }
+  environment->send_report(level, report_message);
 }
 
 int run_analysis(std::optional<std::string> binary_file_path,
-                 std::string dump_file_path,
-                 const std::vector<Extension>& extensions,
+                 std::string dump_file_path, std::vector<Extension> extensions,
                  std::ostream* report_stream) {
   debug_cout << "Reading dump file at " << dump_file_path;
   EventFileReader dump_file_reader(dump_file_path);
@@ -86,30 +155,13 @@ int run_analysis(std::optional<std::string> binary_file_path,
     std::cout << "\nNo extensions enabled. Nothing to do.\n";
     return 0;
   }
-  start_time = file_header.start_time;
 
-  active_objects_db = new Database();
-
-  debug_cout << "Created database";
-
-  if (binary_file_path.has_value()) {
-    stacktrace_symbolizer =
-        StacktraceSymbolizer::Create(*binary_file_path, file_header);
-  } else {
-    stacktrace_symbolizer = nullptr;
-  }
+  environment = new Environment(binary_file_path, file_header,
+                                std::move(extensions), report_stream);
 
   debug_cout << "Created stacktrace symbolizer process";
 
-  exit_code = 0;
-
-  report_dst = report_stream;
-
-  for (const auto& extension : extensions) {
-    active_extension = &extension;
-    extension.start_up();
-    active_extension = nullptr;
-  }
+  environment->start_up();
 
   while (!dump_file_reader.done()) {
     auto event = dump_file_reader.read();
@@ -122,30 +174,15 @@ int run_analysis(std::optional<std::string> binary_file_path,
       }
     }
 
-    active_objects_db->handle_event_before_extensions(event);
-    for (const auto& extension : extensions) {
-      cur_event = event;
-      active_extension = &extension;
-      extension.on_event();
-      active_extension = nullptr;
-      cur_event = nullptr;
-    }
-    active_objects_db->handle_event_after_extensions(event);
+    environment->handle_event(std::move(event));
   }
 
-  for (const auto& extension : extensions) {
-    active_extension = &extension;
-    extension.shut_down();
-    active_extension = nullptr;
-  }
+  environment->shut_down();
 
-  report_dst = nullptr;
+  int exit_code = environment->get_exit_code();
 
-  delete active_objects_db;
-  active_objects_db = nullptr;
-
-  delete stacktrace_symbolizer;
-  stacktrace_symbolizer = nullptr;
+  delete environment;
+  environment = nullptr;
 
   return exit_code;
 }

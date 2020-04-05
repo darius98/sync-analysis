@@ -22,9 +22,9 @@
 
 namespace syan {
 
-Event current_event() noexcept;
+Event current_event();
 
-const Database& database() noexcept;
+const Database& database();
 
 Report create_report();
 

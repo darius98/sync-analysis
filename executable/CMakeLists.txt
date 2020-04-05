@@ -1,7 +1,7 @@
 set(sync_analysis_PLATFORM_SPECIFIC_SRC)
 if (APPLE)
     set(sync_analysis_PLATFORM_SPECIFIC_SRC
-            src/stacktrace_symbolizer_macos.cpp)
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/stacktrace_symbolizer_macos.cpp)
 endif ()
 add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/src/database.cpp
@@ -13,6 +13,7 @@ add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/report.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/run_analysis.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/stacktrace_symbolizer.cpp
         ${sync_analysis_PLATFORM_SPECIFIC_SRC}
         )
 target_include_directories(sync_analysis
