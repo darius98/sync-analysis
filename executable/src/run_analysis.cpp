@@ -1,100 +1,15 @@
-#include "executable/include/syan_extension_api/syan_extension_api.hpp"
+#include "syan_extension_api/syan_extension_api.hpp"
 
 #include <iomanip>
 #include <iostream>
 
 #include "debug.hpp"
+#include "environment.hpp"
 #include "event_file_reader.hpp"
-#include "extension.hpp"
-#include "stacktrace_symbolizer.hpp"
 
 namespace {
 
-using namespace syan;
-
-class Environment {
-public:
-  Environment(const std::optional<std::string>& binary_file_path,
-              const DumpFileHeader& header, std::vector<Extension>&& extensions,
-              std::ostream* report_stream)
-      : start_time(header.start_time),
-        report_stream(report_stream),
-        extensions(std::move(extensions)),
-        stacktrace_symbolizer(
-            StacktraceSymbolizer::create(binary_file_path, header)) {}
-
-  void start_up() {
-    for (const auto& extension : extensions) {
-      active_extension = &extension;
-      extension.start_up();
-      active_extension = nullptr;
-    }
-  }
-
-  void handle_event(Event event) {
-    cur_event = std::move(event);
-    database->handle_event_before_extensions(cur_event);
-    for (const auto& extension : extensions) {
-      active_extension = &extension;
-      extension.on_event();
-      active_extension = nullptr;
-    }
-    database->handle_event_after_extensions(cur_event);
-    cur_event = nullptr;
-  }
-
-  void shut_down() {
-    for (const auto& extension : extensions) {
-      active_extension = &extension;
-      extension.shut_down();
-      active_extension = nullptr;
-    }
-  }
-
-  void send_report(Report::Level level, const std::string& report_message) {
-    *report_stream << report_message << "\n";
-    if (level != Report::Level::info) {
-      exit_code = 1;
-    }
-  }
-
-  void symbolize_stacktrace(const Event& event, std::ostream& stream) const {
-    stacktrace_symbolizer->symbolize_stacktrace(event.raw_backtrace(), stream);
-  }
-
-  const Database& get_database() const {
-    return *database;
-  }
-
-  Event current_event() const {
-    return cur_event;
-  }
-
-  struct timespec execution_start_time() const {
-    return start_time;
-  }
-
-  std::string_view active_extension_name() const {
-    return active_extension->get_name();
-  }
-
-  int get_exit_code() const {
-    return exit_code;
-  }
-
-private:
-  struct timespec const start_time;
-  std::ostream* const report_stream;
-  std::vector<Extension> const extensions;
-  std::unique_ptr<StacktraceSymbolizer> const stacktrace_symbolizer;
-  std::unique_ptr<Database> database = std::make_unique<Database>();
-
-  Event cur_event;
-  const Extension* active_extension = nullptr;
-  int exit_code = 0;
-};
-
-Environment* environment = nullptr;
+syan::Environment* environment = nullptr;
 
 }  // namespace
 

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "dump_file_header_compat.hpp"
-#include <syan_extension_api/event.hpp>
+#include "syan_extension_api/event.hpp"
 
 namespace syan {
 

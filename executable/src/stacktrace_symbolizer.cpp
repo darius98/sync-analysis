@@ -1,8 +1,6 @@
 #include "stacktrace_symbolizer.hpp"
 
-namespace {
-
-using namespace syan;
+namespace syan {
 
 class NullStacktraceSymbolizer: public StacktraceSymbolizer {
 public:
@@ -11,10 +9,6 @@ public:
            "original binary.\n";
   }
 };
-
-}  // namespace
-
-namespace syan {
 
 std::unique_ptr<StacktraceSymbolizer>
 StacktraceSymbolizer::create(const std::optional<std::string>& binary_file_path,
