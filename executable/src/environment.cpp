@@ -32,12 +32,13 @@ void Environment::handle_event(Event event) {
   cur_event = nullptr;
 }
 
-void Environment::shut_down() {
+int Environment::shut_down() {
   for (const auto& extension : extensions) {
     active_extension = &extension;
     extension.shut_down();
     active_extension = nullptr;
   }
+  return exit_code;
 }
 
 void Environment::send_report(Report::Level level,
@@ -67,10 +68,6 @@ struct timespec Environment::execution_start_time() const {
 
 std::string_view Environment::active_extension_name() const {
   return active_extension->get_name();
-}
-
-int Environment::get_exit_code() const {
-  return exit_code;
 }
 
 }  // namespace syan

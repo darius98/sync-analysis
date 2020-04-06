@@ -5,6 +5,8 @@
 
 #include <mcga/cli.hpp>
 
+#include "debug.hpp"
+
 constexpr auto help_menu_header =
     "Synchronization primitives analysis version " SYNC_ANALYSIS_VERSION "\n\n";
 
@@ -134,8 +136,7 @@ Options::Options(int argc, char** argv) {
   print_header = print_header_flag->get_value();
 
   if (positional_args.size() != 2) {
-    std::cout << "Invalid number of arguments.\n\n" << parser.render_help();
-    std::abort();
+    FATAL_OUT << "Invalid number of arguments.\n\n" << parser.render_help();
   }
   dump_file_path = positional_args[1];
 }

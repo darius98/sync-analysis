@@ -20,6 +20,18 @@ struct NewlineAppender {
   explicit operator bool() const;
 };
 
+struct FatalAbortStream {
+  std::ostream& out;
+
+  [[noreturn]] ~FatalAbortStream();
+
+  template<class T>
+  FatalAbortStream& operator<<(T&& value) {
+    out << value;
+    return *this;
+  }
+};
+
 std::string formatted_time();
 
 void install_abort_handler();
@@ -42,5 +54,9 @@ bool is_debug_enabled();
       ::syan::debugging::NewlineAppender{::std::cout}                          \
           << "[DBG " << ::syan::debugging::formatted_time() << " "             \
           << SYAN_CURRENT_FILE << ":" << __LINE__ << "] "
+
+#define FATAL_OUT                                                              \
+  ::syan::debugging::FatalAbortStream{::std::cout}                             \
+      << " FATAL (" << SYAN_CURRENT_FILE << ":" << __LINE__ << ") "
 
 #endif

@@ -25,7 +25,7 @@ public:
 
   void handle_event(Event event);
 
-  void shut_down();
+  int shut_down();
 
   void send_report(Report::Level level, const std::string& report_message);
 
@@ -38,8 +38,6 @@ public:
   struct timespec execution_start_time() const;
 
   std::string_view active_extension_name() const;
-
-  int get_exit_code() const;
 
 private:
   struct timespec const start_time;

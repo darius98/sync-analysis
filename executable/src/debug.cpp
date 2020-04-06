@@ -25,6 +25,11 @@ NewlineAppender::operator bool() const {
   return static_cast<bool>(out);
 }
 
+FatalAbortStream::~FatalAbortStream() {
+  out << std::endl;
+  std::abort();
+}
+
 std::string formatted_time() {
   auto timestamp = std::chrono::system_clock::now();
   auto timestamp_c_style = std::chrono::system_clock::to_time_t(timestamp);
