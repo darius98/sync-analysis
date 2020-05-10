@@ -3,4 +3,5 @@ add_syan_extensions(
         mutex-lock-order
         redundant-recursive-mutex
         redundant-rwlock
+        useless-lock
 )

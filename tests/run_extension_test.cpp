@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
                      nullptr};
   std::cout << "Executing sync analysis binary: " << sync_analysis_binary
             << " -b " << test_binary << " -E " << sync_analysis_extension_dir
-            << " --print-header -e " << sync_analysis_extension_name << " -o "
+            << " --print-header -e " << sync_analysis_extension_name << " -r "
             << sync_analysis_output_file << " " << sync_analysis_dump_path
             << std::endl;
   int status = execv(sync_analysis_binary.c_str(), args);
