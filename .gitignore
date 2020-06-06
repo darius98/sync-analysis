@@ -3,11 +3,15 @@
 .DS_Store
 .idea/
 *.profraw
-paper/*.aux
-paper/*.fdb_latexmk
-paper/*.out
-paper/*.log
-paper/*.synctex.gz
-paper/*.toc
-paper/*.fls
+*.aux
+*.fdb_latexmk
+*.out
+*.log
+*.synctex.gz
+*.toc
+*.fls
+*.bbl
+*.bbg
+*.blg
+paper/building_blocks/*.pdf
 
