@@ -1,7 +1,7 @@
-#include <cxx_sync/mutex.hpp>
-#include <cxx_sync/recursive_mutex.hpp>
-#include <cxx_sync/rwlock.hpp>
-#include <cxx_sync/thread.hpp>
+#include <cxxsync/mutex.hpp>
+#include <cxxsync/recursive_mutex.hpp>
+#include <cxxsync/rwlock.hpp>
+#include <cxxsync/thread.hpp>
 
 using sync::Mutex;
 using sync::MutexGuard;

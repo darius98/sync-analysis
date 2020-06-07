@@ -6,9 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(SYNC_ANALYSIS_VERSION "1.0")
 
-add_compile_options(-Werror -Wall -Wextra -Wpedantic)
-
-include(cmake/SyanAnalyzer.cmake)
+add_compile_options(-Wall -Wextra -Wpedantic)
 
 add_subdirectory(third_party/mcga-cli)
 

@@ -1,4 +1,4 @@
-#include "recursive_mutex.hpp"
+#include "cxxsync/recursive_mutex.hpp"
 
 #include <sync_analysis.h>
 

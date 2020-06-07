@@ -1,6 +1,6 @@
 #include <vector>
 
-#include <cxx_sync/rwlock.hpp>
+#include <cxxsync/rwlock.hpp>
 
 using sync::RWLock;
 using sync::RWLockReadGuard;

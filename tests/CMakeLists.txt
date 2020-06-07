@@ -18,7 +18,7 @@ function(add_analyzer_test ANALYZER TYPE DESCRIPTION)
     set_target_properties(${TEST_NAME}.exe PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${TEST_DIR}
             RUNTIME_OUTPUT_NAME test_binary)
-    target_link_libraries(${TEST_NAME}.exe PUBLIC cxx_sync_lib)
+    target_link_libraries(${TEST_NAME}.exe PUBLIC cxxsync)
     add_test(NAME ${TEST_NAME} COMMAND run_analyzer_test
             --test_binary=${TEST_DIR}/test_binary
             --sync_analysis_binary=$<TARGET_FILE:sync_analysis>

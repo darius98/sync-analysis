@@ -30,3 +30,5 @@ target_compile_definitions(sync_analysis PUBLIC
         )
 target_link_libraries(sync_analysis PUBLIC sync_analysis_lib)
 target_link_options(sync_analysis PUBLIC -rdynamic)
+install(TARGETS sync_analysis DESTINATION bin)
+install(DIRECTORY include DESTINATION .)

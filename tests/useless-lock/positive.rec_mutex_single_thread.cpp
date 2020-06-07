@@ -1,4 +1,4 @@
-#include <cxx_sync/recursive_mutex.hpp>
+#include <cxxsync/recursive_mutex.hpp>
 
 using sync::RecursiveMutex;
 

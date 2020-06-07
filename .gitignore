@@ -1,4 +1,5 @@
 .build/
+.install/
 .test-run/
 .DS_Store
 .idea/
@@ -14,4 +15,3 @@
 *.bbg
 *.blg
 paper/building_blocks/*.pdf
-

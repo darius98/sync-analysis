@@ -1,5 +1,5 @@
-#include <cxx_sync/rwlock.hpp>
-#include <cxx_sync/thread.hpp>
+#include <cxxsync/rwlock.hpp>
+#include <cxxsync/thread.hpp>
 
 using sync::RWLock;
 using sync::Thread;

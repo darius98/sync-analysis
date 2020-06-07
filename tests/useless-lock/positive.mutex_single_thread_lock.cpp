@@ -1,4 +1,4 @@
-#include <cxx_sync/mutex.hpp>
+#include <cxxsync/mutex.hpp>
 
 #include <cassert>
 

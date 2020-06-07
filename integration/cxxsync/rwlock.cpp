@@ -1,4 +1,4 @@
-#include "rwlock.hpp"
+#include "cxxsync/rwlock.hpp"
 
 #include <sync_analysis.h>
 

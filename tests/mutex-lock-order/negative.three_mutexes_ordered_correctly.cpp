@@ -1,5 +1,5 @@
-#include <cxx_sync/mutex.hpp>
-#include <cxx_sync/thread.hpp>
+#include <cxxsync/mutex.hpp>
+#include <cxxsync/thread.hpp>
 
 using sync::Mutex;
 using sync::MutexGuard;

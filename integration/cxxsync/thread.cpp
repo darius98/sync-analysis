@@ -1,4 +1,4 @@
-#include "thread.hpp"
+#include "cxxsync/thread.hpp"
 
 #include <sync_analysis.h>
 

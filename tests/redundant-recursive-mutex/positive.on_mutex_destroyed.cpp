@@ -1,7 +1,7 @@
 #include <vector>
 
-#include <cxx_sync/recursive_mutex.hpp>
-#include <cxx_sync/thread.hpp>
+#include <cxxsync/recursive_mutex.hpp>
+#include <cxxsync/thread.hpp>
 
 using sync::RecursiveMutex;
 using sync::RecursiveMutexGuard;

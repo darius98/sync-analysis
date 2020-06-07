@@ -1,4 +1,4 @@
-#include "mutex.hpp"
+#include "cxxsync/mutex.hpp"
 
 #include <sync_analysis.h>
 
