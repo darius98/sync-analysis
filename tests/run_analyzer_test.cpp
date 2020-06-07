@@ -10,15 +10,15 @@
 namespace cli = mcga::cli;
 
 int main(int argc, char** argv) {
-  cli::Parser parser("Sync Analysis extension test runner.");
+  cli::Parser parser("Sync Analysis analyzer test runner.");
 
   auto test_binary_arg = parser.add_argument(cli::ArgumentSpec("test_binary"));
   auto sync_analysis_binary_arg =
       parser.add_argument(cli::ArgumentSpec("sync_analysis_binary"));
-  auto sync_analysis_extension_dir_arg =
-      parser.add_argument(cli::ArgumentSpec("sync_analysis_extension_dir"));
-  auto sync_analysis_extension_name_arg =
-      parser.add_argument(cli::ArgumentSpec("sync_analysis_extension_name"));
+  auto sync_analysis_analyzer_dir_arg =
+      parser.add_argument(cli::ArgumentSpec("sync_analysis_analyzer_dir"));
+  auto sync_analysis_analyzer_name_arg =
+      parser.add_argument(cli::ArgumentSpec("sync_analysis_analyzer_name"));
   auto sync_analysis_output_file_arg =
       parser.add_argument(cli::ArgumentSpec("sync_analysis_output_file"));
 
@@ -26,10 +26,9 @@ int main(int argc, char** argv) {
 
   auto test_binary = test_binary_arg->get_value();
   auto sync_analysis_binary = sync_analysis_binary_arg->get_value();
-  auto sync_analysis_extension_dir =
-      sync_analysis_extension_dir_arg->get_value();
-  auto sync_analysis_extension_name =
-      sync_analysis_extension_name_arg->get_value();
+  auto sync_analysis_analyzer_dir = sync_analysis_analyzer_dir_arg->get_value();
+  auto sync_analysis_analyzer_name =
+      sync_analysis_analyzer_name_arg->get_value();
   auto sync_analysis_output_file = sync_analysis_output_file_arg->get_value();
 
   int child = fork();
@@ -125,18 +124,18 @@ int main(int argc, char** argv) {
   char* const args[]{sync_analysis_binary.data(),
                      (char*)"-b",
                      test_binary.data(),
-                     (char*)"-E",
-                     sync_analysis_extension_dir.data(),
+                     (char*)"-A",
+                     sync_analysis_analyzer_dir.data(),
                      (char*)"--print-header",
-                     (char*)"-e",
-                     sync_analysis_extension_name.data(),
+                     (char*)"-a",
+                     sync_analysis_analyzer_name.data(),
                      (char*)"-r",
                      sync_analysis_output_file.data(),
                      sync_analysis_dump_path.data(),
                      nullptr};
   std::cout << "Executing sync analysis binary: " << sync_analysis_binary
-            << " -b " << test_binary << " -E " << sync_analysis_extension_dir
-            << " --print-header -e " << sync_analysis_extension_name << " -r "
+            << " -b " << test_binary << " -A " << sync_analysis_analyzer_dir
+            << " --print-header -a " << sync_analysis_analyzer_name << " -r "
             << sync_analysis_output_file << " " << sync_analysis_dump_path
             << std::endl;
   int status = execv(sync_analysis_binary.c_str(), args);

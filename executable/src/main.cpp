@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "debug.hpp"
-#include "find_extensions.hpp"
+#include "find_analyzers.hpp"
 #include "options.hpp"
 #include "run_analysis.hpp"
 
@@ -10,14 +10,14 @@ int main(int argc, char** argv) {
   syan::debugging::set_debug_enabled(options.debug_mode);
   DOUT << "Loaded command line options";
 
-  DOUT << "Loading extensions...";
-  auto extensions = syan::find_extensions(options);
-  DOUT << "Loaded extensions:";
-  for (const auto& extension : extensions) {
-    DOUT << "\t" << extension.get_name();
+  DOUT << "Loading analyzers...";
+  auto analyzers = syan::find_analyzers(options);
+  DOUT << "Loaded analyzers:";
+  for (const auto& analyzer : analyzers) {
+    DOUT << "\t" << analyzer.get_name();
   }
   DOUT << "Running analysis...";
-  int status = syan::run_analysis(options, std::move(extensions));
+  int status = syan::run_analysis(options, std::move(analyzers));
   DOUT << "Analysis done. Exit status = " << status;
   return status;
 }

@@ -1,5 +1,5 @@
 #include "run_analysis.hpp"
-#include "syan_extension_api/syan_extension_api.hpp"
+#include "syan_analyzer_api/syan_analyzer_api.hpp"
 
 #include <fstream>
 #include <iomanip>
@@ -33,8 +33,8 @@ struct timespec execution_start_time() {
   return environment->execution_start_time();
 }
 
-std::string_view active_extension_name() {
-  return environment->active_extension_name();
+std::string_view active_analyzer_name() {
+  return environment->active_analyzer_name();
 }
 
 void symbolize_stacktrace(const Event& event, std::ostream& stream) {
@@ -45,7 +45,7 @@ void send_report(Report::Level level, const std::string& report_message) {
   environment->send_report(level, report_message);
 }
 
-int run_analysis(const Options& options, std::vector<Extension> extensions) {
+int run_analysis(const Options& options, std::vector<Analyzer> analyzers) {
   std::ostream* report_stream = &std::cout;
   std::unique_ptr<std::ostream> own_report_stream;
   if (options.report_file_path.has_value()) {
@@ -82,12 +82,12 @@ int run_analysis(const Options& options, std::vector<Extension> extensions) {
               << "\tReports are written to: "
               << options.report_file_path.value_or("STDOUT") << "\n";
   }
-  if (extensions.empty()) {
-    FATAL_OUT << "No extensions enabled. Nothing to do.";
+  if (analyzers.empty()) {
+    FATAL_OUT << "No analyzers enabled. Nothing to do.";
   }
 
   environment = new Environment(options.binary_file_path, file_header,
-                                std::move(extensions), report_stream);
+                                std::move(analyzers), report_stream);
 
   environment->start_up();
 

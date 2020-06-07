@@ -1,4 +1,4 @@
-add_syan_extensions(
+add_syan_analyzers(
         lock-shadow
         mutex-lock-order
         redundant-recursive-mutex

@@ -1,24 +1,24 @@
-#ifndef SYNC_ANALYSIS_EXECUTABLE_SRC_EXTENSION_H_
-#define SYNC_ANALYSIS_EXECUTABLE_SRC_EXTENSION_H_
+#ifndef SYNC_ANALYSIS_EXECUTABLE_SRC_ANALYZER_H_
+#define SYNC_ANALYSIS_EXECUTABLE_SRC_ANALYZER_H_
 
 #include <memory>
 #include <string>
 
 namespace syan {
 
-class Extension {
+class Analyzer {
   using func = void (*)();
 
 public:
-  Extension(std::string name, void* dso_handle);
+  Analyzer(std::string name, void* dso_handle);
 
-  Extension(const Extension&) = delete;
-  Extension& operator=(const Extension&) = delete;
+  Analyzer(const Analyzer&) = delete;
+  Analyzer& operator=(const Analyzer&) = delete;
 
-  Extension(Extension&&) noexcept = default;
-  Extension& operator=(Extension&&) noexcept = default;
+  Analyzer(Analyzer&&) noexcept = default;
+  Analyzer& operator=(Analyzer&&) noexcept = default;
 
-  ~Extension() = default;
+  ~Analyzer() = default;
 
   std::string_view get_name() const noexcept;
 

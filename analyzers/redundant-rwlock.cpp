@@ -1,7 +1,7 @@
 #include <map>
 #include <optional>
 
-#include <syan_extension_api/syan_extension_api.hpp>
+#include <syan_analyzer_api/syan_analyzer_api.hpp>
 
 using namespace syan;
 
@@ -35,7 +35,7 @@ struct RWLockState {
   }
 };
 
-struct RedundantRWLockExtension {
+struct RedundantRWLockAnalyzer {
   static constexpr const char* name = "redundant-rwlock";
 
   std::map<ObjectId, RWLockState> rwlocks;
@@ -72,4 +72,4 @@ struct RedundantRWLockExtension {
   }
 };
 
-SYAN_EXTENSION_SET_CLASS(RedundantRWLockExtension);
+SYAN_ANALYZER_CLASS(RedundantRWLockAnalyzer);

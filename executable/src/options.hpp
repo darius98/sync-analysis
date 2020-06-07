@@ -10,8 +10,8 @@ namespace syan {
 
 struct Options {
   std::optional<std::string> binary_file_path;
-  std::vector<std::filesystem::path> extension_search_paths;
-  std::vector<std::string> extension_name_rules;
+  std::vector<std::filesystem::path> analyzer_search_paths;
+  std::vector<std::string> analyzer_name_rules;
   bool debug_mode;
   std::optional<std::filesystem::path> report_file_path;
   bool print_header;

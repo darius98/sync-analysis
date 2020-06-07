@@ -4,39 +4,39 @@ namespace syan {
 
 Environment::Environment(const std::optional<std::string>& binary_file_path,
                          const DumpFileHeader& header,
-                         std::vector<Extension>&& extensions,
+                         std::vector<Analyzer>&& analyzers,
                          std::ostream* report_stream)
     : start_time(header.start_time),
       report_stream(report_stream),
-      extensions(std::move(extensions)),
+      analyzers(std::move(analyzers)),
       stacktrace_symbolizer(
           StacktraceSymbolizer::create(binary_file_path, header)) {}
 
 void Environment::start_up() {
-  for (const auto& extension : extensions) {
-    active_extension = &extension;
-    extension.start_up();
-    active_extension = nullptr;
+  for (const auto& analyzer : analyzers) {
+    active_analyzer = &analyzer;
+    analyzer.start_up();
+    active_analyzer = nullptr;
   }
 }
 
 void Environment::handle_event(Event event) {
   cur_event = std::move(event);
-  database->handle_event_before_extensions(cur_event);
-  for (const auto& extension : extensions) {
-    active_extension = &extension;
-    extension.on_event();
-    active_extension = nullptr;
+  database->handle_event_before_analyzers(cur_event);
+  for (const auto& analyzer : analyzers) {
+    active_analyzer = &analyzer;
+    analyzer.on_event();
+    active_analyzer = nullptr;
   }
-  database->handle_event_after_extensions(cur_event);
+  database->handle_event_after_analyzers(cur_event);
   cur_event = nullptr;
 }
 
 int Environment::shut_down() {
-  for (const auto& extension : extensions) {
-    active_extension = &extension;
-    extension.shut_down();
-    active_extension = nullptr;
+  for (const auto& analyzer : analyzers) {
+    active_analyzer = &analyzer;
+    analyzer.shut_down();
+    active_analyzer = nullptr;
   }
   return exit_code;
 }
@@ -66,8 +66,8 @@ struct timespec Environment::execution_start_time() const {
   return start_time;
 }
 
-std::string_view Environment::active_extension_name() const {
-  return active_extension->get_name();
+std::string_view Environment::active_analyzer_name() const {
+  return active_analyzer->get_name();
 }
 
 }  // namespace syan

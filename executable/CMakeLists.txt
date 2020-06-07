@@ -4,13 +4,13 @@ if (APPLE)
             ${CMAKE_CURRENT_SOURCE_DIR}/src/stacktrace_symbolizer_macos.cpp)
 endif ()
 add_executable(sync_analysis
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/analyzer.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/database.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/debug.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/event_file_reader.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/extension.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/find_extensions.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/find_analyzers.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/report.cpp

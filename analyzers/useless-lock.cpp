@@ -1,7 +1,7 @@
 #include <map>
 #include <optional>
 
-#include <syan_extension_api/syan_extension_api.hpp>
+#include <syan_analyzer_api/syan_analyzer_api.hpp>
 
 using namespace syan;
 
@@ -85,4 +85,4 @@ struct SingleThreadLock {
   }
 };
 
-SYAN_EXTENSION_SET_CLASS(SingleThreadLock);
+SYAN_ANALYZER_CLASS(SingleThreadLock);

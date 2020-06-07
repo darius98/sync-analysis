@@ -29,23 +29,25 @@ constexpr auto binary_arg_description =
     "\t\tbinary), file and line information will also be printed where\n"
     "\t\tavailable.";
 
-constexpr auto extension_search_paths_arg_description =
+constexpr auto analyzer_search_paths_arg_description =
     "\n"
-    "\t\tExtra paths to search for extensions. The current working\n"
-    "\t\tdirectory, the sub-directory 'syan-ext' in the current directory\n"
-    "\t\t(if it exists) and '/usr/local/lib/syan-ext' (if it exists) will\n"
+    "\t\tExtra paths to search for analyzers. The current working\n"
+    "\t\tdirectory, the sub-directory 'syan-analyzers' in the current "
+    "directory\n"
+    "\t\t(if it exists) and '/usr/local/lib/syan-analyzers' (if it exists) "
+    "will\n"
     "\t\talways be searched.";
 
-constexpr auto extension_rules_arg_description =
+constexpr auto analyzer_rules_arg_description =
     "\n"
-    "\t\tA list of patterns to filter extensions based on their names.\n"
+    "\t\tA list of patterns to filter analyzers based on their names.\n"
     "\t\tPatterns can contain '*' characters to denote a group of \n"
     "\t\tarbitrary characters. Patterns starting with '-' are negative.\n"
-    "\t\tFor example, './sync_analysis -e -* -e mutex-*' will enable all\n"
-    "\t\textensions starting with 'mutex-', while disabling all other\n"
-    "\t\textensions. The last rule to match an extension determines\n"
-    "\t\twhether the extension is enabled or disabled. If no rule matches\n"
-    "\t\tan extension name, that extension is not enabled.";
+    "\t\tFor example, './sync_analysis -a -* -a mutex-*' will enable all\n"
+    "\t\tanalyzers starting with 'mutex-', while disabling all other\n"
+    "\t\tanalyzers. The last rule to match an analyzer determines\n"
+    "\t\twhether the analyzer is enabled or disabled. If no rule matches\n"
+    "\t\tan analyzer name, that analyzer is not enabled.";
 
 constexpr auto debug_flag_description = "\n"
                                         "\t\tEnable debug logging.";
@@ -79,16 +81,16 @@ Options::Options(int argc, char** argv) {
                               .set_short_name("b")
                               .set_description(binary_arg_description)
                               .set_default_value("UNKNOWN"));
-  auto extension_search_paths_arg = parser.add_list_argument(
-      mcga::cli::ListArgumentSpec("extension-search-path")
-          .set_short_name("E")
-          .set_description(extension_search_paths_arg_description)
+  auto analyzer_search_paths_arg = parser.add_list_argument(
+      mcga::cli::ListArgumentSpec("analyzer-search-path")
+          .set_short_name("A")
+          .set_description(analyzer_search_paths_arg_description)
           .set_default_value({})
           .set_implicit_value({}));
-  auto extension_name_rules_arg = parser.add_list_argument(
-      mcga::cli::ListArgumentSpec("extension")
-          .set_short_name("e")
-          .set_description(extension_rules_arg_description)
+  auto analyzer_name_rules_arg = parser.add_list_argument(
+      mcga::cli::ListArgumentSpec("analyzer")
+          .set_short_name("a")
+          .set_description(analyzer_rules_arg_description)
           .set_default_value({"*"})
           .set_implicit_value({"*"}));
   auto debug_flag = parser.add_flag(
@@ -111,18 +113,18 @@ Options::Options(int argc, char** argv) {
     binary_file_path = binary_arg->get_value();
   }
 
-  auto extension_search_path_strings = extension_search_paths_arg->get_value();
-  extension_search_paths = {
+  auto analyzer_search_path_strings = analyzer_search_paths_arg->get_value();
+  analyzer_search_paths = {
       ".",
-      "./syan-ext",
-      "/usr/local/lib/syan-ext",
+      "./syan-analyzers",
+      "/usr/local/lib/syan-analyzers",
   };
-  for (const auto& path_str : extension_search_path_strings) {
-    extension_search_paths.emplace_back(path_str);
+  for (const auto& path_str : analyzer_search_path_strings) {
+    analyzer_search_paths.emplace_back(path_str);
   }
 
-  extension_name_rules = extension_name_rules_arg->get_value();
-  std::reverse(extension_name_rules.begin(), extension_name_rules.end());
+  analyzer_name_rules = analyzer_name_rules_arg->get_value();
+  std::reverse(analyzer_name_rules.begin(), analyzer_name_rules.end());
 
   debug_mode = debug_flag->get_value();
 

@@ -1,4 +1,4 @@
-#include "find_extensions.hpp"
+#include "find_analyzers.hpp"
 
 #include <dlfcn.h>
 
@@ -6,20 +6,19 @@
 
 namespace {
 
-bool is_extension_filename(const std::filesystem::path& path) {
+bool is_analyzer_filename(const std::filesystem::path& path) {
 #ifdef SYNC_ANALYSIS_IS_MAC_OS_X
   return path.extension() == ".dylib" &&
-         std::string_view{path.filename().c_str()}.substr(0, 11) ==
-             "libsyanext-";
+         std::string_view{path.filename().c_str()}.substr(0, 17) ==
+             "libsyan-analyzer-";
 #elif SYNC_ANALYSIS_IS_LINUX
   return path.extension() == ".so" &&
-         std::string_view{path.filename().c_str()}.substr(0, 11) ==
-             "libsyanext-";
+         std::string_view{path.filename().c_str()}.substr(0, 17) ==
+             "libsyan-analyzer-";
 #endif
 }
 
-bool respects_extension_name_rule(std::string_view name,
-                                  std::string_view rule) {
+bool respects_analyzer_name_rule(std::string_view name, std::string_view rule) {
   if (rule[0] == '-') {
     rule.remove_prefix(1);
   }
@@ -43,10 +42,10 @@ bool respects_extension_name_rule(std::string_view name,
   return dp[rule.size()][name.size()];
 }
 
-bool respects_extension_name_rules(std::string_view name,
-                                   const std::vector<std::string>& rules) {
+bool respects_analyzer_name_rules(std::string_view name,
+                                  const std::vector<std::string>& rules) {
   for (const auto& rule : rules) {
-    if (!rule.empty() && respects_extension_name_rule(name, rule)) {
+    if (!rule.empty() && respects_analyzer_name_rule(name, rule)) {
       return rule[0] != '-';
     }
   }
@@ -57,9 +56,9 @@ bool respects_extension_name_rules(std::string_view name,
 
 namespace syan {
 
-std::vector<Extension> find_extensions(const Options& options) {
-  std::vector<Extension> extensions;
-  for (const auto& directory : options.extension_search_paths) {
+std::vector<Analyzer> find_analyzers(const Options& options) {
+  std::vector<Analyzer> analyzers;
+  for (const auto& directory : options.analyzer_search_paths) {
     if (!std::filesystem::is_directory(directory)) {
       DOUT << "Path " << directory.string() << " is not a directory, skipping.";
       continue;
@@ -68,27 +67,27 @@ std::vector<Extension> find_extensions(const Options& options) {
          std::filesystem::directory_iterator(directory)) {
       auto path = std::filesystem::absolute(relative_path);
       if (!std::filesystem::is_regular_file(path) ||
-          !is_extension_filename(path)) {
+          !is_analyzer_filename(path)) {
         continue;
       }
       void* handle = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
       if (handle == nullptr) {
         continue;
       }
-      void* syan_extension_name_symbol = dlsym(handle, "syan_extension");
-      if (syan_extension_name_symbol == nullptr) {
+      void* syan_analyzer_name_symbol = dlsym(handle, "syan_analyzer");
+      if (syan_analyzer_name_symbol == nullptr) {
         dlclose(handle);
         continue;
       }
-      std::string_view syan_extension_name =
-          *static_cast<const char**>(syan_extension_name_symbol);
-      if (respects_extension_name_rules(syan_extension_name,
-                                        options.extension_name_rules)) {
-        extensions.emplace_back(std::string{syan_extension_name}, handle);
+      std::string_view syan_analyzer_name =
+          *static_cast<const char**>(syan_analyzer_name_symbol);
+      if (respects_analyzer_name_rules(syan_analyzer_name,
+                                       options.analyzer_name_rules)) {
+        analyzers.emplace_back(std::string{syan_analyzer_name}, handle);
       }
     }
   }
-  return extensions;
+  return analyzers;
 }
 
 }  // namespace syan

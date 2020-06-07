@@ -1,7 +1,7 @@
 #include <map>
 #include <set>
 
-#include <syan_extension_api/syan_extension_api.hpp>
+#include <syan_analyzer_api/syan_analyzer_api.hpp>
 
 using namespace syan;
 
@@ -32,7 +32,7 @@ struct LockState {
   }
 };
 
-struct LockShadowExtension {
+struct LockShadowAnalyzer {
   static constexpr const char* name = "lock-shadow";
 
   std::map<ObjectId, std::multiset<Event>> thread_locks;
@@ -98,4 +98,4 @@ struct LockShadowExtension {
   }
 };
 
-SYAN_EXTENSION_SET_CLASS(LockShadowExtension);
+SYAN_ANALYZER_CLASS(LockShadowAnalyzer);

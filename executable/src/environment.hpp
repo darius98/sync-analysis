@@ -6,19 +6,19 @@
 #include <string>
 #include <vector>
 
+#include "analyzer.hpp"
 #include "dump_file_header_compat.hpp"
-#include "extension.hpp"
 #include "stacktrace_symbolizer.hpp"
-#include "syan_extension_api/database.hpp"
-#include "syan_extension_api/event.hpp"
-#include "syan_extension_api/report.hpp"
+#include "syan_analyzer_api/database.hpp"
+#include "syan_analyzer_api/event.hpp"
+#include "syan_analyzer_api/report.hpp"
 
 namespace syan {
 
 class Environment {
 public:
   Environment(const std::optional<std::string>& binary_file_path,
-              const DumpFileHeader& header, std::vector<Extension>&& extensions,
+              const DumpFileHeader& header, std::vector<Analyzer>&& analyzers,
               std::ostream* report_stream);
 
   void start_up();
@@ -37,17 +37,17 @@ public:
 
   struct timespec execution_start_time() const;
 
-  std::string_view active_extension_name() const;
+  std::string_view active_analyzer_name() const;
 
 private:
   struct timespec const start_time;
   std::ostream* const report_stream;
-  std::vector<Extension> const extensions;
+  std::vector<Analyzer> const analyzers;
   std::unique_ptr<StacktraceSymbolizer> const stacktrace_symbolizer;
   std::unique_ptr<Database> const database = std::make_unique<Database>();
 
   Event cur_event;
-  const Extension* active_extension = nullptr;
+  const Analyzer* active_analyzer = nullptr;
   int exit_code = 0;
 };
 

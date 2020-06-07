@@ -1,8 +1,8 @@
-#include "syan_extension_api/database.hpp"
+#include "syan_analyzer_api/database.hpp"
 
 namespace syan {
 
-void Database::handle_event_before_extensions(const Event& event) {
+void Database::handle_event_before_analyzers(const Event& event) {
   if (event.is_create_event()) {
     auto key = std::pair{event.object_type(), event.object()};
     active_objects.emplace(key, event);
@@ -10,7 +10,7 @@ void Database::handle_event_before_extensions(const Event& event) {
   }
 }
 
-void Database::handle_event_after_extensions(const Event& event) {
+void Database::handle_event_after_analyzers(const Event& event) {
   if (event.is_destroy_event()) {
     auto key = std::pair{event.object_type(), event.object()};
     active_objects.erase(key);

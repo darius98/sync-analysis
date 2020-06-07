@@ -5,22 +5,22 @@
 #include <ostream>
 #include <string>
 
-#include "extension.hpp"
+#include "analyzer.hpp"
 #include "options.hpp"
-#include "syan_extension_api/event.hpp"
-#include "syan_extension_api/report.hpp"
+#include "syan_analyzer_api/event.hpp"
+#include "syan_analyzer_api/report.hpp"
 
 namespace syan {
 
 struct timespec execution_start_time();
 
-std::string_view active_extension_name();
+std::string_view active_analyzer_name();
 
 void symbolize_stacktrace(const Event& event, std::ostream& stream);
 
 void send_report(Report::Level level, const std::string& report_message);
 
-int run_analysis(const Options& options, std::vector<Extension> extensions);
+int run_analysis(const Options& options, std::vector<Analyzer> analyzers);
 
 }  // namespace syan
 

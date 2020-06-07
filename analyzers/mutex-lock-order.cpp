@@ -1,11 +1,11 @@
 #include <map>
 #include <set>
 
-#include <syan_extension_api/syan_extension_api.hpp>
+#include <syan_analyzer_api/syan_analyzer_api.hpp>
 
 using namespace syan;
 
-struct MutexLockOrderExtension {
+struct MutexLockOrderAnalyzer {
   static constexpr const char* name = "mutex-lock-order";
 
   std::map<std::pair<ObjectId, ObjectId>, std::pair<Event, Event>> edges;
@@ -61,4 +61,4 @@ struct MutexLockOrderExtension {
   }
 };
 
-SYAN_EXTENSION_SET_CLASS(MutexLockOrderExtension);
+SYAN_ANALYZER_CLASS(MutexLockOrderAnalyzer);

@@ -1,11 +1,11 @@
-#include "syan_extension_api/report.hpp"
+#include "syan_analyzer_api/report.hpp"
 
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 
 #include "run_analysis.hpp"
-#include "syan_extension_api/syan_extension_api.hpp"
+#include "syan_analyzer_api/syan_analyzer_api.hpp"
 
 namespace syan {
 
@@ -46,7 +46,7 @@ Report::~Report() {
   case Report::warning: builder << "WARNING"; break;
   case Report::error: std::cout << "ERROR"; break;
   }
-  builder << " (" << active_extension_name() << "): " << description;
+  builder << " (" << active_analyzer_name() << "): " << description;
   for (auto& section : sections) {
     auto timestamp = execution_start_time();
 

@@ -8,7 +8,7 @@ set(SYNC_ANALYSIS_VERSION "1.0")
 
 add_compile_options(-Werror -Wall -Wextra -Wpedantic)
 
-include(cmake/SyanExtension.cmake)
+include(cmake/SyanAnalyzer.cmake)
 
 add_subdirectory(third_party/mcga-cli)
 
@@ -17,5 +17,5 @@ add_compile_options(-fno-exceptions)
 add_subdirectory(lib)
 add_subdirectory(integration)
 add_subdirectory(executable)
-add_subdirectory(extensions)
+add_subdirectory(analyzers)
 add_subdirectory(tests)

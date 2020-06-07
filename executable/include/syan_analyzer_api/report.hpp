@@ -1,11 +1,11 @@
-#ifndef SYNC_ANALYSIS_EXECUTABLE_INCLUDE_SYAN_EXTENSION_API_REPORT_H_
-#define SYNC_ANALYSIS_EXECUTABLE_INCLUDE_SYAN_EXTENSION_API_REPORT_H_
+#ifndef SYNC_ANALYSIS_EXECUTABLE_INCLUDE_SYAN_ANALYZER_API_REPORT_H_
+#define SYNC_ANALYSIS_EXECUTABLE_INCLUDE_SYAN_ANALYZER_API_REPORT_H_
 
 #include <set>
 #include <string>
 #include <vector>
 
-#include <syan_extension_api/event.hpp>
+#include <syan_analyzer_api/event.hpp>
 
 namespace syan {
 
