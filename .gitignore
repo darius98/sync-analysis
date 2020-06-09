@@ -15,3 +15,13 @@
 *.bbg
 *.blg
 paper/building_blocks/*.pdf
+CMakeFiles/
+Makefile
+cmake_install.cmake
+*.a
+*.so
+*.dylib
+CMakeCache.txt
+executable/sync_analysis
+tests/run_analyzer_test
+tests/CTestTestfile.cmake
