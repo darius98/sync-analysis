@@ -1,21 +1,23 @@
 \subsection{Instalarea și compilarea proiectului}
 Proiectul poate fi descărcat, instalat și folosit pe orice calculator cu
-sistemul de operare o distribuție de Linux, OpenBSD sau Mac OS și acces
+sistemul de operare o distribuție de GNU/Linux sau Mac OS și cu acces
 la internet. De asemenea, calculatorul trebuie să aibă instalate
 următoarele programe:
 \begin{itemize}
     \item \lstinline{as, ar, ld, addr2line} -- de obicei aceste programe
     sau alte programe echivalente vin preinstalate cu orice distribuție
-    de Linux, Mac OS, FreeBSD sau OpenBSD. Ele fac parte din colecția de
-    utilitare \lstinline{binutils}\cite{binutils} și sunt disponibile
-    gratuit pentru descărcare pe website-ul oficial
-    GNU\cite{GNUWebsite}.
+    de GNU/Linux sau Mac OS. Ele fac parte din colecția de utilitare
+    \lstinline{binutils}\cite{binutils} și sunt disponibile gratuit
+    pentru descărcare pe website-ul oficial GNU\cite{GNUWebsite}.
     \item \lstinline{CMake}\cite{CMake} -- versiunea \lstinline{3.15}
     sau mai nouă
     \item \lstinline{make} -- orice versiune compatibilă cu versiunea de
     CMake instalată
+    \item \lstinline{atos}\cite{atos} -- doar pentru Mac OS, unde este
+    mereu preinstalat
     \item un compilator de C și C++ care suportă standardele C11,
     respectiv C++17 în întregime (de exemplu \lstinline{Clang 10}
+    \cite{Clang})
     \item \lstinline{git}\cite{git} -- minim versiunea \lstinline{2.0}
 \end{itemize}
 
@@ -30,9 +32,8 @@ Astfel, acesta poate fi descărcat prin următoarea comandă
 \end{minipage}
 
 Deoarece \textit{repository}-ul de git include biblioteca
-\lstinline{mcga-cli}\cite{mcga-cli} ca submodul de git, trebuie
-inițializată logica pentru submodule de git și descărcat separat acest
-submodul:
+\lstinline{mcga-cli}\cite{mcga-cli} ca submodul, trebuie executată o
+comandă separată pentru a inițializa submodulele de git:
 
 \begin{minipage}{\linewidth}
 \begin{lstlisting}
