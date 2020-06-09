@@ -4,7 +4,6 @@ add_library(sync_analysis_lib STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/dump_file_header.c
         ${CMAKE_CURRENT_SOURCE_DIR}/src/event_time.c
         ${CMAKE_CURRENT_SOURCE_DIR}/src/global_buffer.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/handle_event.c
         ${CMAKE_CURRENT_SOURCE_DIR}/src/init.c
         ${CMAKE_CURRENT_SOURCE_DIR}/src/sync_analysis.c
         ${CMAKE_CURRENT_SOURCE_DIR}/src/worker_thread.c

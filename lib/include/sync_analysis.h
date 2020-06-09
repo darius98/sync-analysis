@@ -5,6 +5,11 @@
 extern "C" {
 #endif
 
+// Core
+void* syan_allocate_event(int event_type);
+void syan_capture_allocated_event(void* event, void* addr);
+void syan_capture_event(int event_type, void* addr);
+
 // Thread
 void* syan_thread_on_create_init();
 void syan_thread_on_create_finalize(void* event, void* addr);
