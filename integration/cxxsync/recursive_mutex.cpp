@@ -1,7 +1,6 @@
 #include "cxxsync/recursive_mutex.hpp"
 
-#include <sync_analysis.h>
-
+#include "../shared/events.hpp"
 #include "exception.hpp"
 
 namespace sync {

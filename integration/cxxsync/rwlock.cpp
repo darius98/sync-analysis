@@ -1,7 +1,6 @@
 #include "cxxsync/rwlock.hpp"
 
-#include <sync_analysis.h>
-
+#include "../shared/events.hpp"
 #include "exception.hpp"
 
 namespace sync {
