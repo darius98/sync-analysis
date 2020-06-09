@@ -1,0 +1,92 @@
+\subsection{Instalarea și compilarea proiectului}
+Proiectul poate fi descărcat, instalat și folosit pe orice calculator cu
+sistemul de operare o distribuție de Linux, OpenBSD sau Mac OS și acces
+la internet. De asemenea, calculatorul trebuie să aibă instalate
+următoarele programe:
+\begin{itemize}
+    \item \lstinline{as, ar, ld, addr2line} -- de obicei aceste programe
+    sau alte programe echivalente vin preinstalate cu orice distribuție
+    de Linux, Mac OS, FreeBSD sau OpenBSD. Ele fac parte din colecția de
+    utilitare \lstinline{binutils}\cite{binutils} și sunt disponibile
+    gratuit pentru descărcare pe website-ul oficial
+    GNU\cite{GNUWebsite}.
+    \item \lstinline{CMake}\cite{CMake} -- versiunea \lstinline{3.15}
+    sau mai nouă
+    \item \lstinline{make} -- orice versiune compatibilă cu versiunea de
+    CMake instalată
+    \item un compilator de C și C++ care suportă standardele C11,
+    respectiv C++17 în întregime (de exemplu \lstinline{Clang 10}
+    \item \lstinline{git}\cite{git} -- minim versiunea \lstinline{2.0}
+\end{itemize}
+
+Proiectul este disponibil pe internet, stocat pe server-ul GitHub.
+Astfel, acesta poate fi descărcat prin următoarea comandă
+\lstinline{shell}:
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}
+    % git clone https://github.com/darius98/sync-analysis.git
+\end{lstlisting}
+\end{minipage}
+
+Deoarece \textit{repository}-ul de git include biblioteca
+\lstinline{mcga-cli}\cite{mcga-cli} ca submodul de git, trebuie
+inițializată logica pentru submodule de git și descărcat separat acest
+submodul:
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}
+    % cd sync-analysis/
+    % git submodule update --init
+\end{lstlisting}
+\end{minipage}
+
+Odată ce \textit{repository}-ul principal și \textit{submodul}-ul
+\lstinline{mcga-cli} au fost descărcate cu succes, proiectul poate fi
+compilat prin următoarea secvență de comenzi, executate în directorul de
+bază al proiectului:
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}
+    % cmake .
+    % make all
+\end{lstlisting}
+\end{minipage}
+
+După compilarea proiectului, acesta poate fi instalat în sistem folosind
+următoarea comandă, executată tot în directorul de bază al proiectului:
+
+\begin{minipage}{\linewidth}
+\begin{lstlisting}
+    % make install
+\end{lstlisting}
+\end{minipage}
+
+Această comandă adaugă fișiere noi în directoarele de sistem. De obicei,
+aceste fișiere se adaugă în directorul \lstinline{/usr/local/}, deci pe
+multe sisteme această comandă va avea nevoie de permisiuni de
+administrator. Soluția, de exemplu pe sistemul de operare Ubuntu, este
+de a rula comanda folosind \lstinline{sudo}
+(\lstinline{sudo make install}). Fișierele ce se adaugă în sistem prin
+instalare sunt următoarele:
+
+\begin{itemize}
+    \item biblioteca pentru capturare de evenimente:
+    \lstinline{lib/libsync_analysis.so} (pentru Mac OS extensia este
+    \lstinline{.dylib}) și interfața C a acesteia:
+    \lstinline{include/sync_analysis.h}
+    \item biblioteca pentru integrare \lstinline{lib/libcxxsync.a} și
+    interfața C++ a acesteia: directorul \lstinline{include/cxxsync/}
+    \item biblioteca pentru integrare
+    \lstinline{lib/libsyan_pthread_shim.so} (pentru Mac OS extensia este
+    \lstinline{.dylib})
+    \item biblioteca pentru integrare
+    \lstinline{lib/libsyan_stdcxx_shim.so} (pentru Mac OS extensia
+    este \lstinline{.dylib}) și interfața C++ a acesteia: directorul
+    \lstinline{include/stdcxx_shim/}
+    \item programul independent \lstinline{SyncAnalysis}
+    \lstinline{bin/sync_analysis}
+    \item interfața C++ pentru dezvoltarea analizorilor
+    \lstinline{include/syan_analyzer_api/}
+    \item analizorii preinstalați directorul \lstinline{syan-analyzers/}
+\end{itemize}

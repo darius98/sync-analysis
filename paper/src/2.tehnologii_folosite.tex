@@ -1,6 +1,7 @@
 \section{Tehnologii folosite}
 
 \subsection{Limbajul C11 și biblioteca standard C}
+
 Limbajul C\cite{C} este folosit pentru implementarea bibliotecii de
 înregistrare de evenimente și a uneia din bibliotecile de integrare.
 Am ales limbajul pentru componenta aceasta din proiect deoarece
@@ -15,6 +16,7 @@ implementarea bibliotecii de înregistrare de evenimente din motive de
 performanță.
 
 \subsection{Limbajul C++17 și biblioteca standard C++}
+
 Limbajul C++\cite{CXX} este folosit pentru implementarea majorității
 proiectului. Programul SyncAnalysis, două dintre bibliotecile de
 integrare, toate exemplele de analizoare și toate testele automate au
@@ -31,6 +33,7 @@ implementarea analizorilor. Printre modulele folosite cel mai des se
 numără \lstinline{<vector>}, \lstinline{<map>} și \lstinline{<string>}.
 
 \subsection{Compilatorul Clang}
+
 Limbajele C și C++, folosite în acest proiect, sunt limbaje a căror cod
 sursă se compilează în cod nativ, executabil direct pe hardware. Pentru
 a efectua această transformare în proiectul curent, am folosit exclusiv
@@ -40,6 +43,7 @@ de care am avut nevoie în dezvoltare cum ar fi
 Clang-Tidy\cite{ClangTidy} și ThreadSanitizer\cite{ThreadSanitizer}.
 
 \subsection{Uneltele de dezvoltare CMake și CTest}
+
 Pentru proiecte mari de C++, invocarea manuală a compilatorului pentru
 a recompila fiecare fișier modificat devine repede impractică.
 CMake\cite{CMake} este un \textit{build system}: prin scrierea unui
@@ -55,6 +59,7 @@ manuală a acestora. CTest ajută la automatizarea acestui procedeu, din
 nou spre a facilita o experiență plăcută de dezvoltare.
 
 \subsection{Biblioteca pthread}
+
 Biblioteca \lstinline{pthread}\cite{pthread} este interfața standard
 pentru crearea și manipularea mai multor fire de execuție într-un
 proces. Este parte din specificația standard POSIX pentru o interfață
@@ -70,6 +75,7 @@ execuție separat care serializează evenimentele capturate în fișierul de
 evenimente.
 
 \subsection{Biblioteca DL}
+
 Biblioteca \lstinline{DL}\cite{DL} este interfața descrisă în
 specificația standard POSIX pentru găsirea, încărcarea și utilizarea
 bibliotecilor dinamice. Această bibliotecă este folosită în proiect în
@@ -77,6 +83,7 @@ programul independent \lstinline{SyncAnalysis} pentru a încărca
 analizorii specificați de utilizator.
 
 \subsection{Biblioteca libunwind}
+
 Biblioteca \lstinline{libunwind}\cite{libunwind} este o facilitate
 portabilă și eficientă pentru a observa stiva de apeluri de funcții în
 timpul execuției unui program.
@@ -91,6 +98,7 @@ terminarea programului client, doar pentru stivele de execuție necesare
 în rapoarte.
 
 \subsection{Programele addr2line, respectiv atos}
+
 După cum s-a menționat și în secțiunea pentru \lstinline{libunwind},
 biblioteca de capturare a evenimentelor serializează doar lista de
 adrese din stiva de execuție în datele evenimentului în timpul execuției
@@ -112,6 +120,7 @@ programul \lstinline{SyncAnalysis} pe Mac OS, acesta folosește
 \lstinline{atos}\cite{atos} pentru a îndeplini aceleași sarcini.
 
 \subsection{Biblioteca mcga-cli}
+
 Programul \lstinline{SyncAnalysis} acceptă multe argumente de
 configurare în linia de comandă (de exemplu directoarele în care să
 caute analizori, reguli de includere și excludere pentru ce analizori
@@ -124,3 +133,16 @@ folosind o bibliotecă externă, \lstinline{mcga-cli}\cite{mcga-cli}.
 Această bibliotecă a fost dezvoltată de autorul proiectului
 \lstinline{SyncAnalysis}, descris aici, dar este un proiect independent
 de articolul curent.
+
+\subsection{Git și GitHub}
+
+Git\cite{git} este un sistem de versionare și menținere a istoricului de
+modificări. A fost folosit în dezvoltarea acestui proiect exact cu acest
+scop: de a menține un istoric central al tuturor modificărilor făcute
+asupra codului sursă al proiectului și al acestui document.
+
+GitHub\cite{GitHub} este o platformă comercială ce oferă un server de
+git și o interfață web pentru a putea naviga ușor prin istoric.
+\textit{Repository}-ul de git unde se găsește codul sursă al acestui
+proiect este salvat pe serverul de git oferit de GitHub, și este
+accesibil la adresa \url{https://github.com/darius98/sync-analysis}.
