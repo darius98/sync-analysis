@@ -13,11 +13,11 @@ EventFileReader::EventFileReader(std::string fn, std::size_t buffer_cap)
       is_done_reading_file(false) {
   auto buf = std::make_unique<::SyanEvent[]>(buffer_cap);
   if (file == nullptr) {
-    std::cerr << "Cannot read dump file at '" << file_name << "'\n";
+    std::cerr << "Cannot open dump file at '" << file_name << "'\n";
     std::abort();
   }
   buffer = std::move(buf);
-  int read_status = syan_read_dump_file_header(file.get(), &file_header);
+  int read_status = read_header();
   if (read_status != 0) {
     std::cerr << "Cannot read dump file at '" << file_name << "'\n";
     std::abort();
@@ -46,6 +46,70 @@ Event EventFileReader::read() {
   return Event::make(&buffer[buffer_cursor++]);
 }
 
+int EventFileReader::read_header() {
+  size_t num_read;
+  num_read =
+      fread(&file_header.start_time, sizeof(struct timespec), 1, file.get());
+  if (num_read != 1) {
+    return 1;
+  }
+
+  num_read =
+      fread(&file_header.program_name_length, sizeof(size_t), 1, file.get());
+  if (num_read != 1) {
+    return 1;
+  }
+
+  char* program_name = (char*)malloc(file_header.program_name_length + 1);
+  if (program_name == NULL) {
+    return 1;
+  }
+
+  num_read = fread(program_name, sizeof(char), file_header.program_name_length,
+                   file.get());
+  if (num_read != file_header.program_name_length) {
+    free(program_name);
+    return 1;
+  }
+  program_name[file_header.program_name_length] = 0;
+  file_header.program_name = program_name;
+
+  num_read =
+      fread(&file_header.program_command_length, sizeof(size_t), 1, file.get());
+  if (num_read != 1) {
+    free(program_name);
+    return 1;
+  }
+
+  char* program_command = (char*)malloc(file_header.program_command_length + 1);
+  if (program_command == NULL) {
+    free(program_name);
+    return 1;
+  }
+
+  num_read = fread(program_command, sizeof(char),
+                   file_header.program_command_length, file.get());
+  if (num_read != file_header.program_command_length) {
+    free(program_name);
+    free(program_command);
+    return 1;
+  }
+  program_command[file_header.program_command_length] = 0;
+  file_header.program_command = program_command;
+
+#ifdef SYNC_ANALYSIS_IS_MAC_OS_X
+  num_read =
+      fread(&file_header.program_load_addr, sizeof(intptr_t), 1, file.get());
+  if (num_read != 1) {
+    free(program_name);
+    free(program_command);
+    return 1;
+  }
+#endif
+
+  return 0;
+}
+
 void EventFileReader::read_next_chunk() {
   if (done()) {
     return;
@@ -60,8 +124,8 @@ void EventFileReader::read_next_chunk() {
   buffer_cursor = 0;
 }
 
-void EventFileReader::CloseFileDeleter::operator()(std::FILE* f) const
-    noexcept {
+void EventFileReader::CloseFileDeleter::operator()(
+    std::FILE* f) const noexcept {
   std::fclose(f);
 }
 

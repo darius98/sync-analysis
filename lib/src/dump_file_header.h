@@ -27,8 +27,6 @@ int syan_init_dump_file_header(SyanDumpFileHeader* header, int argc,
 
 int syan_write_dump_file_header(FILE* stream, const SyanDumpFileHeader* header);
 
-int syan_read_dump_file_header(FILE* stream, SyanDumpFileHeader* header);
-
 #ifdef __cplusplus
 }
 #endif

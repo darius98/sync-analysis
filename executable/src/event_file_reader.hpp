@@ -23,6 +23,8 @@ public:
   Event read();
 
 private:
+  int read_header();
+
   void read_next_chunk();
 
   struct CloseFileDeleter {

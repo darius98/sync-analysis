@@ -1,4 +1,4 @@
-add_library(cxxsync STATIC
+add_library(cxxsync SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/cxxsync/exception.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/cxxsync/mutex.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/cxxsync/recursive_mutex.cpp

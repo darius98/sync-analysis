@@ -3,7 +3,7 @@ enable_testing()
 add_custom_target(clear_coverage_data
         COMMAND find ${PROJECT_BINARY_DIR} -name "*.gcda" -print0 | xargs -0 rm)
 
-add_executable(run_analyzer_test run_analyzer_test.cpp)
+add_executable(run_analyzer_test EXCLUDE_FROM_ALL run_analyzer_test.cpp)
 target_link_libraries(run_analyzer_test mcga_cli)
 
 add_custom_target(tests.analyzers
@@ -14,7 +14,8 @@ function(add_analyzer_test ANALYZER TYPE DESCRIPTION)
     set(TEST_NAME "analyzer.${ANALYZER}.${TYPE}.${DESCRIPTION}")
     set(TEST_DIR ${PROJECT_SOURCE_DIR}/.test-run/${TEST_NAME})
     file(MAKE_DIRECTORY ${TEST_DIR})
-    add_executable(${TEST_NAME}.exe "${CMAKE_CURRENT_SOURCE_DIR}/${ANALYZER}/${TYPE}.${DESCRIPTION}.cpp")
+    add_executable(${TEST_NAME}.exe EXCLUDE_FROM_ALL
+            "${CMAKE_CURRENT_SOURCE_DIR}/${ANALYZER}/${TYPE}.${DESCRIPTION}.cpp")
     set_target_properties(${TEST_NAME}.exe PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${TEST_DIR}
             RUNTIME_OUTPUT_NAME test_binary)
