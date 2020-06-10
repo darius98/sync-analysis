@@ -126,6 +126,7 @@ int main(int argc, char** argv) {
                      test_binary.data(),
                      (char*)"-A",
                      sync_analysis_analyzer_dir.data(),
+                     (char*)"--debug",
                      (char*)"--print-header",
                      (char*)"-a",
                      sync_analysis_analyzer_name.data(),
@@ -135,9 +136,9 @@ int main(int argc, char** argv) {
                      nullptr};
   std::cout << "Executing sync analysis binary: " << sync_analysis_binary
             << " -b " << test_binary << " -A " << sync_analysis_analyzer_dir
-            << " --print-header -a " << sync_analysis_analyzer_name << " -r "
-            << sync_analysis_output_file << " " << sync_analysis_dump_path
-            << std::endl;
+            << " --debug --print-header -a " << sync_analysis_analyzer_name
+            << " -r " << sync_analysis_output_file << " "
+            << sync_analysis_dump_path << std::endl;
   int status = execv(sync_analysis_binary.c_str(), args);
   std::cerr << "execv failed for sync analysis process. return=" << status
             << ", errno=" << errno << "\n";

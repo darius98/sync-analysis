@@ -56,16 +56,16 @@ enum SyanEventType {
   SA_EV_RWLOCK_ON_DESTROY = SA_EV_RWLOCK | SA_EV_DESTROY,
 };
 
-static_assert(SA_EV_THREAD_ON_CREATE == SYNC_ANALYSIS_THREAD_CREATE_EVENT_TYPE);
+static_assert(SA_EV_THREAD_ON_CREATE == SYAN_THREAD_CREATE_EVENT);
 
 // Thread
 
 inline void* syan_thread_on_create_init() {
-  return syan_allocate_event(SA_EV_THREAD_ON_CREATE);
+  return syan_initialize_event(SA_EV_THREAD_ON_CREATE);
 }
 
 inline void syan_thread_on_create_finalize(void* event, void* addr) {
-  syan_capture_allocated_event(event, addr);
+  syan_finalize_event(event, addr);
 }
 
 inline void syan_thread_on_create(void* addr) {

@@ -1,6 +1,127 @@
 \subsection{Biblioteca de capturare a evenimentelor}
+Aceasta este prima și cea mai importantă dintre componentele
+proiectului. Pentru că această bibliotecă este încărcată direct în
+programul clientului, este proiectată să fie atât portabilă cât și
+performantă.
+
+Pentru a maximiza portabilitatea, alegerea naturală de limbaj
+pentru bibliotecă este C\cite{C}: pentru că limbajul are o interfață
+binară standardizată de ISO și implementată de majoritatea
+compilatoarelor folosite în industrie, împreună cu faptul că majoritatea
+limbajelor de nivel înalt implementează
+\textit{foreign-function-interface} cu C, aplicațiile pot beneficia de
+această bibliotecă aproape indiferent de limbajul în care au fost
+programate sau platforma pe care sunt executate.
+
+Deși există variante mai bune pentru performanță cum ar fi C++ sau
+\textit{assembly}, C este un limbaj suficient de eficient pentru a fi
+cea mai bună alegere, luând în considerare avantajul copleșitor de
+portabilitate.
+
 \subsubsection{Interfață}
-\subsubsection{Descrierea unui eveniment}
-\subsubsection{Capturarea stivei de execuție}
-\subsubsection{Serializare (fișiserul DUMP)}
-\subsubsection{Implementare}
+Pentru că această bibliotecă este una generică, interfața este
+intenționat minimală: sunt expuse în mod public 3 funcții și o constantă
+numerică. În limbajul C, interfața poate fi vizualizată astfel:
+\begin{lstlisting}[language=C]
+    void syan_capture_event(int event_type, void* object);
+
+    #define SYAN_THREAD_CREATE_EVENT 17
+
+    void* syan_initialize_event(int event_type);
+    void syan_finalize_event(void* event, void* object);
+\end{lstlisting}
+Singura funcționalitate a acestei biblioteci este de a captura
+evenimente, așa că interfața publică importantă este doar funcția
+\lstinline{syan_capture_event}, care îndeplinește exact acest scop.
+Exemplul de utilizare după care a fost proiectată funcția
+\lstinline{syan_capture_event} este următorul:
+\begin{lstlisting}[language=C]
+    #define EVENT_MUTEX_BEFORE_LOCK 1331
+    #define EVENT_MUTEX_AFTER_LOCK 1332
+
+    pthread_mutex_t* m;
+    void f() {
+        syan_capture_event(EVENT_MUTEX_BEFORE_LOCK, m);
+        pthread_mutex_lock(m);
+        syan_capture_event(EVENT_MUTEX_AFTER_LOCK, m);
+    }
+\end{lstlisting}
+Funcția este apelată cu 2 parametri, unul pentru tipul de eveniment
+capturat și celălalt pentru identitatea obiectului țintă al
+evenimentului. Astfel, în analiza post-mortem a unui program se poate
+face o corelare între mai multe evenimente care au avut loc pe același
+obiect țintă. Cum obiectele în limbajul C au în mod implicit o
+identitate dată de adresa de memorie unde sunt stocate, este natural ca
+parametrul care identifică obiectul să aibă tipul de date
+\lstinline{void*}, care reprezintă în mod convențional o adresă oarecare
+de memorie. Apare totuși o problemă: aceeași adresă de memorie poate fi
+refolosită de-a lungul execuției unui program, pentru a stoca mai multe
+obiecte logice diferite (după dealocarea primului obiect, la alocarea
+unui obiect nou se poate folosi aceeași memorie; un exemplu comun este
+memoria stivei de execuție). Pentru a evita confuzii generate de această
+problemă, se recomandă ca pentru un obiect ce este ținta unor evenimente
+capturate să se captureze și un eveniment care marchează dealocarea
+obiectului.
+
+Fiecare eveniment capturat conține identitatea firului de execuție care
+l-a capturat. Este util atunci să se raporteze câte un eveniment care
+marchează crearea fiecărui fir de execuție, pentru a putea pune
+evenimentele unui fir de execuție într-un context. Astfel, biblioteca în
+sine când se încarcă raportează ca prim eveniment unul care marchează
+crearea firului de execuție care a încărcat biblioteca. Pentru că
+biblioteca raportează în interiorul său un eveniment de creare de fir de
+execuție, aceasta stabilește un număr
+\lstinline{SYAN_THREAD_CREATE_EVENT} (aleator ales 17) care să
+reprezinte evenimentele de acest tip. Orice bibliotecă de integrare
+trebuie să dea același număr pentru argumentul \lstinline{event_type}
+când apelează funcția \lstinline{syan_capture_event} pentru a raporta
+crearea unui fir de execuție.
+
+Cu experiența implementării bibliotecilor de integrare s-a observat că
+atunci când se raportează crearea unui nou fir de execuție folosind
+biblioteca \lstinline{pthread}, ținta evenimentului este cunoscută abia
+după ce a pornit firul de execuție:
+\begin{lstlisting}[language=C]
+    pthread_t T;
+    pthread_create(&T, nullptr, func, arg);
+    syan_capture_event(SYAN_THREAD_CREATE_EVENT, (void*)T);
+\end{lstlisting}
+Dacă evenimentul care marchează crearea firului de execuție \textit{T}
+este raportat \textit{după} crearea lui \textit{T}, pot apărea
+inconsistențe în analiza post-mortem: firul de execuție \textit{T} poate
+începe să captureze evenimente, care pot ajunge să apară în fișierul de
+evenimente înaintea evenimentului care marchează crearea lui \textit{T}.
+Pentru a rezolva această situație, biblioteca expune celelalte două
+funcții \lstinline{syan_initialize_event} și
+\lstinline{syan_finalize_event} în interfața bibliotecii. Exemplul de
+mai sus se repară astfel:
+\begin{lstlisting}[language=C]
+    pthread_t T;
+    void* ev = syan_initialize_event(SYAN_THREAD_CREATE_EVENT);
+    pthread_create(&T, nullptr, func, arg);
+    syan_finalize_event(ev, (void*)T);
+\end{lstlisting}
+Funcția \lstinline{syan_initialize_event} crează evenimentul și îi
+alocă locul în fișierul de evenimente \textit{înainte} de crearea
+firului \textit{T}. După crearea firului \textit{T}, evenimentul este
+doar marcat ca fiind \textit{finalizat}, dar este scris în fișier ca și
+cum în locul unde a fost mai înainte apelat
+\lstinline{syan_initialize_event} ar fi fost apelat
+\lstinline{syan_capture_event}, rezolvând problema ridicată mai devreme.
+
+Se observă acum că funcția \lstinline{syan_capture_event} are o
+implementare evidentă pe baza celor două funcții nou introduse:
+\begin{lstlisting}[language=C]
+    void syan_capture_event(int event_type, void* object) {
+        void* ev = syan_initialize_event(event_type);
+        syan_finalize_event(ev, object);
+    }
+\end{lstlisting}
+
+\subsubsection{Structura unui eveniment}
+
+\subsubsection{Obținerea stivei de execuție}
+
+\subsubsection{Coada de evenimente}
+
+\subsubsection{Serializarea fișiserului DUMP}

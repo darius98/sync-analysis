@@ -18,7 +18,7 @@ __attribute__((destructor)) static void syan_shutdown_call() {
   syan_shutdown();
 }
 
-void* syan_allocate_event(int event_type) {
+void* syan_initialize_event(int event_type) {
   SyanEvent* event = syan_global_buffer_acquire_event_slot();
   event->event_type = event_type;
   event->timestamp = syan_event_time_now();
@@ -27,11 +27,11 @@ void* syan_allocate_event(int event_type) {
   return event;
 }
 
-void syan_capture_allocated_event(void* event, void* addr) {
+void syan_finalize_event(void* event, void* addr) {
   ((SyanEvent*)event)->addr = (intptr_t)addr;
   atomic_store(&((SyanEvent*)event)->signature, SYAN_EVENT_SIGNATURE);
 }
 
 void syan_capture_event(int event_type, void* addr) {
-  syan_capture_allocated_event(syan_allocate_event(event_type), addr);
+  syan_finalize_event(syan_initialize_event(event_type), addr);
 }

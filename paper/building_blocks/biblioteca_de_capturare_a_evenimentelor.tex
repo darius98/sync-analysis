@@ -13,9 +13,10 @@
 \usepackage[lmargin=2cm, rmargin=3cm]{geometry}
 \usepackage{url}
 
-\graphicspath{ {./resources/} }
+\graphicspath{ {../resources/} }
 
 \fontfamily{Times New Roman}
+
 
 \begin{document}
 
@@ -23,23 +24,9 @@
 \hyphenpenalty=10000
 \exhyphenpenalty=10000
 
-\input{src/0.coperta}
-
-\newpage{} \tableofcontents{}
-
-\newpage{}
-\input{src/1.introducere}
-\newpage{}
-\input{src/2.tehnologii_folosite}
-\newpage{}
-\input{src/3.descrierea_proiectului}
-\newpage{}
-\input{src/4.exemple_de_utilizare}
-\newpage{}
-\input{src/5.concluzii}
-\newpage{}
+\input{../src/3.2.biblioteca_de_capturare_a_evenimentelor}
 
 \bibliographystyle{unsrt}
-\bibliography{bibliografie}
+\bibliography{../bibliografie}
 
 \end{document}
