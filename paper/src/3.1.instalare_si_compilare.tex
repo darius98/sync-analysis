@@ -25,43 +25,35 @@ Proiectul este disponibil pe internet, stocat pe server-ul GitHub.
 Astfel, acesta poate fi descărcat prin următoarea comandă
 \lstinline{shell}:
 
-\begin{minipage}{\linewidth}
 \begin{lstlisting}
     % git clone https://github.com/darius98/sync-analysis.git
 \end{lstlisting}
-\end{minipage}
 
 Deoarece \textit{repository}-ul de git include biblioteca
 \lstinline{mcga-cli}\cite{mcga-cli} ca submodul, trebuie executată o
 comandă separată pentru a inițializa submodulele de git:
 
-\begin{minipage}{\linewidth}
 \begin{lstlisting}
     % cd sync-analysis/
     % git submodule update --init
 \end{lstlisting}
-\end{minipage}
 
 Odată ce \textit{repository}-ul principal și \textit{submodul}-ul
 \lstinline{mcga-cli} au fost descărcate cu succes, proiectul poate fi
 compilat prin următoarea secvență de comenzi, executate în directorul de
 bază al proiectului:
 
-\begin{minipage}{\linewidth}
 \begin{lstlisting}
     % cmake .
     % make all
 \end{lstlisting}
-\end{minipage}
 
 După compilarea proiectului, acesta poate fi instalat în sistem folosind
 următoarea comandă, executată tot în directorul de bază al proiectului:
 
-\begin{minipage}{\linewidth}
 \begin{lstlisting}
     % make install
 \end{lstlisting}
-\end{minipage}
 
 Această comandă adaugă fișiere noi în directoarele de sistem. De obicei,
 aceste fișiere se adaugă în directorul \lstinline{/usr/local/}, deci pe

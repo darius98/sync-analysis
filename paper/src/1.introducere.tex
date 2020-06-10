@@ -142,7 +142,6 @@ opțiunea este \lstinline{-fsanitize=thread}). Executabilul obținut prin
 compilare conține verificări împotriva acceselor concurente
 nesincronizate la memorie:
 
-\begin{minipage}{\linewidth}
 \begin{lstlisting}
 % clang -fsanitize=thread -g -O1 -o program tiny_race.c
 % ./program
@@ -155,7 +154,6 @@ WARNING: ThreadSanitizer: data race (pid=19219)
     #0 pthread_create tsan_interceptors.cc:705 (exe+0xc790)
     #1 main tiny_race.c:9 (exe+0xa3a4)
 \end{lstlisting}
-\end{minipage}
 
 După cum se vede din exemplul de mai sus (parafrazat din site-ul oficial
 de documenție al proiectului \cite{ThreadSanitizerDoc}), ThreadSanitizer
