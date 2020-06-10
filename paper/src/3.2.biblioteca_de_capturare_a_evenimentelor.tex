@@ -22,7 +22,10 @@ portabilitate.
 Pentru că această bibliotecă este una generică, interfața este
 intenționat minimală: sunt expuse în mod public 3 funcții și o constantă
 numerică. În limbajul C, interfața poate fi vizualizată astfel:
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[
+        language=C,
+        captionpos=b,
+        caption=Interfața bibliotecii pentru capturare de evenimente]
     void syan_capture_event(int event_type, void* object);
 
     #define SYAN_THREAD_CREATE_EVENT 17
@@ -30,12 +33,12 @@ numerică. În limbajul C, interfața poate fi vizualizată astfel:
     void* syan_initialize_event(int event_type);
     void syan_finalize_event(void* event, void* object);
 \end{lstlisting}
-Singura funcționalitate a acestei biblioteci este de a captura
-evenimente, așa că interfața publică importantă este doar funcția
+Funcționalitatea a acestei biblioteci este de a captura evenimente, așa
+că interfața publică importantă este doar funcția
 \lstinline{syan_capture_event}, care îndeplinește exact acest scop.
-Exemplul de utilizare după care a fost proiectată funcția
+Exemplul principal de utilizare după care a fost proiectată funcția
 \lstinline{syan_capture_event} este următorul:
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[caption=Exemplul 1 folosit în proiectarea interfeței]
     #define EVENT_MUTEX_BEFORE_LOCK 1331
     #define EVENT_MUTEX_AFTER_LOCK 1332
 
@@ -81,7 +84,7 @@ Cu experiența implementării bibliotecilor de integrare s-a observat că
 atunci când se raportează crearea unui nou fir de execuție folosind
 biblioteca \lstinline{pthread}, ținta evenimentului este cunoscută abia
 după ce a pornit firul de execuție:
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[caption=Exemplul 2 folosit în proiectarea interfeței]
     pthread_t T;
     pthread_create(&T, nullptr, func, arg);
     syan_capture_event(SYAN_THREAD_CREATE_EVENT, (void*)T);
@@ -95,7 +98,7 @@ Pentru a rezolva această situație, biblioteca expune celelalte două
 funcții \lstinline{syan_initialize_event} și
 \lstinline{syan_finalize_event} în interfața bibliotecii. Exemplul de
 mai sus se repară astfel:
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[caption=Exemplul 3 folosit în proiectarea interfeței]
     pthread_t T;
     void* ev = syan_initialize_event(SYAN_THREAD_CREATE_EVENT);
     pthread_create(&T, nullptr, func, arg);
@@ -111,7 +114,8 @@ cum în locul unde a fost mai înainte apelat
 
 Se observă acum că funcția \lstinline{syan_capture_event} are o
 implementare evidentă pe baza celor două funcții nou introduse:
-\begin{lstlisting}[language=C]
+\begin{lstlisting}[caption=Implementarea funcției
+                   \lstinline{syan_capture_event}]
     void syan_capture_event(int event_type, void* object) {
         void* ev = syan_initialize_event(event_type);
         syan_finalize_event(ev, object);

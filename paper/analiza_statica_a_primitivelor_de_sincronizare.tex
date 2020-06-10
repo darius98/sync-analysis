@@ -12,6 +12,11 @@
 \usepackage{listings}
 \usepackage[lmargin=2cm, rmargin=3cm]{geometry}
 \usepackage{url}
+\usepackage{xcolor}
+
+\renewcommand{\lstlistingname}{Fragment de cod}
+
+\lstset{language=C++, captionpos=b}
 
 \graphicspath{ {./resources/} }
 
@@ -38,6 +43,12 @@
 \newpage{}
 \input{src/5.concluzii}
 \newpage{}
+
+\appendix
+\renewcommand{\listfigurename}{Anexa A. Lista figurilor}
+\listoffigures
+\renewcommand{\lstlistlistingname}{Anexa B. Lista fragmentelor de cod}
+\lstlistoflistings
 
 \bibliographystyle{unsrt}
 \bibliography{bibliografie}

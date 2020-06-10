@@ -22,46 +22,42 @@ următoarele programe:
 \end{itemize}
 
 Proiectul este disponibil pe internet, stocat pe server-ul GitHub.
-Astfel, acesta poate fi descărcat prin următoarea comandă
-\lstinline{shell}:
+Astfel, acesta poate fi descărcat și instalat prin următoarea secvență
+de comenzi \lstinline{shell}:
 
-\begin{lstlisting}
-    % git clone https://github.com/darius98/sync-analysis.git
+\begin{lstlisting}[language=bash,
+                   numbers=left,
+                   xleftmargin=3em,
+                   caption=Instrucțiuni pentru instalarea proiectului]
+    git clone https://github.com/darius98/sync-analysis.git
+    cd sync-analysis/
+    git submodule update --init
+    cmake .
+    make all
+    make install
 \end{lstlisting}
 
-Deoarece \textit{repository}-ul de git include biblioteca
-\lstinline{mcga-cli}\cite{mcga-cli} ca submodul, trebuie executată o
-comandă separată pentru a inițializa submodulele de git:
+Comanda 1 descarcă \textit{repository}-ul de git al proiectului de pe
+server-ul GitHub. Acesta conține tot codul sursă asociat proiectului.
+Toate comenzile mai departe trebuie executate în directorul de bază al
+proiectului, așa că comanda 2 schimbă directorul curent pentru restul
+comenzilor.
 
-\begin{lstlisting}
-    % cd sync-analysis/
-    % git submodule update --init
-\end{lstlisting}
+Deoarece \textit{repository}-ul include biblioteca
+\lstinline{mcga-cli}\cite{mcga-cli} ca submodul, trebuie executată
+comanda 3 separat pentru a inițializa submodulele de git și a descărca
+acest submodul.
 
 Odată ce \textit{repository}-ul principal și \textit{submodul}-ul
 \lstinline{mcga-cli} au fost descărcate cu succes, proiectul poate fi
-compilat prin următoarea secvență de comenzi, executate în directorul de
-bază al proiectului:
-
-\begin{lstlisting}
-    % cmake .
-    % make all
-\end{lstlisting}
-
-După compilarea proiectului, acesta poate fi instalat în sistem folosind
-următoarea comandă, executată tot în directorul de bază al proiectului:
-
-\begin{lstlisting}
-    % make install
-\end{lstlisting}
-
-Această comandă adaugă fișiere noi în directoarele de sistem. De obicei,
-aceste fișiere se adaugă în directorul \lstinline{/usr/local/}, deci pe
-multe sisteme această comandă va avea nevoie de permisiuni de
-administrator. Soluția, de exemplu pe sistemul de operare Ubuntu, este
-de a rula comanda folosind \lstinline{sudo}
-(\lstinline{sudo make install}). Fișierele ce se adaugă în sistem prin
-instalare sunt următoarele:
+compilat prin comenzile 4-5. După compilarea proiectului, acesta poate
+fi instalat în sistem folosind comanda 6. Această comandă adaugă fișiere
+noi în directoarele de sistem. De obicei, aceste fișiere se adaugă în
+directorul \lstinline{/usr/local/}, deci pe multe sisteme această
+comandă va avea nevoie de permisiuni de administrator. Soluția, de
+exemplu pe sistemul de operare Ubuntu, este de a rula comanda folosind
+\lstinline{sudo} (\lstinline{sudo make install}). Fișierele ce se adaugă
+în sistem prin instalare sunt următoarele:
 
 \begin{itemize}
     \item biblioteca pentru capturare de evenimente:
