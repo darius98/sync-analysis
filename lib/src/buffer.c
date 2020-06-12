@@ -18,6 +18,10 @@ SyanBufferInitStatus syan_buffer_init(SyanBuffer** buffer) {
   for (int i = 0; i < SYAN_BUFFER_NUM_PAGES; i++) {
     (*buffer)->pages[i] = malloc(sizeof(SyanBufferPage));
     if ((*buffer)->pages[i] == NULL) {
+      for (int j = 0; j < i; j++) {
+        free((*buffer)->pages[j]);
+      }
+      free(*buffer);
       return BUFFER_INIT_MALLOC_FAILED_PAGE;
     }
     syan_reset_buffer_page((*buffer)->pages[i]);
