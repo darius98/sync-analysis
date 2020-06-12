@@ -14,6 +14,8 @@
 *.bbl
 *.bbg
 *.blg
+*.lol
+*.lof
 paper/building_blocks/*.pdf
 CMakeFiles/
 Makefile

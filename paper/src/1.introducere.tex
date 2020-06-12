@@ -87,7 +87,7 @@ importantă componentă este o bibliotecă ce înregistrează evenimentele
 interesante în timpul execuției programului și le serializează într-un
 fișier, pentru a fi analizate separat de alt program. Detalii despre
 această bibliotecă și implementarea ei se găsesc în secțiunea
-\textbf{3.2}.
+\textbf{\ref{library}}.
 
 Biblioteca este una de uz general, neavând în mod direct o interfață
 specifică analizării primitivelor de sincronizare. De aceea proiectul
@@ -98,7 +98,8 @@ populare cum ar fi \lstinline{<pthread.h>} sau modulele
 \lstinline{<thread>} și \lstinline{<mutex>} din biblioteca standard C++,
 pentru a permite programelor ce folosesc aceste biblioteci să folosească
 \textit{SyncAnalysis} fără schimbări în codul sursă. Detalii despre
-aceste biblioteci se găsesc în secțiunea \textbf{3.3}.
+aceste biblioteci se găsesc în secțiunea
+\textbf{\ref{integration-libraries}}.
 
 După execuția programului client obținem o colecție de evenimente,
 capturate și serializate eficient într-un fișier cu ajutorul
@@ -115,8 +116,9 @@ evenimentele din fișier în memorie, pentru ca apoi \textit{analizorii}
 să diagnosticheze erori, avertismente sau alte informații utile pe baza
 acestor evenimente, iar programul să creeze și să afișeze apoi rapoarte
 pentru utilizator. Mai multe detalii despre acest program se găsesc în
-secțiunea \textbf{3.4}, iar despre analizorii implementați ca exemplu
-pentru analiza primitivelor de sincronizare în secțiunea \textbf{3.5}.
+secțiunea \textbf{\ref{executable}}, iar despre analizorii implementați
+ca exemplu pentru analiza primitivelor de sincronizare în secțiunea
+\textbf{\ref{analyzers}}.
 
 \begin{figure}[h]
 \centering

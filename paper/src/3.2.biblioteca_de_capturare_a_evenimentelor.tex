@@ -1,4 +1,4 @@
-\subsection{Biblioteca de capturare a evenimentelor}
+\subsection{Biblioteca de capturare a evenimentelor}\label{library}
 Aceasta este prima și cea mai importantă dintre componentele
 proiectului. Pentru că această bibliotecă este încărcată direct în
 programul clientului, este proiectată să fie atât portabilă cât și
@@ -122,10 +122,348 @@ implementare evidentă pe baza celor două funcții nou introduse:
     }
 \end{lstlisting}
 
-\subsubsection{Structura unui eveniment}
+\subsubsection{Structura unui eveniment}\label{section:event-structure}
 
-\subsubsection{Obținerea stivei de execuție}
+Un eveniment capturat de bibliotecă are aceași structură indiferent de
+tipul evenimentului sau de identitatea obiectului țintă al acestuia.
+Aceasta a fost proiectată astfel încât mai multe evenimente să poată fi
+stocate ușor și eficient într-o zonă continuă de memorie și serializate
+în format binar pe disc. În codul sursă C al bibliotecii, structura ce
+definește un eveniment este următoarea:
+\begin{lstlisting}[caption=Structura unui eveniment capturat]
+    typedef struct {
+        int32_t signature;
+        int32_t event_type;
+        int64_t timestamp;
+        intptr_t thread_id;
+        intptr_t object_id;
+        intptr_t backtrace[12];
+    } SyanEvent;
+\end{lstlisting}
 
-\subsubsection{Coada de evenimente}
+Ordinea și dimensiunea în biți a fiecărui câmp a fost aleasă astfel
+încât pe platformele cele mai populare, unde arhitectura procesorului
+este pe 64 de biți și astfel dimensiunea unui \lstinline{intptr_t} este
+8 bytes, un eveniment să aibă dimensiunea exact 128 bytes, fără spațiu
+irosit din cauze precum \textit{padding} sau \textit{alignment}. Această
+dimensiune, fiind o putere a lui 2 ($2^7=128$) mai are un avantaj:
+dimensiunea paginii de RAM este în general tot o putere de 2, de obicei
+4096 ($2^{12}$), și astfel pe o pagină de memorie încap exact 32 de
+evenimente. Această proprietate este exploatată în bibliotecă pentru a
+obține viteze mari de serializare a evenimentelor în memorie, și mai
+apoi pe disc.
 
-\subsubsection{Serializarea fișiserului DUMP}
+Câmpul \lstinline{signature} este un detaliu de implementare folosit
+pentru a împiedica biblioteca din a scrie un eveniment pe disc înainte
+de apelarea funcției \lstinline{syan_finalize_event}. Aceasta nu va
+scrie evenimentul pe disc până când valoarea câmpului
+\lstinline{signature} nu devine egală cu valoarea prestabilită 666013.
+În cadrul funcției \lstinline{syan_initialize_event} valoarea câmpului
+este marcată 0, dar acesta este deja pus în coada de evenimente ce
+trebuie scrise pe disc. La apelul funcției
+\lstinline{syan_finalize_event}, valoarea este schimbată în 666013,
+permițând bibliotecii să continue serializarea de evenimente.
+
+Câmpurile \lstinline{event_type} și \lstinline{object_id} vor conține
+valorile cerute de clientul bibliotecii în apelul funcției
+\lstinline{syan_capture_event}, sau respectiv în apelurile la
+\lstinline{syan_initialize_event} și la \lstinline{syan_finalize_event}.
+
+Câmpul \lstinline{timestamp} este o reprezentare pe 64 de biți al
+numărului de nanosecunde scurse de la inițializarea bibliotecii până la
+momentul capturării evenimentului. Fișierul DUMP (descris în secțiunea
+\textbf{\ref{dump-file}}) conține în \textit{header} momentul de timp al
+inițializării bibliotecii, astfel momentul real de timp când a avut loc
+evenimentul poate fi reconstruit post-mortem cu precizie de nanosecundă,
+iar stocarea numărului de nanosecunde pe 64 de biți permite capturarea
+evenimentelor într-un program cu durată de viață până la 146 de ani,
+suficient pentru orice scop practic.
+
+Câmpul \lstinline{thread_id} conține identitatea firului de execuție ce
+a capturat evenimentul. Acesta este obținut printr-un apel la funcția
+\lstinline{pthread_self()}, descrisă în specificația POSIX pentru fire
+de execuție portabile\cite{pthread}. Deși specificația nu precizează
+dacă tipul de date returnat de \lstinline{pthread_self()}, anume
+\lstinline{pthread_t}, poate fi stocat cu succes într-o variabilă cu
+tipul de date \lstinline{intptr_t}, în practică toate implementările
+bibliotecii \lstinline{pthread} pentru platformele pe care a fost
+testată biblioteca implementează \lstinline{pthread_t} ca pe un
+\textit{pointer} la structura de control a firului de execuție (iar
+acest \textit{pointer} poate fi stocat, conform definiției tipului de
+date \lstinline{intptr_t}).
+
+Câmpul \lstinline{backtrace} conține adresele de întoarcere din stiva de
+execuție. Acestea sunt utile pentru ca în analiza post mortem să se
+poată reconstrui stiva de apeluri de funcții așa cum este descris în
+secțiunea \textbf{\ref{stack-reconstruction}} și să se poată construi
+rapoarte cât mai exacte despre condițiile în care s-a capturat un
+eveniment. Modul cum sunt capturate aceste adrese este descris mai pe
+larg în secțiunea \textbf{\ref{stack-unwinding}}.
+
+\subsubsection{Stiva de execuție}\label{stack-unwinding}
+
+După compilarea programelor în cod de asamblare, tot codul este
+structurat în funcții. Când o funcție apelează o altă funcție, aceasta
+trebuie să își stocheze valorile variabilelor locale în memorie și
+trebuie să îi transmită funcției apelate adresa de memorie unde să
+reîntoarcă controlul odată ce și-a terminat execuția. Zona de memorie
+unde funcțiile stochează aceste informații se numește segmentul de stivă
+al programului. Fiecare fir de execuție are propriul segment stivă,
+independent de celelalte fire.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=14cm]{stack.jpg}
+\caption{Stiva de execuție în arhitectura X86}
+\label{fig:stack}
+\end{figure}
+
+În Figura \ref{fig:stack} se poate vedea acest procedeu pentru
+arhitectura X86: în momentul apelului funcției \lstinline{function_1}
+din funcția \lstinline{main}, se crează un nou cadru în memoria stivă a
+programului (identificată pe desen prin culoarea albastru). La începutul
+acestui cadru se stochează adresa de memorie a instrucțiunii următoare
+apelului din funcția \lstinline{main}. În timpul execuției funcției
+\lstinline{function_1}, aceasta apelează o a doua funcție
+\lstinline{function_2}. Se crează deci un al treilea cadru în memoria
+stivă (identificată pe desen prin culoarea verde), din nou stocându-se
+adresa de întoarcere. La finalul funcției \lstinline{function_2},
+aceasta invocă instrucțiunea \lstinline{ret}, care întoarce controlul la
+adresa de memorie stocată în cadrul de stivă al funcției curente, adică
+înapoi la funcția \lstinline{function_1}. Când și aceasta se termină
+prin invocarea instrucțiunii ret, controlul este întors funcției
+\lstinline{main}. Dacă aceasta nu mai este apelată la rândul său de
+nicio altă funcție, instrucțiunea \lstinline{ret} de la sfârșitul
+acesteia va încheia execuția programului, întorcând controlul sistemului
+de operare.
+
+A se observa că explicația dată mai sus nu descrie în mod exact cum
+funcționează procesoarele și programele moderne, însă putem ajunge la
+rezultate corecte pentru scopul nostru și fără a înțelege alte detalii
+sau complicații istorice ale stivei de execuție. Singurul detaliu demn
+de menționat este că în unele situații, compilatoarele de C și C++ pot
+decide să \textit{optimizeze} programul prin omiterea stocării adresei
+de întoarcere pe stivă, caz în care reconstruirea stivei de execuție
+devine imposibilă. Pentru compilatorul Clang\cite{Clang}, această
+optimizare poate fi oprită prin argumentul de compilare
+\lstinline{-fno-omit-frame-pointer}.
+
+Dacă funcția \lstinline{function_2} face un apel la funcția
+\lstinline{syan_capture_event} pentru a captura un eveniment, vrem să
+obținem lista de adrese de întoarcere din toate cadrele funcțiilor din
+stivă. Acest rezultat poate fi obținut folosind biblioteca
+\textit{libunwind}\cite{libunwind} prin următoarea funcție C:
+
+\begin{lstlisting}[caption=Capturarea stivei de execuție folosind
+                           \lstinline{libunwind}]
+    #include <libunwind.h>
+
+    void syan_get_backtrace(intptr_t* backtrace) {
+        unw_context_t ctx;
+        unw_getcontext(&ctx);
+        unw_cursor_t crs;
+        unw_init_local(&crs, &ctx);
+        int n_frames = 0;
+        while (n_frames < 12 && unw_step(&crs) > 0) {
+            unw_word_t ip;
+            if (unw_get_reg(&crs, UNW_REG_IP, &ip) < 0) {
+                break;
+            }
+            backtrace[n_frames++] = (intptr_t)ip;
+        }
+    }
+\end{lstlisting}
+
+Astfel, fiecare eveniment conține tot șirul de adrese de întoarcere din
+sitva de execuție a firului ce a capturat evenimentului, urmând ca
+această informație să fie interpretată în analiza post mortem pentru a
+obține numele funcțiilor din care fac parte aceste adrese (după cum este
+descris în secțiunea \textbf{\ref{stack-reconstruction}}).
+
+\subsubsection{Coada de evenimente și serializarea}\label{section:queue}
+
+Am menționat deja mai devreme că un obiectiv clar în proiectarea acestei
+biblioteci este ca performanța programului analizat să fie impactată cât
+se poate de puțin. Trebuie luat în considerare astfel că scrierea
+evenimentelor pe disc este o operațiune lentă. Prima decizie luată în
+implementarea serializării este deci de a scrie evenimentele doar în
+memoria RAM în cadrul firelor de execuție ale programului client, pentru
+ca mai apoi un alt fir de execuție creat de bibliotecă să copieze datele
+din memoria RAM pe disc.
+
+Odată luată această decizie, performanța bibliotecii se împarte în două
+componente: durata capturării unui eveniment și eficiența firului de
+execuție ce serializează datele pe disc. Pentru a obține rezultate
+satisfăcătoare pe ambele planuri, am proiectat o
+\textit{coadă de evenimente} (intern numită \lstinline{SyanBuffer})
+specifică pentru această bibliotecă. Interfața acestei cozi în limbajul
+C poate fi văzută în Fragmentul de cod \ref{code:lib-queue-interface}.
+
+\begin{lstlisting}[caption=Interfața cozii de evenimente folosite în
+                           bibliotecă,
+                   label=code:lib-queue-interface]
+    #define SYAN_BUFFER_PAGE_SIZE 256
+    #define SYAN_BUFFER_NUM_PAGES 1024
+
+    typedef struct {
+      SyanEvent storage[SYAN_BUFFER_PAGE_SIZE];
+      int_fast32_t storage_front;
+      atomic_int_fast32_t storage_back;
+    } SyanBufferPage;
+    typedef SyanBufferPage* SyanBufferPagePtr;
+
+    typedef struct {
+      SyanBufferPagePtr pages[SYAN_BUFFER_NUM_PAGES];
+      int_fast32_t pages_front;
+      atomic_int_fast32_t pages_back;
+    } SyanBuffer;
+
+    int syan_buffer_init(SyanBuffer** b);
+    SyanEvent* syan_buffer_acquire_event_slot(SyanBuffer* b);
+    SyanBufferPagePtr syan_buffer_get_front_page(SyanBuffer* b);
+    void syan_buffer_release_front_page(SyanBuffer* b);
+\end{lstlisting}
+
+Încă din interfață se poate observa prima proprietate importantă a
+acestei cozi: nu conține niciun mecanism explicit de sincronizare, ci
+doar două variabile cu tipul de date \textit{atomic}.
+
+Punerea rapidă a evenimentelor în coadă este mai importantă decât
+eficiența citirii din coadă, pentru a interfera cât mai puțin cu firele
+de execuție ale programului client. Când un astfel de fir capturează un
+eveniment, memoria folosită pentru a stoca informațiile acelui eveniment
+este direct memorie din câmpul \lstinline{storage} al paginii curente
+din coadă (pagina \lstinline{b->pages[b->pages_back]}). Asta omite
+necesitatea de a apela funcții precum \lstinline{malloc} pentru a obține
+memorie pentru eveniment sau \lstinline{memcpy} pentru a muta
+evenimentul în coadă abia după ce acesta este complet format. Așadar în
+funcția \lstinline{syan_initialize_event} se obține o zonă de memorie
+pentru stocarea respectivului eveniment printr-un apel la funcția
+\lstinline{syan_buffer_acquire_event_slot}, care implementează un
+algoritm \textit{lock-free} bazat pe operațiile primitive de
+\textit{compare-and-swap} și \textit{atomic-fetch-add} pe variabilele
+atomice \lstinline{pages_back} și respectiv \lstinline{storage_back} din
+acea pagină. Implementarea este similară cu cele descrise în articolele
+\textit{Lock-free linked lists using compare-and-swap}
+\cite{LinkedListsCAS} și
+\textit{A practical nonblocking queue algorithm using compare-and-swap}
+\cite{QueueCAS}.
+
+După ce un eveniment a fost scris în coadă, acesta trebuie scris mai
+departe pe disc. După cum am spus mai sus, biblioteca crează un fir de
+execuție special pentru această operație. Fiind un singur fir care se
+ocupă de scrierea pe disc a evenimentelor de la începutul cozii, se
+poate observa și în interfață că variabilele \lstinline{pages_front} și
+\lstinline{storage_front} nu sunt atomice: aceasta sunt atât scrise cât
+și citite doar de firul intern al bibliotecii, așa că nu necesită
+sincronizare. Am menționat și mai devreme cum un eveniment pus în coadă
+nu este scris pe disc până când câmpul \lstinline{signature} al
+evenimentului nu are valoarea corectă, scrisă doar de apelul funcției
+\lstinline{syan_finalize_event}. În practică, firul de execuție al
+bibliotecii citește aceste semnături din evenimentele de la începutul
+cozii folosind operația \textit{atomic-load}, pentru că se așteaptă ca
+scrierea să fie făcută de firul de execuție care raportează evenimentul.
+
+Firul de execuție intern bibliotecii funcționează pe bază de iterații:
+o iterație scrie cât de multe evenimente poate din coadă pe disc. Dacă
+iterația a scris cu succes date pe disc, se trece direct la următoarea
+iterație. Altfel, înseamnă că nu mai există evenimente noi capturate, și
+firul apelează funcția de sistem \lstinline{usleep} pentru a permite
+firelor programului client să își continue execuția înainte de a începe
+o nouă iterație. Pentru a afla ce evenimente noi are de scris pe disc,
+firul apelează funcția \lstinline{syan_buffer_get_front_page} și
+verifică valorile câmpurilor \lstinline{storage_front} și
+\lstinline{storage_back} de pe acea pagină. Dacă valorile acestea sunt
+diferite, atunci toate evenimentele dintre sunt fie evenimente noi
+capturate, fie evenimente în curs de capturare. Firul așteaptă
+finalizarea tuturor acestor evenimente pe modelul \textit{busy-wait}.
+Biblioteca asumă că între apelurile funcțiilor
+\lstinline{syan_initialize_event} și \lstinline{syan_finalize_event}
+trece relativ puțin timp. S-a experimentat aici și cu alte modele de
+așteptare (\lstinline{pthread_sched_yield}, \lstinline{usleep}) și s-a
+observat empiric că \textit{busy-wait} se comportă cel mai bine în
+practică. După ce toate aceste evenimente sunt finalizate, ele sunt
+scrise împreună pe disc printr-un singur apel al funcției standard C
+\lstinline{fwrite}. Dacă prin scrierea acestor evenimente s-au scris
+toate evenimentele din pagină, aceasta este eliberată. Altfel, se
+modifică doar câmpul \lstinline{storage_front} al paginii pentru a marca
+până unde au fost scrise evenimentele din pagină. O variantă
+simplificată a implementării în limbajul C poate fi văzută mai jos:
+
+\begin{lstlisting}[caption=Scrierea evenimentelor pe disc,
+                   label=code:lib-write-events]
+    SyanBufferPagePtr p = syan_global_buffer_get_front_page();
+    int_fast32_t front = p->storage_front;
+    int_fast32_t back = atomic_load(&p->storage_back);
+    for (int i = front; i < back; i++)
+        while (atomic_load(&p->storage[i].signature)
+                   != SYAN_EVENT_SIGNATURE)
+            ;
+    int num_bytes = (back - front) * sizeof(SyanEvent);
+    fwrite(&p->storage[front], 1, num_bytes, DUMP_file);
+    if (back == SYAN_BUFFER_PAGE_SIZE)
+        syan_global_buffer_release_front_page();
+    else
+        buf_page->storage_front = back;
+    return (back - front > 0);
+\end{lstlisting}
+
+\subsubsection{Fișiserului DUMP}\label{dump-file}
+
+Am menționat în repetate rânduri că evenimentele capturate în timpul
+execuției sunt scrise într-un fișier, denumit în continuare fișierul
+DUMP. Dar acest fișier nu conține doar evenimentele, ci are și un antet
+ce conține informații în plus despre execuție, utile pentru analiza
+post-mortem a evenimentelor:
+\begin{itemize}
+    \item momentul când a fost inițializată biblioteca (o aproximare
+    bună a momentului când a început execuția programului)
+    \item calea către executabilul invocat
+    \item argumentele din linia de comandă date executabilului
+    \item adresa la care a fost încărcat executabilul
+\end{itemize}
+
+Momentul când a fost inițializată biblioteca este important pentru a
+putea reconstrui momentul de timp când a fost capturat un eveniment,
+pentru că valoarea câmpului \lstinline{timestamp} din fiecare eveniment
+este egală cu numărul de nanosecunde ce au trecut între acest moment de
+inițializare și momentul capturării evenimentului.
+
+Calea către executabiul invocat și argumentelee din linia de comandă
+sunt utile pentru a putea identifica ce reprezintă acest fișier DUMP. Nu
+sunt folosite de către programul \lstinline{SyncAnalysis} decât pentru a
+fi afișate în raportul de analizare.
+
+Adresa de încărcare a executabilului este importantă pentru a putea
+interpreta adresele din \lstinline{backtrace}-urile evenimentelor. Mai
+multe detalii despre acest procedeu se găsesc în secțiunea 
+\textbf{\ref{stack-reconstruction}}.
+
+Fișierul DUMP este creat și deschis pentru scriere printr-un apel la
+funcția standard C \lstinline{fopen("sync_analysis.dump", "wb")}.
+Conform specificației acestei funcții, dacă un fișier cu același nume
+exista deja, versiunea anterioară este ștearsă și un nou fișier gol este
+creat oricum. Apelul la \lstinline{fopen} se face la inițializarea
+bibliotecii, împreună cu scrierea antetului și pornirea firului intern
+de execuție. În continuarea antetului sunt scrise direct evenimentele,
+unul după celălalt, serializate în formatul binar descris în secțiunea
+\textbf{\ref{section:event-structure}}.
+
+\subsubsection{Măsurători de performanță}\label{library-performance}
+
+După cum am menționat în secțiunea \textbf{\ref{section:queue}},
+performanța bibliotecii se împarte în două metrici diferite: timpul
+necesar capturării unui eveniment și volumul de evenimente ce poate fi
+serializat într-o perioadă de timp. Ambele măsurători depind de
+frecvența evenimentelor și de numărul de fire de execuție ce capturează
+evenimente. În Figura \ref{fig:lib-perf} se pot vedea două tabele cu
+măsurătorile făcute cu ajutorul bibliotecii \lstinline{Google Benchmark}
+\cite{GoogleBenchmark} pentru ambele metrici interesante.
+
+\begin{figure}[ht]
+\centering
+\missingfigure[figwidth=14cm]
+    {TODO: table of library performance measurements}
+\caption{Măsurători de performanță a bibliotecii}
+\label{fig:lib-perf}
+\end{figure}
