@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-SyanBufferInitStatus syan_global_buffer_init();
+int syan_global_buffer_init();
 
 SyanEvent* syan_global_buffer_acquire_event_slot();
 

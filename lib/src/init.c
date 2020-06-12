@@ -22,13 +22,13 @@ void syan_init(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  SyanBufferInitStatus buffer_init_status = syan_global_buffer_init();
-  if (buffer_init_status == BUFFER_INIT_MALLOC_FAILED_BUFFER) {
+  int buffer_init_status = syan_global_buffer_init();
+  if (buffer_init_status == SYAN_BUFFER_INIT_MALLOC_BUFFER_FAILED) {
     fprintf(stderr, "SyncAnalysis init: malloc failed for %lu bytes\n",
             sizeof(SyanBuffer));
     exit(EXIT_FAILURE);
   }
-  if (buffer_init_status == BUFFER_INIT_MALLOC_FAILED_PAGE) {
+  if (buffer_init_status == SYAN_BUFFER_INIT_MALLOC_PAGE_FAILED) {
     fprintf(stderr, "SyncAnalysis init: malloc failed for %lu bytes\n",
             sizeof(SyanBufferPage));
     exit(EXIT_FAILURE);

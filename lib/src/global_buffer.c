@@ -2,7 +2,7 @@
 
 static SyanBuffer* syan_global_buffer = NULL;
 
-SyanBufferInitStatus syan_global_buffer_init() {
+int syan_global_buffer_init() {
   return syan_buffer_init(&syan_global_buffer);
 }
 

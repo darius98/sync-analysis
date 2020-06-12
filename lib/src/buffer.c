@@ -9,10 +9,10 @@ static void syan_reset_buffer_page(SyanBufferPagePtr page) {
   memset(page->storage, 0, sizeof(page->storage));
 }
 
-SyanBufferInitStatus syan_buffer_init(SyanBuffer** buffer) {
+int syan_buffer_init(SyanBuffer** buffer) {
   *buffer = malloc(sizeof(SyanBuffer));
   if (*buffer == NULL) {
-    return BUFFER_INIT_MALLOC_FAILED_BUFFER;
+    return SYAN_BUFFER_INIT_MALLOC_BUFFER_FAILED;
   }
 
   for (int i = 0; i < SYAN_BUFFER_NUM_PAGES; i++) {
@@ -22,14 +22,14 @@ SyanBufferInitStatus syan_buffer_init(SyanBuffer** buffer) {
         free((*buffer)->pages[j]);
       }
       free(*buffer);
-      return BUFFER_INIT_MALLOC_FAILED_PAGE;
+      return SYAN_BUFFER_INIT_MALLOC_PAGE_FAILED;
     }
     syan_reset_buffer_page((*buffer)->pages[i]);
   }
   (*buffer)->pages_front = 0;
   atomic_store(&(*buffer)->pages_back, 0);
 
-  return BUFFER_INIT_OK;
+  return SYAN_BUFFER_INIT_OK;
 }
 
 SyanEvent* syan_buffer_acquire_event_slot(SyanBuffer* buffer) {

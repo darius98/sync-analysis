@@ -29,13 +29,13 @@ typedef struct {
   atomic_int_fast16_t pages_back;
 } SyanBuffer;
 
-typedef enum {
-  BUFFER_INIT_OK,
-  BUFFER_INIT_MALLOC_FAILED_BUFFER,
-  BUFFER_INIT_MALLOC_FAILED_PAGE,
-} SyanBufferInitStatus;
+enum {
+  SYAN_BUFFER_INIT_OK,
+  SYAN_BUFFER_INIT_MALLOC_BUFFER_FAILED,
+  SYAN_BUFFER_INIT_MALLOC_PAGE_FAILED,
+};
 
-SyanBufferInitStatus syan_buffer_init(SyanBuffer** buffer);
+int syan_buffer_init(SyanBuffer** buffer);
 
 SyanEvent* syan_buffer_acquire_event_slot(SyanBuffer* buffer);
 
