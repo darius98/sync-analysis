@@ -42,19 +42,17 @@ cod \ref{code:thread-type-erasure}.
                            clasa \lstinline{Thread} din
                            \lstinline{cxxsync},
                    label=code:thread-type-erasure]
-    template<class Lambda>
-    Thread::Thread(Lambda lambda) {
+    template<class Lambda> Thread::Thread(Lambda lambda) {
         init(&erased_lambda<Lambda>, new Lambda(lambda));
     }
 
     void Thread::init(void* (*func)(void*), void* arg) {
-      void* ev = syan_initialize_event(SA_EV_THREAD_ON_CREATE);
-      pthread_create(&pt_thread, nullptr, func, arg);
-      syan_finalize_event(ev, (void*)pt_thread);
+        auto e = syan_initialize_event(SA_EV_THREAD_ON_CREATE);
+        pthread_create(&pt_thread, nullptr, func, arg);
+        syan_finalize_event(e, (void*)pt_thread);
     }
 
-    template<class Lambda>
-    void* erased_lambda(void* arg) {
+    template<class Lambda> void* erased_lambda(void* arg) {
         Lambda* lambda = static_cast<Lambda*>(arg);
         (*lambda)();
         delete lambda;
@@ -62,8 +60,8 @@ cod \ref{code:thread-type-erasure}.
     }
 \end{lstlisting}
 
-Clasele \lstinline{Mutex} și \lstinline{RecursiveMutex} expun câte 3
-metode publice:
+Clasele \lstinline{Mutex} și \lstinline{RecursiveMutex} expun fiecare
+câte 3 metode publice:
 \begin{lstlisting}
     bool try_lock() noexcept;
     void lock();
@@ -75,6 +73,7 @@ interior funcțiile \lstinline{pthread_mutex_trylock},
 \lstinline{_lock} respectiv \lstinline{_unlock} din biblioteca
 \lstinline{pthread}. Clasa \lstinline{RWLock} expune 6 metode publice
 (3 pentru \textit{read-lock} și 3 pentru \textit{write-lock}):
+
 \begin{lstlisting}
     bool try_rd_lock() noexcept;
     void rd_lock();
