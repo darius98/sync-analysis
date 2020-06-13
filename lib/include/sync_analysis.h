@@ -13,6 +13,12 @@ void syan_capture_event(int event_type, void* addr);
 }
 #endif
 
-#define SYAN_THREAD_CREATE_EVENT 17
+enum {
+  SA_EV_THREAD = 1u << 26,
+  SA_EV_JOIN = 1u << 27,
+  SA_EV_DETACH = 1u << 28,
+  SA_EV_CREATE = 1u << 29,
+  SA_EV_DESTROY = 1u << 30,
+};
 
 #endif

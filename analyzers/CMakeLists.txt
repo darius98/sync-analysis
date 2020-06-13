@@ -5,6 +5,7 @@ macro(add_syan_analyzer NAME)
     target_include_directories(syan-analyzer-${NAME} PRIVATE ${PROJECT_SOURCE_DIR}/executable/include)
     target_compile_options(syan-analyzer-${NAME} PRIVATE -fvisibility=hidden)
     target_link_options(syan-analyzer-${NAME} PRIVATE -undefined dynamic_lookup)
+    target_link_libraries(syan-analyzer-${NAME} PRIVATE sync_analysis_lib_options)
     set_target_properties(syan-analyzer-${NAME} PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/syan-analyzers)
     add_dependencies(all_analyzers syan-analyzer-${NAME})

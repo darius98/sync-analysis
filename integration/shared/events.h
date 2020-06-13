@@ -8,23 +8,18 @@ extern "C" {
 #endif
 
 enum {
-  SA_EV_THREAD = 1u << 0,
-  SA_EV_MUTEX = 1u << 1,
-  SA_EV_REC_MUTEX = 1u << 2,
-  SA_EV_RWLOCK = 1u << 3,
+  SA_EV_MUTEX = 1u << 15,
+  SA_EV_REC_MUTEX = 1u << 16,
+  SA_EV_RWLOCK = 1u << 17,
 
-  SA_EV_CREATE = 1u << 4,
-  SA_EV_TRY_WR_LOCK = 1u << 5,
-  SA_EV_BEFORE_WR_LOCK = 1u << 6,
-  SA_EV_AFTER_WR_LOCK = 1u << 7,
-  SA_EV_WR_UNLOCK = 1u << 8,
-  SA_EV_TRY_RD_LOCK = 1u << 9,
-  SA_EV_BEFORE_RD_LOCK = 1u << 10,
-  SA_EV_AFTER_RD_LOCK = 1u << 11,
-  SA_EV_RD_UNLOCK = 1u << 12,
-  SA_EV_DESTROY = 1u << 13,
-  SA_EV_JOIN = 1u << 14,
-  SA_EV_DETACH = 1u << 15,
+  SA_EV_TRY_WR_LOCK = 1u << 18,
+  SA_EV_BEFORE_WR_LOCK = 1u << 19,
+  SA_EV_AFTER_WR_LOCK = 1u << 20,
+  SA_EV_WR_UNLOCK = 1u << 21,
+  SA_EV_TRY_RD_LOCK = 1u << 22,
+  SA_EV_BEFORE_RD_LOCK = 1u << 23,
+  SA_EV_AFTER_RD_LOCK = 1u << 24,
+  SA_EV_RD_UNLOCK = 1u << 25,
 };
 
 enum {

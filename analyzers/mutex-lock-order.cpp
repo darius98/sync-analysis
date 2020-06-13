@@ -3,6 +3,8 @@
 
 #include <syan_analyzer_api/syan_analyzer_api.hpp>
 
+#include "utils.hpp"
+
 using namespace syan;
 
 struct MutexLockOrderAnalyzer {
@@ -13,7 +15,7 @@ struct MutexLockOrderAnalyzer {
 
   void operator()(Event event) {
     switch (event.type()) {
-    case EventType::mutex_before_lock: {
+    case SA_EV_MUTEX_BEFORE_LOCK: {
       auto& owned = thread_owned_mutexes[event.thread()];
       for (const auto& owned_obj : owned) {
         auto it = edges.find({event.object(), owned_obj.object()});
@@ -43,7 +45,7 @@ struct MutexLockOrderAnalyzer {
       }
       break;
     }
-    case EventType::mutex_after_lock: {
+    case SA_EV_MUTEX_AFTER_LOCK: {
       thread_owned_mutexes[event.thread()].insert(event);
       auto& owned = thread_owned_mutexes[event.thread()];
       for (const auto& owned_obj : owned) {
@@ -52,7 +54,7 @@ struct MutexLockOrderAnalyzer {
       }
       break;
     }
-    case EventType::mutex_on_unlock: {
+    case SA_EV_MUTEX_ON_UNLOCK: {
       thread_owned_mutexes[event.thread()].erase(event);
       break;
     }

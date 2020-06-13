@@ -1,6 +1,7 @@
 #include <map>
 #include <optional>
 
+#include "utils.hpp"
 #include <syan_analyzer_api/syan_analyzer_api.hpp>
 
 using namespace syan;
@@ -32,7 +33,7 @@ struct RedundantRecursiveMutexAnalyzer {
   std::map<ObjectId, RecursiveMutexState> recursive_mutexes;
 
   void operator()(Event event) {
-    if (event.object_type() != ObjectType::rec_mutex) {
+    if (object_type(event) != ObjectType::rec_mutex) {
       return;
     }
     if (event.is_create_event()) {
@@ -46,7 +47,7 @@ struct RedundantRecursiveMutexAnalyzer {
     }
 
     switch (event.type()) {
-    case EventType::rec_mutex_after_lock: {
+    case SA_EV_REC_MUTEX_AFTER_LOCK: {
       it->second.was_ever_locked = true;
       if (it->second.thread_owner.has_value()) {
         // Found a legitimate use of a recursive mutex. Backing off.
@@ -57,11 +58,11 @@ struct RedundantRecursiveMutexAnalyzer {
       it->second.thread_owner.emplace(event.thread());
       break;
     }
-    case EventType::rec_mutex_on_unlock: {
+    case SA_EV_REC_MUTEX_ON_UNLOCK: {
       it->second.thread_owner.reset();
       break;
     }
-    case EventType::rec_mutex_on_destroy: {
+    case SA_EV_REC_MUTEX_ON_DESTROY: {
       recursive_mutexes.erase(it);
     }
     default: break;

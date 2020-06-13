@@ -9,8 +9,8 @@ struct Event::EventPtrInternal {
   ::SyanEvent event;
 };
 
-EventType Event::type() const noexcept {
-  return static_cast<EventType>(ptr->event.event_type);
+int Event::type() const noexcept {
+  return ptr->event.event_type;
 }
 
 ObjectId Event::object() const noexcept {

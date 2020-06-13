@@ -1,6 +1,7 @@
 #include <map>
 #include <optional>
 
+#include "utils.hpp"
 #include <syan_analyzer_api/syan_analyzer_api.hpp>
 
 using namespace syan;
@@ -56,11 +57,11 @@ struct SingleThreadLock {
   std::map<std::pair<ObjectType, ObjectId>, ObjectState> objects;
 
   void operator()(Event event) {
-    if (event.raw_type() & event_type_thread) {
+    if (event.type() & SA_EV_THREAD) {
       return;
     }
 
-    const auto object_key = std::pair{event.object_type(), event.object()};
+    const auto object_key = std::pair{object_type(event), event.object()};
 
     if (event.is_create_event()) {
       objects.emplace(std::piecewise_construct,
@@ -73,10 +74,10 @@ struct SingleThreadLock {
       return;
     }
 
-    if ((event.raw_type() & event_type_before_rd_lock) ||
-        (event.raw_type() & event_type_before_wr_lock) ||
-        (event.raw_type() & event_type_try_rd_lock) ||
-        (event.raw_type() & event_type_try_wr_lock)) {
+    if ((event.type() & SA_EV_BEFORE_RD_LOCK) ||
+        (event.type() & SA_EV_BEFORE_WR_LOCK) ||
+        (event.type() & SA_EV_TRY_RD_LOCK) ||
+        (event.type() & SA_EV_TRY_WR_LOCK)) {
       auto it = objects.find(object_key);
       if (it != objects.end() && !it->second.set_thread(event.thread())) {
         objects.erase(it);

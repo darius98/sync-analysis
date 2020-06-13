@@ -68,7 +68,7 @@ void syan_init(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  syan_capture_event(SYAN_THREAD_CREATE_EVENT, pthread_self());
+  syan_capture_event(SA_EV_THREAD | SA_EV_CREATE, pthread_self());
 }
 
 void syan_shutdown() {

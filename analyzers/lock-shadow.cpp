@@ -3,6 +3,8 @@
 
 #include <syan_analyzer_api/syan_analyzer_api.hpp>
 
+#include "utils.hpp"
+
 using namespace syan;
 
 struct LockState {
@@ -22,11 +24,11 @@ struct LockState {
     auto report = create_report();
     report.set_level(Report::Level::warning);
     report.set_description(
-        "Every lock event on " + database().object_name(lock_type, lock_id) +
+        "Every lock event on " + database().object_name(lock_id) +
         " is shadowed by a write lock on " + database().object_name(shadow));
-    report.add_section("Note: " + database().object_name(lock_type, lock_id) +
+    report.add_section("Note: " + database().object_name(lock_id) +
                            " created here:",
-                       database().object_create(lock_type, lock_id));
+                       database().object_create(lock_id));
     report.add_section(
         "Note: " + database().object_name(shadow) + " created here:", shadow);
   }
@@ -41,17 +43,17 @@ struct LockShadowAnalyzer {
   void operator()(Event event) {
     auto& current_thread_locks = thread_locks[event.thread()];
 
-    if (event.type() == EventType::mutex_on_create ||
-        event.type() == EventType::rec_mutex_on_create ||
-        event.type() == EventType::rwlock_on_create) {
+    if (event.type() == SA_EV_MUTEX_ON_CREATE ||
+        event.type() == SA_EV_REC_MUTEX_ON_CREATE ||
+        event.type() == SA_EV_RWLOCK_ON_CREATE) {
       locks.emplace(event.object(),
-                    LockState{event.object_type(), event.object()});
+                    LockState{object_type(event), event.object()});
       return;
     }
 
-    if (event.type() == EventType::mutex_on_unlock ||
-        event.type() == EventType::rec_mutex_on_unlock ||
-        event.type() == EventType::rwlock_on_wr_unlock) {
+    if (event.type() == SA_EV_MUTEX_ON_UNLOCK ||
+        event.type() == SA_EV_REC_MUTEX_ON_UNLOCK ||
+        event.type() == SA_EV_RWLOCK_ON_WR_UNLOCK) {
       auto first_occurrence =
           current_thread_locks.find(database().object_create(event));
       if (first_occurrence != current_thread_locks.end()) {
@@ -62,10 +64,10 @@ struct LockShadowAnalyzer {
 
     auto it = locks.find(event.object());
 
-    if (event.type() == EventType::mutex_after_lock ||
-        event.type() == EventType::rec_mutex_after_lock ||
-        event.type() == EventType::rwlock_after_wr_lock ||
-        event.type() == EventType::rwlock_after_rd_lock) {
+    if (event.type() == SA_EV_MUTEX_AFTER_LOCK ||
+        event.type() == SA_EV_REC_MUTEX_AFTER_LOCK ||
+        event.type() == SA_EV_RWLOCK_AFTER_WR_LOCK ||
+        event.type() == SA_EV_RWLOCK_AFTER_RD_LOCK) {
       if (it != locks.end()) {
         if (!it->second.was_ever_locked) {
           it->second.shadows.insert(current_thread_locks.begin(),
@@ -83,14 +85,14 @@ struct LockShadowAnalyzer {
           locks.erase(it);
         }
       }
-      if (event.type() != EventType::rwlock_after_rd_lock) {
+      if (event.type() != SA_EV_RWLOCK_AFTER_RD_LOCK) {
         current_thread_locks.insert(database().object_create(event));
       }
     }
 
-    if (event.type() == EventType::mutex_on_destroy ||
-        event.type() == EventType::rec_mutex_on_destroy ||
-        event.type() == EventType::rwlock_on_destroy) {
+    if (event.type() == SA_EV_MUTEX_ON_DESTROY ||
+        event.type() == SA_EV_REC_MUTEX_ON_DESTROY ||
+        event.type() == SA_EV_RWLOCK_ON_DESTROY) {
       if (it != locks.end()) {
         locks.erase(it);
       }

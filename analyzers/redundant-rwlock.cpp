@@ -1,6 +1,7 @@
 #include <map>
 #include <optional>
 
+#include "utils.hpp"
 #include <syan_analyzer_api/syan_analyzer_api.hpp>
 
 using namespace syan;
@@ -41,7 +42,7 @@ struct RedundantRWLockAnalyzer {
   std::map<ObjectId, RWLockState> rwlocks;
 
   void operator()(Event event) {
-    if (event.object_type() != ObjectType::rwlock) {
+    if (object_type(event) != ObjectType::rwlock) {
       return;
     }
     if (event.is_create_event()) {
@@ -55,15 +56,15 @@ struct RedundantRWLockAnalyzer {
     }
 
     switch (event.type()) {
-    case EventType::rwlock_after_rd_lock: {
+    case SA_EV_RWLOCK_AFTER_RD_LOCK: {
       it->second.was_ever_rd_locked = true;
       break;
     }
-    case EventType::rwlock_after_wr_lock: {
+    case SA_EV_RWLOCK_AFTER_WR_LOCK: {
       it->second.was_ever_wr_locked = true;
       break;
     }
-    case EventType::rwlock_on_destroy: {
+    case SA_EV_RWLOCK_ON_DESTROY: {
       rwlocks.erase(it);
       break;
     }
