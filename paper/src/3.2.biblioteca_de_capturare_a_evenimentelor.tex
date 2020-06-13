@@ -20,25 +20,32 @@ portabilitate.
 
 \subsubsection{Interfață}
 Pentru că această bibliotecă este una generică, interfața este
-intenționat minimală: sunt expuse în mod public 3 funcții și o constantă
-numerică. În limbajul C, interfața poate fi vizualizată astfel:
+intenționat minimală: sunt expuse în mod public 3 funcții și 4
+constante numerice. În limbajul C, interfața poate fi descrisă astfel:
 \begin{lstlisting}[
-        language=C,
-        captionpos=b,
         caption=Interfața bibliotecii pentru capturare de evenimente]
     void syan_capture_event(int event_type, void* object);
 
-    #define SYAN_THREAD_CREATE_EVENT 17
-
     void* syan_initialize_event(int event_type);
     void syan_finalize_event(void* event, void* object);
+
+    enum {
+      SA_EV_THREAD = 1u << 28,
+      SA_EV_CREATE = 1u << 29,
+      SA_EV_DESTROY = 1u << 30,
+      SA_EV_THREAD_ON_CREATE = SA_EV_THREAD | SA_EV_CREATE,
+    };
 \end{lstlisting}
-Funcționalitatea a acestei biblioteci este de a captura evenimente, așa
-că interfața publică importantă este doar funcția
+Funcționalitatea acestei biblioteci este de a captura evenimente, așa
+că interfața publică importantă este funcția
 \lstinline{syan_capture_event}, care îndeplinește exact acest scop.
-Exemplul principal de utilizare după care a fost proiectată funcția
+Toate celelalte componente ale interfeței expuse sunt pentru a trata
+cazuri particulare mai complexe sau a oferi mai multă informație
+programului de analiză post-mortem, și sunt descrise mai jos. Exemplul
+principal de utilizare după care a fost proiectată funcția
 \lstinline{syan_capture_event} este următorul:
-\begin{lstlisting}[caption=Exemplul 1 folosit în proiectarea interfeței]
+\begin{lstlisting}[caption=Exemplul folosit în proiectarea interfeței]
+
     #define EVENT_MUTEX_BEFORE_LOCK 1331
     #define EVENT_MUTEX_AFTER_LOCK 1332
 
@@ -63,8 +70,21 @@ obiecte logice diferite (după dealocarea primului obiect, la alocarea
 unui obiect nou se poate folosi aceeași memorie; un exemplu comun este
 memoria stivei de execuție). Pentru a evita confuzii generate de această
 problemă, se recomandă ca pentru un obiect ce este ținta unor evenimente
-capturate să se captureze și un eveniment care marchează dealocarea
-obiectului.
+capturate să se captureze și două evenimente speciale: unul pentru
+alocarea și unul pentru dealocarea memoriei obiectului. Pentru ca
+programul \lstinline{SyncAnalysis} să se poată folosi de evenimentele de
+alocare și dealocare pentru a reconstrui o bază de date de obiecte
+active în fiecare punct al execuției programului client, se recomandă ca
+evenimentele acestea (și doar acestea!) să conțină în tipul
+evenimentului biții \lstinline{SA_EV_CREATE} respectiv
+\lstinline{SA_EV_DESTROY}:
+\begin{lstlisting}
+    enum {
+        EVENT_MUTEX = 1u << 15,
+        EVENT_MUTEX_CREATE = EVENT_MUTEX | SA_EV_CREATE,
+        EVENT_MUTEX_DESTROY = EVENT_MUTEX | SA_EV_DESTROY,
+    };
+\end{lstlisting}
 
 Fiecare eveniment capturat conține identitatea firului de execuție care
 l-a capturat. Este util atunci să se raporteze câte un eveniment care
@@ -74,17 +94,19 @@ sine când se încarcă raportează ca prim eveniment unul care marchează
 crearea firului de execuție care a încărcat biblioteca. Pentru că
 biblioteca raportează în interiorul său un eveniment de creare de fir de
 execuție, aceasta stabilește un număr
-\lstinline{SYAN_THREAD_CREATE_EVENT} (aleator ales 17) care să
-reprezinte evenimentele de acest tip. Orice bibliotecă de integrare
-trebuie să dea același număr pentru argumentul \lstinline{event_type}
-când apelează funcția \lstinline{syan_capture_event} pentru a raporta
-crearea unui fir de execuție.
+\lstinline{SA_EV_THREAD_ON_CREATE} (se observă în interfață că acest
+număr conține bitul \lstinline{SA_EV_CREATE}) care să reprezinte
+evenimentele de acest tip. Orice bibliotecă de integrare trebuie să dea
+același număr pentru argumentul \lstinline{event_type} când apelează
+funcția \lstinline{syan_capture_event} pentru a raporta crearea unui fir
+nou de execuție.
 
 Cu experiența implementării bibliotecilor de integrare s-a observat că
 atunci când se raportează crearea unui nou fir de execuție folosind
 biblioteca \lstinline{pthread}, ținta evenimentului este cunoscută abia
 după ce a pornit firul de execuție:
-\begin{lstlisting}[caption=Exemplul 2 folosit în proiectarea interfeței]
+\begin{lstlisting}[caption=Capturare incorectă a creării unui fir de
+                           execuție]
     pthread_t T;
     pthread_create(&T, nullptr, func, arg);
     syan_capture_event(SYAN_THREAD_CREATE_EVENT, (void*)T);
@@ -98,7 +120,8 @@ Pentru a rezolva această situație, biblioteca expune celelalte două
 funcții \lstinline{syan_initialize_event} și
 \lstinline{syan_finalize_event} în interfața bibliotecii. Exemplul de
 mai sus se repară astfel:
-\begin{lstlisting}[caption=Exemplul 3 folosit în proiectarea interfeței]
+\begin{lstlisting}[caption=Capturare corectă a creării unui fir de
+                           execuție]
     pthread_t T;
     void* ev = syan_initialize_event(SYAN_THREAD_CREATE_EVENT);
     pthread_create(&T, nullptr, func, arg);
@@ -252,12 +275,11 @@ Dacă funcția \lstinline{function_2} face un apel la funcția
 \lstinline{syan_capture_event} pentru a captura un eveniment, vrem să
 obținem lista de adrese de întoarcere din toate cadrele funcțiilor din
 stivă. Acest rezultat poate fi obținut folosind biblioteca
-\textit{libunwind}\cite{libunwind} prin următoarea funcție C:
+\textit{libunwind}\cite{libunwind}:
 
 \begin{lstlisting}[caption=Capturarea stivei de execuție folosind
                            \lstinline{libunwind}]
     #include <libunwind.h>
-
     void syan_get_backtrace(intptr_t* backtrace) {
         unw_context_t ctx;
         unw_getcontext(&ctx);
@@ -266,52 +288,36 @@ stivă. Acest rezultat poate fi obținut folosind biblioteca
         int n_frames = 0;
         while (n_frames < 12 && unw_step(&crs) > 0) {
             unw_word_t ip;
-            if (unw_get_reg(&crs, UNW_REG_IP, &ip) < 0) {
-                break;
-            }
+            if (unw_get_reg(&crs, UNW_REG_IP, &ip) < 0) break;
             backtrace[n_frames++] = (intptr_t)ip;
         }
     }
 \end{lstlisting}
 
-Astfel, fiecare eveniment conține tot șirul de adrese de întoarcere din
-sitva de execuție a firului ce a capturat evenimentului, urmând ca
-această informație să fie interpretată în analiza post mortem pentru a
-obține numele funcțiilor din care fac parte aceste adrese (după cum este
-descris în secțiunea \textbf{\ref{stack-reconstruction}}).
-
 \subsubsection{Coada de evenimente și serializarea}\label{section:queue}
 
-Am menționat deja mai devreme că un obiectiv clar în proiectarea acestei
+Am menționat deja mai devreme că un obiectiv în proiectarea acestei
 biblioteci este ca performanța programului analizat să fie impactată cât
 se poate de puțin. Trebuie luat în considerare astfel că scrierea
 evenimentelor pe disc este o operațiune lentă. Prima decizie luată în
 implementarea serializării este deci de a scrie evenimentele doar în
 memoria RAM în cadrul firelor de execuție ale programului client, pentru
 ca mai apoi un alt fir de execuție creat de bibliotecă să copieze datele
-din memoria RAM pe disc.
-
-Odată luată această decizie, performanța bibliotecii se împarte în două
-componente: durata capturării unui eveniment și eficiența firului de
-execuție ce serializează datele pe disc. Pentru a obține rezultate
-satisfăcătoare pe ambele planuri, am proiectat o
-\textit{coadă de evenimente} (intern numită \lstinline{SyanBuffer})
-specifică pentru această bibliotecă. Interfața acestei cozi în limbajul
-C poate fi văzută în Fragmentul de cod \ref{code:lib-queue-interface}.
+din memoria RAM pe disc. Pentru a obține rezultate satisfăcătoare de
+performanță, am proiectat o \textit{coadă de evenimente} (intern numită
+\lstinline{SyanBuffer}) specifică pentru această bibliotecă. Interfața
+acestei cozi este următoarea:
 
 \begin{lstlisting}[caption=Interfața cozii de evenimente folosite în
-                           bibliotecă,
-                   label=code:lib-queue-interface]
+                           bibliotecă]
     #define SYAN_BUFFER_PAGE_SIZE 256
     #define SYAN_BUFFER_NUM_PAGES 1024
-
     typedef struct {
       SyanEvent storage[SYAN_BUFFER_PAGE_SIZE];
       int_fast32_t storage_front;
       atomic_int_fast32_t storage_back;
     } SyanBufferPage;
     typedef SyanBufferPage* SyanBufferPagePtr;
-
     typedef struct {
       SyanBufferPagePtr pages[SYAN_BUFFER_NUM_PAGES];
       int_fast32_t pages_front;

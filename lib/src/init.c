@@ -73,9 +73,6 @@ void syan_init(int argc, char** argv) {
 }
 
 void syan_shutdown() {
-  syan_finalize_event(syan_initialize_event(SA_EV_THREAD_ON_JOIN),
-                      (void*)pthread_self());
-
   int status = syan_stop_worker_thread();
   if (status != 0) {
     fprintf(stderr, "SyncAnalysis shutdown: pthread_join failed error=%d\n",

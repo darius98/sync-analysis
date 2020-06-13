@@ -13,15 +13,10 @@ inline void syan_capture_event(int event_type, void* addr) {
 }
 
 enum {
-  SA_EV_THREAD = 1u << 26,
-  SA_EV_JOIN = 1u << 27,
-  SA_EV_DETACH = 1u << 28,
+  SA_EV_THREAD = 1u << 28,
   SA_EV_CREATE = 1u << 29,
   SA_EV_DESTROY = 1u << 30,
-
   SA_EV_THREAD_ON_CREATE = SA_EV_THREAD | SA_EV_CREATE,
-  SA_EV_THREAD_ON_JOIN = SA_EV_THREAD | SA_EV_JOIN,
-  SA_EV_THREAD_ON_DETACH = SA_EV_THREAD | SA_EV_DETACH,
 };
 
 #ifdef __cplusplus
