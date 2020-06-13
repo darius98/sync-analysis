@@ -59,10 +59,6 @@ public:
 
   int type() const noexcept;
 
-  int raw_type() const noexcept {
-    return static_cast<int>(type());
-  }
-
   ObjectId object() const noexcept;
 
   ObjectId thread() const noexcept;
@@ -72,11 +68,11 @@ public:
   RawBacktrace raw_backtrace() const noexcept;
 
   bool is_create_event() const noexcept {
-    return (raw_type() & SA_EV_CREATE) != 0;
+    return (type() & SA_EV_CREATE) != 0;
   }
 
   bool is_destroy_event() const noexcept {
-    return (raw_type() & SA_EV_DESTROY) != 0;
+    return (type() & SA_EV_DESTROY) != 0;
   }
 
   explicit operator bool() const noexcept {
