@@ -1,6 +1,6 @@
 #include "cxxsync/recursive_mutex.hpp"
 
-#include "../shared/events.hpp"
+#include "../shared/events.h"
 #include "exception.hpp"
 
 namespace sync {
@@ -18,32 +18,32 @@ RecursiveMutex::RecursiveMutex() {
   status = pthread_mutexattr_destroy(&attr);
   SyncException::throw_on_error("RecursiveMutex", "pthread_mutexattr_destroy",
                                 status);
-  syan_rec_mutex_on_create(this);
+  syan_capture_event(SA_EV_REC_MUTEX_ON_CREATE, this);
 }
 
 RecursiveMutex::~RecursiveMutex() {
   pthread_mutex_destroy(&pt_mutex);
-  syan_rec_mutex_on_destroy(this);
+  syan_capture_event(SA_EV_REC_MUTEX_ON_DESTROY, this);
 }
 
 bool RecursiveMutex::try_lock() noexcept {
-  syan_rec_mutex_on_try_lock(this);
+  syan_capture_event(SA_EV_REC_MUTEX_ON_TRY_LOCK, this);
   if (pthread_mutex_trylock(&pt_mutex) == 0) {
-    syan_rec_mutex_after_lock(this);
+    syan_capture_event(SA_EV_REC_MUTEX_AFTER_LOCK, this);
     return true;
   }
   return false;
 }
 
 void RecursiveMutex::lock() {
-  syan_rec_mutex_before_lock(this);
+  syan_capture_event(SA_EV_REC_MUTEX_BEFORE_LOCK, this);
   int status = pthread_mutex_lock(&pt_mutex);
   SyncException::throw_on_error("RecursiveMutex", "pthread_mutex_lock", status);
-  syan_rec_mutex_after_lock(this);
+  syan_capture_event(SA_EV_REC_MUTEX_AFTER_LOCK, this);
 }
 
 void RecursiveMutex::unlock() {
-  syan_rec_mutex_on_unlock(this);
+  syan_capture_event(SA_EV_REC_MUTEX_ON_UNLOCK, this);
   int status = pthread_mutex_unlock(&pt_mutex);
   SyncException::throw_on_error("RecursiveMutex", "pthread_mutex_unlock",
                                 status);

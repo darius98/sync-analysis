@@ -1,6 +1,6 @@
 #include "cxxsync/thread.hpp"
 
-#include "../shared/events.hpp"
+#include "../shared/events.h"
 #include "exception.hpp"
 
 namespace sync {
@@ -49,7 +49,7 @@ void Thread::join() {
   void* result;
   int status = pthread_join(pt_thread, &result);
   SyncException::throw_on_error("Thread", "pthread_join", status);
-  syan_thread_on_join((void*)pt_thread);
+  syan_capture_event(SA_EV_THREAD_ON_JOIN, (void*)pt_thread);
   pt_thread = nullptr;
 }
 
@@ -60,14 +60,14 @@ void Thread::detach() {
 
   int status = pthread_detach(pt_thread);
   SyncException::throw_on_error("Thread", "pthread_detach", status);
-  syan_thread_on_detach((void*)pt_thread);
+  syan_capture_event(SA_EV_THREAD_ON_DETACH, (void*)pt_thread);
   pt_thread = nullptr;
 }
 
 void Thread::init_thread(void* (*func)(void*), void* arg) {
-  void* event = syan_thread_on_create_init();
+  void* event = syan_initialize_event(SA_EV_THREAD_ON_CREATE);
   int status = pthread_create(&pt_thread, nullptr, func, arg);
-  syan_thread_on_create_finalize(event, (void*)pt_thread);
+  syan_finalize_event(event, (void*)pt_thread);
   SyncException::throw_on_error("Thread", "pthread_create", status);
 }
 
