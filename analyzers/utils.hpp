@@ -25,13 +25,13 @@ inline ObjectType object_type(const Event& event) noexcept {
   if (event.type() & SA_EV_THREAD) {
     return ObjectType::thread;
   }
-  if (event.type() & SA_EV_MUTEX) {
+  if (event.type() & SA_MUTEX) {
     return ObjectType::mutex;
   }
-  if (event.type() & SA_EV_REC_MUTEX) {
+  if (event.type() & SA_REC_MUTEX) {
     return ObjectType::rec_mutex;
   }
-  if (event.type() & SA_EV_RWLOCK) {
+  if (event.type() & SA_RWLOCK) {
     return ObjectType::rwlock;
   }
   return ObjectType::unknown;

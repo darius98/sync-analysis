@@ -74,10 +74,10 @@ struct SingleThreadLock {
       return;
     }
 
-    if ((event.type() & SA_EV_BEFORE_RD_LOCK) ||
-        (event.type() & SA_EV_BEFORE_WR_LOCK) ||
-        (event.type() & SA_EV_TRY_RD_LOCK) ||
-        (event.type() & SA_EV_TRY_WR_LOCK)) {
+    if ((event.type() & SA_BEFORE_RD_LOCK) ||
+        (event.type() & SA_BEFORE_WR_LOCK) ||
+        (event.type() & SA_TRY_RD_LOCK) ||
+        (event.type() & SA_TRY_WR_LOCK)) {
       auto it = objects.find(object_key);
       if (it != objects.end() && !it->second.set_thread(event.thread())) {
         objects.erase(it);

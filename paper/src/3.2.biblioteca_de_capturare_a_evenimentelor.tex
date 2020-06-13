@@ -30,9 +30,9 @@ constante numerice. În limbajul C, interfața poate fi descrisă astfel:
     void syan_finalize_event(void* event, void* object);
 
     enum {
-      SA_EV_THREAD = 1u << 28,
-      SA_EV_CREATE = 1u << 29,
-      SA_EV_DESTROY = 1u << 30,
+      SA_EV_CREATE = 1 << 28,
+      SA_EV_DESTROY = 1 << 29,
+      SA_EV_THREAD = 1 << 30,
       SA_EV_THREAD_ON_CREATE = SA_EV_THREAD | SA_EV_CREATE,
     };
 \end{lstlisting}
@@ -64,20 +64,28 @@ obiect țintă. Cum obiectele în limbajul C au în mod implicit o
 identitate dată de adresa de memorie unde sunt stocate, este natural ca
 parametrul care identifică obiectul să aibă tipul de date
 \lstinline{void*}, care reprezintă în mod convențional o adresă oarecare
-de memorie. Apare totuși o problemă: aceeași adresă de memorie poate fi
+de memorie. Apare totuși o problemă: aceași adresă de memorie poate fi
 refolosită de-a lungul execuției unui program, pentru a stoca mai multe
 obiecte logice diferite (după dealocarea primului obiect, la alocarea
-unui obiect nou se poate folosi aceeași memorie; un exemplu comun este
-memoria stivei de execuție). Pentru a evita confuzii generate de această
-problemă, se recomandă ca pentru un obiect ce este ținta unor evenimente
-capturate să se captureze și două evenimente speciale: unul pentru
-alocarea și unul pentru dealocarea memoriei obiectului. Pentru ca
-programul \lstinline{SyncAnalysis} să se poată folosi de evenimentele de
-alocare și dealocare pentru a reconstrui o bază de date de obiecte
-active în fiecare punct al execuției programului client, se recomandă ca
-evenimentele acestea (și doar acestea!) să conțină în tipul
-evenimentului biții \lstinline{SA_EV_CREATE} respectiv
-\lstinline{SA_EV_DESTROY}:
+unui obiect nou se poate folosi aceași memorie; un exemplu comun este
+segmentul de memorie stivă al programului). Pentru a evita confuzii
+generate de această problemă, biblioteca expune două constante numerice
+\lstinline{SA_EV_CREATE} și \lstinline{SA_EV_DESTROY}, ce acționează ca
+\textit{biți indicatori} în tipul unui eveniment: dacă în scrierea în
+baza 2 a tipului unui eveniment bitul \lstinline{SA_EV_CREATE}
+(respectiv \lstinline{SA_EV_DESTROY}) este 1, evenimentul este
+considerat unul care marchează crearea un obiect (respectiv distrugerea
+unui obiect).
+
+Această convenție este folosită și de către programul
+\lstinline{SyncAnalysis}, care se folosește de aceste evenimente pentru
+a reconstrui o bază de date de obiecte active în fiecare punct al
+execuției programului client, a include evenimentul ce marchează
+crearea unui obiect țintă în rapoarte și a curăța memorie după
+distrugerea unui obiect. Astfel, este recomandat ca orice bibliotecă de
+integrare să folosească acești indicatori pentru a captura evenimente ce
+marchează crearea și distrugerea tuturor obiectelor de interes pentru
+evenimentele capturate de respectiva bibliotecă:
 \begin{lstlisting}
     enum {
         EVENT_MUTEX = 1u << 15,
@@ -89,11 +97,11 @@ evenimentului biții \lstinline{SA_EV_CREATE} respectiv
 Fiecare eveniment capturat conține identitatea firului de execuție care
 l-a capturat. Este util atunci să se raporteze câte un eveniment care
 marchează crearea fiecărui fir de execuție, pentru a putea pune
-evenimentele unui fir de execuție într-un context. Astfel, biblioteca în
-sine când se încarcă raportează ca prim eveniment unul care marchează
-crearea firului de execuție care a încărcat biblioteca. Pentru că
-biblioteca raportează în interiorul său un eveniment de creare de fir de
-execuție, aceasta stabilește un număr
+evenimentele capturate de un anumit fir de execuție într-un context.
+Astfel, biblioteca în sine când se încarcă capturează ca prim eveniment
+unul care marchează crearea firului de execuție care a încărcat
+biblioteca. Pentru că biblioteca raportează în interiorul său un
+eveniment de creare de fir de execuție, aceasta stabilește un număr
 \lstinline{SA_EV_THREAD_ON_CREATE} (se observă în interfață că acest
 număr conține bitul \lstinline{SA_EV_CREATE}) care să reprezinte
 evenimentele de acest tip. Orice bibliotecă de integrare trebuie să dea
@@ -109,31 +117,31 @@ după ce a pornit firul de execuție:
                            execuție]
     pthread_t T;
     pthread_create(&T, nullptr, func, arg);
-    syan_capture_event(SYAN_THREAD_CREATE_EVENT, (void*)T);
+    syan_capture_event(SA_EV_THREAD_ON_CREATE, (void*)T);
 \end{lstlisting}
 Dacă evenimentul care marchează crearea firului de execuție \textit{T}
-este raportat \textit{după} crearea lui \textit{T}, pot apărea
+este capturat \textit{după} crearea lui \textit{T}, pot apărea
 inconsistențe în analiza post-mortem: firul de execuție \textit{T} poate
 începe să captureze evenimente, care pot ajunge să apară în fișierul de
 evenimente înaintea evenimentului care marchează crearea lui \textit{T}.
 Pentru a rezolva această situație, biblioteca expune celelalte două
 funcții \lstinline{syan_initialize_event} și
-\lstinline{syan_finalize_event} în interfața bibliotecii. Exemplul de
-mai sus se repară astfel:
+\lstinline{syan_finalize_event} în interfața bibliotecii.  Funcția
+\lstinline{syan_initialize_event} crează evenimentul și îi alocă locul
+în fișierul de evenimente \textit{înainte} de crearea firului
+\textit{T}. După crearea firului \textit{T}, evenimentul este doar
+marcat ca fiind \textit{finalizat}, dar este scris în fișier ca și cum
+în locul unde a fost mai înainte apelat
+\lstinline{syan_initialize_event} ar fi fost apelat
+\lstinline{syan_capture_event}, rezolvând problema ridicată mai devreme.
+Exemplul de mai sus se repară astfel:
 \begin{lstlisting}[caption=Capturare corectă a creării unui fir de
                            execuție]
     pthread_t T;
-    void* ev = syan_initialize_event(SYAN_THREAD_CREATE_EVENT);
+    void* ev = syan_initialize_event(SA_EV_THREAD_ON_CREATE);
     pthread_create(&T, nullptr, func, arg);
     syan_finalize_event(ev, (void*)T);
 \end{lstlisting}
-Funcția \lstinline{syan_initialize_event} crează evenimentul și îi
-alocă locul în fișierul de evenimente \textit{înainte} de crearea
-firului \textit{T}. După crearea firului \textit{T}, evenimentul este
-doar marcat ca fiind \textit{finalizat}, dar este scris în fișier ca și
-cum în locul unde a fost mai înainte apelat
-\lstinline{syan_initialize_event} ar fi fost apelat
-\lstinline{syan_capture_event}, rezolvând problema ridicată mai devreme.
 
 Se observă acum că funcția \lstinline{syan_capture_event} are o
 implementare evidentă pe baza celor două funcții nou introduse:
@@ -312,12 +320,15 @@ acestei cozi este următoarea:
                            bibliotecă]
     #define SYAN_BUFFER_PAGE_SIZE 256
     #define SYAN_BUFFER_NUM_PAGES 1024
+
     typedef struct {
       SyanEvent storage[SYAN_BUFFER_PAGE_SIZE];
       int_fast32_t storage_front;
       atomic_int_fast32_t storage_back;
     } SyanBufferPage;
+
     typedef SyanBufferPage* SyanBufferPagePtr;
+
     typedef struct {
       SyanBufferPagePtr pages[SYAN_BUFFER_NUM_PAGES];
       int_fast32_t pages_front;
@@ -403,8 +414,7 @@ simplificată a implementării în limbajul C poate fi văzută mai jos:
     int_fast32_t back = atomic_load(&p->storage_back);
     for (int i = front; i < back; i++)
         while (atomic_load(&p->storage[i].signature)
-                   != SYAN_EVENT_SIGNATURE)
-            ;
+                   != SYAN_EVENT_SIGNATURE);
     int num_bytes = (back - front) * sizeof(SyanEvent);
     fwrite(&p->storage[front], 1, num_bytes, DUMP_file);
     if (back == SYAN_BUFFER_PAGE_SIZE)
