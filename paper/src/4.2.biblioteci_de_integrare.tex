@@ -1,0 +1,197 @@
+\subsection{Biblioteci de integrare}
+\label{integration-libraries}
+
+\subsubsection{cxxsync (C++, începând cu C++11)}
+\lstinline{cxxsync} este o bibliotecă de C++ proiectată pentru a fi un
+exemplu de integrare cu biblioteca de capturare de evenimente. Nu este
+neapărat cea mai bună soluție pentru integrarea în proiecte existente,
+deoarece are o interfață diferită de alte biblioteci existente, deci
+sunt necesare schimbări în codul sursă pentru integrare. Această
+bibliotecă este folosită de exemplu în testele analizorilor, după cum
+este descris în secțiunea \textbf{\ref{analyzer-tests}}.
+
+Biblioteca expune 4 clase principale, pentru cele 4 primitive ale căror
+evenimente ne interesează: \lstinline{Thread} pentru
+\textit{fir de execuție}, \lstinline{Mutex} pentru \textit{mutex},
+\lstinline{RecursiveMutex} pentru \textit{mutex recursiv} și
+\lstinline{RWLock} pentru \textit{read-write lock}. În implementarea
+tuturor claselor se folosesc funcții din biblioteca \lstinline{pthread}
+și se capturează evenimente folosind funcția
+\lstinline{syan_capture_event}, descrisă în Secțiunea
+\textbf{\ref{section:library-interface}}, și tipuri de evenimente dintre
+cele descrise în Fragmentul de cod \ref{code:syan-event-types}.
+
+Clasa \lstinline{Thread} crează un fir de execuție printr-un apel al
+funcției \lstinline{pthread_create} în constructor. Pentru a admite
+sintaxa elegantă de funcții \textit{lambda} din C++11 pentru
+inițializarea firului de execuție, s-a folosit tehnica C++ cunoscută ca
+\textit{type erasure}\cite{TypeErasure}, mai exact transformarea unui
+tip de date necunoscut, primit ca \textit{parametru de template},
+într-unul cunoscut, în acest caz \lstinline{void*(*)(void*)}
+(\textit{pointer} la o funcție ce primește ca parametru un
+\lstinline{void*} și returnează un \lstinline{void*}; acesta este tipul
+de date pe care îl primește funcția \lstinline{pthread_create} ca
+parametru pentru a inițializa noul fir de execuție). Implementarea
+constructorului clasei \lstinline{Thread} folosind această tehnică,
+și de asemenea folosirea funcțiilor \lstinline{syan_initialize_event} și
+\lstinline{syan_finalize_event} în locul funcției
+\lstinline{syan_capture_event} din motivele precizate în secțiunea
+\textbf{\ref{section:library-interface}} se pot vedea în Fragmentul de
+cod \ref{code:thread-type-erasure}.
+\begin{lstlisting}[caption=Tehnica \textit{type-erasure} în
+                           clasa \lstinline{Thread} din
+                           \lstinline{cxxsync},
+                   label=code:thread-type-erasure]
+    template<class Lambda>
+    Thread::Thread(Lambda lambda) {
+        init(&erased_lambda<Lambda>, new Lambda(lambda));
+    }
+
+    void Thread::init(void* (*func)(void*), void* arg) {
+      void* ev = syan_initialize_event(SA_EV_THREAD_ON_CREATE);
+      pthread_create(&pt_thread, nullptr, func, arg);
+      syan_finalize_event(ev, (void*)pt_thread);
+    }
+
+    template<class Lambda>
+    void* erased_lambda(void* arg) {
+        Lambda* lambda = static_cast<Lambda*>(arg);
+        (*lambda)();
+        delete lambda;
+        return nullptr;
+    }
+\end{lstlisting}
+
+Clasele \lstinline{Mutex} și \lstinline{RecursiveMutex} expun câte 3
+metode publice:
+\begin{lstlisting}
+    bool try_lock() noexcept;
+    void lock();
+    void unlock();
+\end{lstlisting}
+
+Aceste trei metode sunt implementate la fel în ambele clase, apelând în
+interior funcțiile \lstinline{pthread_mutex_trylock},
+\lstinline{_lock} respectiv \lstinline{_unlock} din biblioteca
+\lstinline{pthread}. Clasa \lstinline{RWLock} expune 6 metode publice
+(3 pentru \textit{read-lock} și 3 pentru \textit{write-lock}):
+\begin{lstlisting}
+    bool try_rd_lock() noexcept;
+    void rd_lock();
+    void rd_unlock();
+    bool try_wr_lock() noexcept;
+    void wr_lock();
+    void wr_unlock();
+\end{lstlisting}
+
+Metodele acestea sunt implementate prin apeluri la funcțiile
+echivalente din biblioteca \lstinline{pthread}:
+\lstinline{pthread_rwlock_tryrdlock}, \lstinline{_rdlock},
+\lstinline{_unlock}, \lstinline{_trywrlock}, \lstinline{_wrlock}
+respectiv \lstinline{_unlock}.
+
+Toate cele 4 clase principale din bibliotecă fac unul sau mai multe
+apeluri la funcția \lstinline{syan_capture_event}, pentru a raporta
+diverse evenimente. De exemplu, constructorul clasei
+\lstinline{RecursiveMutex} face următorul apel:
+\begin{lstlisting}
+    syan_capture_event(SA_EV_REC_MUTEX_ON_CREATE, this);
+\end{lstlisting}
+Metodele \lstinline{try_lock, try_rd_lock, try_wr_lock} pot face unul
+sau două apeluri, în funcție de dacă primitiva a fost \textit{locked} cu
+succes:
+\begin{lstlisting}[caption=Metoda \lstinline{RWLock::try_rd_lock} din
+                           \lstinline{cxxsync}]
+    bool RWLock::try_rd_lock() noexcept {
+      syan_capture_event(SA_EV_RWLOCK_ON_TRY_RD_LOCK, this);
+      if (pthread_rwlock_tryrdlock(&pt_rwlock) != 0)
+        return false;
+      syan_capture_event(SA_EV_RWLOCK_AFTER_RD_LOCK, this);
+      return true;
+    }
+\end{lstlisting}
+
+Pe lângă cele 4 clase principale, biblioteca mai expune și 4 clase
+auxiliare atașate pentru a implementa tehnica \textit{RAII}\cite{RAII},
+foarte populară și utilă în programele moderne C++ (clasele sunt numite
+\lstinline{MutexGuard}, \lstinline{RecursiveMutexGuard},
+\lstinline{RWLockReadGuard} și \lstinline{RWLockWriteGuard}). Aceste
+clase au o interfață foarte simplă (compusă doar din constructor și
+destructor) și o implementare la fel de simplă, expusă în Fragmentul de
+cod \ref{code:mutex-guard}. Scopul acestor clase este doar ca o instanță
+cu \textit{automatic storage} să fie creată unde se vrea un
+\textit{lock} pe o primitivă și metoda asociată de \textit{unlock} se va
+apela automat la sfârșitul blocului respectiv de cod (indiferent dacă se
+iese în mod natural prin terminarea blocului sau printr-un
+\lstinline{throw}, \lstinline{goto}, \lstinline{break},
+\lstinline{continue} sau \lstinline{return}).
+\begin{lstlisting}[caption=Clasa \lstinline{MutexGuard} din
+                           \lstinline{cxxsync},
+                   label=code:mutex-guard]
+    struct MutexGuard {
+        explicit MutexGuard(Mutex* m): mtx(m) { mtx->lock(); }
+        ~MutexGuard() { mtx->unlock(); }
+    private:
+        Mutex* mtx;
+    }
+\end{lstlisting}
+
+\subsubsection{pthread shim (C/C++)}
+Multe programe ce folosesc mai multe fire de execuție se folosesc de
+interfața bibliotecii \lstinline{pthread} pentru a crea și sincroniza
+aceste fire, pentru că aceasta este disponibilă ca bibliotecă dinamică
+pe orice sistem de operare ce respectă interfața POSIX.
+
+Biblioteca \lstinline{syan_pthread_shim} este o bibliotecă dinamică ce
+exportă o parte din simbolurile disponibile în biblioteca
+\lstinline{pthread}. Toate aceste simboluri sunt funcții care
+\textit{interceptează} apelurile programului la funcții din
+\lstinline{pthread}, capturează evenimentele asociate respectivelor
+funcții prin apeluri la \lstinline{syan_capture_event} și apelează mai
+departe funcțiile cu același simbol din \lstinline{pthread}.
+
+Această bibliotecă nu oferă o interfață în cod sursă, pentru că
+interfața la nivel de sursă este o submulțime a funcțiilor din interfața
+\lstinline{pthread}. Precum orice alt \textit{shim} (bibliotecă ce
+interceptează în mod transparent apelurile la altă bibliotecă
+\cite{wiki:Shim_(computing)}), această bibliotecă trebuie încărcată de
+un program ce folosește \lstinline{pthread} \textit{înainte} de
+încărcarea bibliotecii \lstinline{pthread} propriu-zise, pentru ca
+apelurile la funcții cu simbolurile vizibile din \lstinline{pthread} să
+fie interpretate ca apeluri la funcții din biblioteca
+\lstinline{syan_pthread_shim}.
+
+Pentru a folosi această bibliotecă, ne vom folosi de bine-cunoscutul
+\textit{LD\_PRELOAD trick}\cite{LD_PRELOAD} pentru a garanta că
+biblioteca este încărcată prima:
+\begin{lstlisting}
+    % LD_PRELOAD="libsyan_pthread_shim.so" ./program
+\end{lstlisting}
+Folosind acest truc, această bibliotecă poate fi folosită fără a
+necesita măcar recompilarea programului client. Când programul face
+un apel la o funcție din \lstinline{pthread}, spre exemplu la funcția
+\lstinline{pthread_rwlock_tryrdlock}, în loc să se apeleze funcția cu
+acel nume din biblioteca \lstinline{pthread}, se va apela funcția din
+biblioteca noastră (Fragmentul de cod \ref{code:pthread_shim_func}).
+Aceasta face apelul mai departe la funcția originală, găsită printr-un
+apel manual al funcției \lstinline{dlsym} cu parametrul
+\lstinline{RTLD_NEXT} (parte din interfața DL\cite{DL}), însă capturează
+de asemenea evenimentele interesante prin apeluri la funcția
+\lstinline{syan_capture_event}.
+
+\begin{lstlisting}[caption=Funcția
+                           \lstinline{pthread_rwlock_tryrdlock} din
+                           \lstinline{pthread_shim},
+                   float, floatplacement=H,
+                   label=code:pthread_shim_func]
+    typedef int(*original_func_t)(pthread_rwlock_t*);
+    int pthread_rwlock_tryrdlock(pthread_rwlock_t* rwl) {
+      original_func_t f = (original_func_t)dlsym(
+            RTLD_NEXT, "pthread_rwlock_tryrdlock");
+      syan_capture_event(SA_EV_RWLOCK_ON_TRY_RD_LOCK, rwl);
+      int r = f(rwlock);
+      if (r == 0)
+        syan_capture_event(SA_EV_RWLOCK_AFTER_RD_LOCK, rwl);
+      return r;
+    }
+\end{lstlisting}

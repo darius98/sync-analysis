@@ -6,31 +6,31 @@ Limbajul C\cite{C} este folosit pentru implementarea bibliotecii de
 înregistrare de evenimente și a uneia din bibliotecile de integrare.
 Am ales limbajul pentru componenta aceasta din proiect deoarece
 portabilitatea bibliotecii este o prioritate: această bibliotecă trebuie
-să poată fi folosită în orice program scris în orice limbaj și rulând pe
-orice sistem de operare. De asemenea este important ca biblioteca să fie
-cât mai eficientă, pentru a nu interfera prea tare cu execuția
-programului client. Această combinație de cerințe este îndeplinită
-perfect de limbajul C. Am ales versiunea C11 pentru a avea acces la
-modulul \lstinline{<stdatomic.h>} din biblioteca standard, folosit în
-implementarea bibliotecii de înregistrare de evenimente din motive de
-performanță.
+să poată fi folosită în orice program scris în aproape orice limbaj și
+rulând pe aproape orice sistem de operare. De asemenea este important ca
+biblioteca să fie cât mai eficientă, pentru a nu interfera prea tare cu
+execuția programului client. Această combinație de cerințe este
+îndeplinită perfect de limbajul C. Am ales versiunea C11 pentru a avea
+acces la modulul \lstinline{<stdatomic.h>} din biblioteca standard,
+folosit în implementarea bibliotecii de înregistrare de evenimente din
+motive de performanță.
 
 \subsection{Limbajul C++17 și biblioteca standard C++}
 
 Limbajul C++\cite{CXX} este folosit pentru implementarea majorității
-proiectului. Programul SyncAnalysis, două dintre bibliotecile de
-integrare, toate exemplele de analizoare și toate testele automate au
-codul sursă scris în acest limbaj.
+proiectului. Programul \lstinline{SyncAnalysis}, una dintre bibliotecile
+de integrare date ca exemplu, toate exemplele de analizoare și toate
+testele automate au codul sursă scris în acest limbaj.
 
 Înafară de preferință personală, argumentul principal pentru folosirea
 limbajului C++ este interoperabilitatea bună cu limbajul C. Astfel, a
 fost ușor de refolosit cod din biblioteca de înregistrare de evenimente
 în programul SyncAnalysis pentru părțile de deserializare a fișierului
 de evenimente, în timp ce restul programului și analizorii au putut fi
-scriși într-un stil modern, rămânând totuși foarte eficient. Biblioteca
-standard C++ este folosită peste tot în implementarea programului și în
-implementarea analizorilor. Printre modulele folosite cel mai des se
-numără \lstinline{<vector>}, \lstinline{<map>} și \lstinline{<string>}.
+scriși într-un limbaj modern și foarte eficient. Biblioteca standard C++
+este folosită peste tot în implementarea programului și în implementarea
+analizorilor. Printre modulele folosite cel mai des se numără
+\lstinline{<vector>}, \lstinline{<map>} și \lstinline{<string>}.
 
 \subsection{Compilatorul Clang}
 
@@ -60,14 +60,15 @@ nou spre a facilita o experiență plăcută de dezvoltare.
 
 \subsection{Biblioteca pthread}
 
-Biblioteca \lstinline{pthread}\cite{pthread} este interfața standard
-pentru crearea și manipularea mai multor fire de execuție într-un
-proces. Este parte din specificația standard POSIX pentru o interfață
-portabilă a sistemelor de operare.
+Biblioteca \lstinline{pthread}\cite{pthread} este interfața pentru
+crearea și manipularea mai multor fire de execuție într-un proces. Este
+parte din specificația standard POSIX pentru o interfață portabilă a
+sistemelor de operare.
 
-Biblioteca \lstinline{pthread} este folosită în toate bibliotecile de
-integrare, una din acestea având ca scop chiar simularea interfeței
-publice oferite în header-ul \lstinline{<pthread.h>}.
+Biblioteca \lstinline{pthread} este folosită în ambele bibliotecile de
+integrare, una din acestea având ca scop chiar simularea unei părți din
+interfața publică oferită în antetul bibliotecii,
+\lstinline{<pthread.h>}.
 
 De asemenea, \lstinline{pthread} este folosită și în implementarea
 bibliotecii de capturare de evenimente pentru crearea unui fir de
@@ -104,8 +105,8 @@ biblioteca de capturare a evenimentelor serializează doar lista de
 adrese din stiva de execuție în datele evenimentului în timpul execuției
 programului client. Programul \lstinline{SyncAnalysis} transformă apoi
 respectivele adrese în simboluri citibile de către client (nume de
-funcții, fișier și linie în codul sursă, etcetera), pentru a fi atașate
-rapoartelor.
+funcții sau fișier și linie în codul sursă unde este făcut apelul),
+pentru a fi atașate rapoartelor.
 
 Pentru multe dintre sistemele de operare ce respectă standardul POSIX,
 problema este rezolvată de programul \lstinline{addr2line} oferit de GNU
@@ -114,9 +115,9 @@ primește o listă de adrese de memorie ce reprezintă stiva de apeluri de
 funcții și executabilul din care acestea au provenit și afișează exact
 lista de simboluri asociate, și, dacă se pot afla, numele fișierului și
 linia unde se află codul sursă pentru adresa respectivă din program.
-Pentru că proiectul a fost dezvoltat în principal pe un calculator cu
+Pentru că proiectul a fost dezvoltat în mare parte pe un calculator cu
 sistemul de operare Mac OS (cu kernel-ul Darwin) unde programul
-\lstinline{addr2line} nu funcționează prea bine, când se rulează
+\lstinline{addr2line} nu dă rezultate satisfăcătoare, când se rulează
 programul \lstinline{SyncAnalysis} pe Mac OS, acesta folosește
 \lstinline{atos}\cite{atos} pentru a îndeplini aceleași sarcini.
 
@@ -133,7 +134,7 @@ Astfel, argumentele din linia de comandă sunt citite și interpretate
 folosind o bibliotecă externă, \lstinline{mcga-cli}\cite{mcga-cli}.
 Această bibliotecă a fost dezvoltată tot de autorul proiectului
 \lstinline{SyncAnalysis} descris aici, dar este un proiect independent
-de articolul curent.
+de acesta.
 
 \subsection{Git și GitHub}
 

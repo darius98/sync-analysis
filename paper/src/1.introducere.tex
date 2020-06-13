@@ -79,8 +79,9 @@ pentru a face analiza. Alte strategii de analiză folosite în unelte
 existente includ analiză \textit{on-the-fly}, în care analiza este
 făcută în paralel cu execuția programului în același proces, precum în
 ThreadSanitizer\cite{ThreadSanitizer} și analiză \textit{statică}, în
-care codul sursă în sine este analizat, nu programul obținut, precum în
-Clang Thread Safety Analysis\cite{ClangThreadSafetyAnalysis}.
+care codul sursă în sine este analizat, nu programul obținut prin
+compilare, precum în Clang Thread Safety Analysis
+\cite{ClangThreadSafetyAnalysis}.
 
 Se distinge astfel direcția generală a acestui sistem. Prima și cea mai
 importantă componentă este o bibliotecă ce înregistrează evenimentele
@@ -89,50 +90,49 @@ fișier, pentru a fi analizate separat de alt program. Detalii despre
 această bibliotecă și implementarea ei se găsesc în secțiunea
 \textbf{\ref{library}}.
 
-Biblioteca este una de uz general, neavând în mod direct o interfață
-specifică analizării primitivelor de sincronizare. De aceea proiectul
-conține și o suită de biblioteci pentru a facilita folosirea bibliotecii
-de capturare a evenimentelor în scopul de analiză a primitivelor de
-sincronizare. Acestea oferă interfețe identice cu alte biblioteci
-populare cum ar fi \lstinline{<pthread.h>} sau modulele
-\lstinline{<thread>} și \lstinline{<mutex>} din biblioteca standard C++,
-pentru a permite programelor ce folosesc aceste biblioteci să folosească
-\textit{SyncAnalysis} fără schimbări în codul sursă. Detalii despre
-aceste biblioteci se găsesc în secțiunea
-\textbf{\ref{integration-libraries}}.
-
 După execuția programului client obținem o colecție de evenimente,
 capturate și serializate eficient într-un fișier cu ajutorul
-bibliotecilor descrise mai sus. În continuare, trebuie făcută o analiză
+bibliotecii descrise mai sus. În continuare, trebuie făcută o analiză
 a acestor evenimente, iar proiectul oferă o soluție pentru asta în forma
-unui program independent. Acest program, precum biblioteca de capturare
-a evenimentelor, este unul de uz general, și nu este direct legat de
-analiza primitivelor de sincronizare. Acesta nu execută pe cont propriu
-nicio analiză asupra evenimentelor, ci se bazează pe o suită de module
-separate numite \textit{analizori}. Acești analizori sunt distribuiți
-sub formă de biblioteci dinamice pe care programul le încarcă la
-începutul execuției. Programul se ocupă de a deserializa și indexa
-evenimentele din fișier în memorie, pentru ca apoi \textit{analizorii}
-să diagnosticheze erori, avertismente sau alte informații utile pe baza
-acestor evenimente, iar programul să creeze și să afișeze apoi rapoarte
-pentru utilizator. Mai multe detalii despre acest program se găsesc în
-secțiunea \textbf{\ref{executable}}, iar despre analizorii implementați
-ca exemplu pentru analiza primitivelor de sincronizare în secțiunea
+unui program independent numit \lstinline{SyncAnalysis}. Acest program,
+precum biblioteca de capturare a evenimentelor, este unul de uz general,
+și nu este direct legat de analiza primitivelor de sincronizare. Acesta
+nu execută pe cont propriu nicio analiză asupra evenimentelor, ci se
+bazează pe o suită de module separate numite \textit{analizori}. Acești
+analizori sunt distribuiți sub formă de biblioteci dinamice pe care
+\lstinline{SyncAnalysis} le încarcă la începutul execuției. Programul se
+ocupă de a deserializa și indexa evenimentele din fișier în memorie,
+pentru ca apoi \textit{analizorii} să diagnosticheze erori, avertismente
+sau în general informații utile pe baza acestor evenimente, iar
+programul să creeze și să afișeze apoi rapoarte pentru utilizator. Mai
+multe detalii despre acest program se găsesc în secțiunea
+\textbf{\ref{executable}}, iar despre analizorii implementați ca exemplu
+pentru analiza primitivelor de sincronizare în secțiunea
 \textbf{\ref{analyzers}}.
 
-\begin{figure}[h]
+Biblioteca și programul de analiză post-mortem sunt de uz general,
+neavând în mod direct o interfață specifică analizării primitivelor de
+sincronizare. De aceea proiectul conține și două exemple de biblioteci
+pentru a facilita folosirea bibliotecii de capturare a evenimentelor în
+scopul de analiză a primitivelor de sincronizare. Una dintre acestea
+oferă o interfață identică cu cea a altei biblioteci populare,
+\lstinline{pthread}, pentru a permite programelor ce folosesc această
+bibliotecă să folosească \lstinline{SyncAnalysis} fără schimbări în
+codul sursă. Detalii despre aceste biblioteci se găsesc în secțiunea
+\textbf{\ref{integration-libraries}}. În Figura \ref{fig:architecture}
+se poate vedea arhitectura software a proiectului SyncAnalysis. Cu
+albastru sunt marcate elementele de uz general, adică cele independente
+de unealta dezvoltată (folosibile chiar pentru unelte care nu se ocupă
+de analiza primitivelor de sincronizare), cu verde sunt marcate
+elementele ce sunt specifice unei anumite unelte, iar cu gri sunt
+marcate elementele programului client.
+
+\begin{figure}[H]
 \centering
 \includegraphics[width=14cm]{architecture.jpg}
 \caption{Arhitectura proiectului SyncAnalysis}
 \label{fig:architecture}
 \end{figure}
-
-În Figura \ref{fig:architecture} se poate vedea arhitectura software a
-proiectului SyncAnalysis. Cu albastru sunt marcate elementele de uz
-general, adică cele independente de unealta dezvoltată (folosibile chiar
-pentru unelte care nu se ocupă de analiza primitivelor de sincronizare),
-cu verde sunt marcate elementele ce sunt specifice unei anumite unelte,
-iar cu gri sunt marcate elementele clientului.
 
 \subsection{Comparație cu ThreadSanitizer}
 O unealtă populară ce ajută la diagnosticarea folosirii insuficiente a

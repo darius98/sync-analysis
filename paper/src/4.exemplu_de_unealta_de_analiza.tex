@@ -1,0 +1,31 @@
+\section{Exemplu de unealtă de analiză}
+
+Vom arăta în acest capitol pașii luați spre a scrie o unealtă de analiză
+specifică pentru primitivele de sincronizare folosind infrastructura
+discutată în capitolul \textbf{3}. O unealtă este compusă din
+următoarele componente:
+\begin{itemize}
+    \item O enumerație a tipurilor de evenimente de interes ce
+    trebuiesc capturate în execuția unui program. Biblioteca pentru
+    capturare de evenimente și programul de analiză
+    \lstinline{SyncAnalysis} sunt componente generice, refolosibile
+    pentru orice fel de analiză post-mortem de evenimente. Pentru a
+    folosi aceste componente spre a scrie o unealtă de analiză a
+    primitivelor de sincronizare, trebuie mai întâi să definim tipurile
+    de evenimente ce descriu aceste primitive;
+    \item Una sau mai multe biblioteci de integrare ce folosesc
+    biblioteca descrisă în Secțiunea \textbf{\ref{library}} pentru a
+    captura evenimentele de interes;
+    \item Unul sau mai mulți analizori ce să fie încărcați de programul
+    \lstinline{SyncAnalysis} descris în Secțiunea
+    \textbf{\ref{executable}} pentru a analiza evenimentele capturate.
+\end{itemize}
+
+\input{src/4.1.tipuri_de_evenimente}
+
+\input{src/4.2.biblioteci_de_integrare}
+
+\input{src/4.3.analizori}
+
+\subsection{Testele analizorilor (folosind cxxsync)}
+\label{analyzer-tests}

@@ -1,0 +1,49 @@
+\subsection{Tipuri de evenimente pentru primitive de sincronizare}
+
+Astfel, am creat
+o interfață C ce conține constante numerice pentru tipurile de
+evenimente specifice primitivelor de sincronizare, ce complimentează
+constantele numerice expuse în interfața bibliotecii pentru capturarea
+de evenimente.
+
+Definim mai întâi câteva constante ce reprezintă
+\textit{biți indicatori} din tipul evenimentului: tipul de obiect
+țintă al evenimentului (\lstinline{SA_MUTEX} pentru \textit{mutex},
+\lstinline{SA_REC_MUTEX} pentru \textit{mutex recursiv} și
+\lstinline{SA_RWLOCK} pentru \textit{read-write lock}, similare cu
+\lstinline{SA_EV_THREAD} pentru \textit{fire de execuție}, definită în
+Secțiunea \textbf{\ref{section:library-interface}}) și acțiunea ce are
+loc pe acel obiect țintă (\lstinline{SA_BEFORE_WR_LOCK},
+\lstinline{SA_AFTER_WR_LOCK} și altele, din nou similare cu constantele
+\lstinline{SA_EV_CREATE} și \lstinline{SA_EV_DESTROY} din Secțiunea
+\textbf{\ref{section:library-interface}}). Lista completă a tipurilor de
+evenimente capturate, împreună cu valorile acestora obținute din biții
+indicatori este următoarea:
+
+\begin{lstlisting}[caption=Tipurile de evenimente pentru primitivele de
+                           sincronizare, label=code:syan-event-types]
+SA_EV_THREAD_ON_JOIN        = SA_EV_THREAD | SA_JOIN
+SA_EV_THREAD_ON_DETACH      = SA_EV_THREAD | SA_DETACH
+SA_EV_MUTEX_ON_CREATE       = SA_MUTEX     | SA_EV_CREATE
+SA_EV_MUTEX_ON_TRY_LOCK     = SA_MUTEX     | SA_TRY_WR_LOCK
+SA_EV_MUTEX_BEFORE_LOCK     = SA_MUTEX     | SA_BEFORE_WR_LOCK
+SA_EV_MUTEX_AFTER_LOCK      = SA_MUTEX     | SA_AFTER_WR_LOCK
+SA_EV_MUTEX_ON_UNLOCK       = SA_MUTEX     | SA_WR_UNLOCK
+SA_EV_MUTEX_ON_DESTROY      = SA_MUTEX     | SA_EV_DESTROY
+SA_EV_REC_MUTEX_ON_CREATE   = SA_REC_MUTEX | SA_EV_CREATE
+SA_EV_REC_MUTEX_ON_TRY_LOCK = SA_REC_MUTEX | SA_TRY_WR_LOCK
+SA_EV_REC_MUTEX_BEFORE_LOCK = SA_REC_MUTEX | SA_BEFORE_WR_LOCK
+SA_EV_REC_MUTEX_AFTER_LOCK  = SA_REC_MUTEX | SA_AFTER_WR_LOCK
+SA_EV_REC_MUTEX_ON_UNLOCK   = SA_REC_MUTEX | SA_WR_UNLOCK
+SA_EV_REC_MUTEX_ON_DESTROY  = SA_REC_MUTEX | SA_EV_DESTROY
+SA_EV_RWLOCK_ON_CREATE      = SA_RWLOCK    | SA_EV_CREATE
+SA_EV_RWLOCK_ON_TRY_RD_LOCK = SA_RWLOCK    | SA_TRY_RD_LOCK
+SA_EV_RWLOCK_BEFORE_RD_LOCK = SA_RWLOCK    | SA_BEFORE_RD_LOCK
+SA_EV_RWLOCK_AFTER_RD_LOCK  = SA_RWLOCK    | SA_AFTER_RD_LOCK
+SA_EV_RWLOCK_ON_RD_UNLOCK   = SA_RWLOCK    | SA_RD_UNLOCK
+SA_EV_RWLOCK_ON_TRY_WR_LOCK = SA_RWLOCK    | SA_TRY_WR_LOCK
+SA_EV_RWLOCK_BEFORE_WR_LOCK = SA_RWLOCK    | SA_BEFORE_WR_LOCK
+SA_EV_RWLOCK_AFTER_WR_LOCK  = SA_RWLOCK    | SA_AFTER_WR_LOCK
+SA_EV_RWLOCK_ON_WR_UNLOCK   = SA_RWLOCK    | SA_WR_UNLOCK
+SA_EV_RWLOCK_ON_DESTROY     = SA_RWLOCK    | SA_EV_DESTROY
+\end{lstlisting}
