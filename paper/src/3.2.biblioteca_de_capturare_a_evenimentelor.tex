@@ -18,7 +18,7 @@ Deși există variante mai bune pentru performanță cum ar fi C++ sau
 cea mai bună alegere, luând în considerare avantajul copleșitor de
 portabilitate.
 
-\subsubsection{Interfață}
+\subsubsection{Interfață}\label{section:library-interface}
 Pentru că această bibliotecă este una generică, interfața este
 intenționat minimală: sunt expuse în mod public 3 funcții și 4
 constante numerice. În limbajul C, interfața poate fi descrisă astfel:
@@ -111,8 +111,9 @@ nou de execuție.
 
 Cu experiența implementării bibliotecilor de integrare s-a observat că
 atunci când se raportează crearea unui nou fir de execuție folosind
-biblioteca \lstinline{pthread}, ținta evenimentului este cunoscută abia
-după ce a pornit firul de execuție:
+biblioteca \lstinline{pthread}, identitatea obiectului țintă
+al evenimentului este cunoscută abia după ce a pornit noul fir de
+execuție:
 \begin{lstlisting}[caption=Capturare incorectă a creării unui fir de
                            execuție]
     pthread_t T;
@@ -184,21 +185,21 @@ evenimente. Această proprietate este exploatată în bibliotecă pentru a
 obține viteze mari de serializare a evenimentelor în memorie, și mai
 apoi pe disc.
 
-Câmpul \lstinline{signature} este un detaliu de implementare folosit
-pentru a împiedica biblioteca din a scrie un eveniment pe disc înainte
-de apelarea funcției \lstinline{syan_finalize_event}. Aceasta nu va
-scrie evenimentul pe disc până când valoarea câmpului
-\lstinline{signature} nu devine egală cu valoarea prestabilită 666013.
-În cadrul funcției \lstinline{syan_initialize_event} valoarea câmpului
-este marcată 0, dar acesta este deja pus în coada de evenimente ce
-trebuie scrise pe disc. La apelul funcției
-\lstinline{syan_finalize_event}, valoarea este schimbată în 666013,
-permițând bibliotecii să continue serializarea de evenimente.
+Câmpul \lstinline{signature} este folosit intern pentru a împiedica
+biblioteca din a scrie un eveniment pe disc înainte de apelarea funcției
+\lstinline{syan_finalize_event} pentru acel eveniment. Aceasta nu va
+scrie evenimentul pe disc până când nu citește în câmpul
+\lstinline{signature} valoarea prestabilită 666013. Valoarea câmpului
+este 0 după apelul la funcția \lstinline{syan_initialize_event}, dar
+evenimentul este deja pus în coada de evenimente ce trebuie scrise pe
+disc. Când este apelată funcția \lstinline{syan_finalize_event},
+valoarea este schimbată în 666013, permițând bibliotecii să continue
+scrierea evenimentelor din coadă pe disc.
 
 Câmpurile \lstinline{event_type} și \lstinline{object_id} vor conține
-valorile cerute de clientul bibliotecii în apelul funcției
-\lstinline{syan_capture_event}, sau respectiv în apelurile la
-\lstinline{syan_initialize_event} și la \lstinline{syan_finalize_event}.
+valorile date ca parametri de către client când acesta apelează funcția
+\lstinline{syan_capture_event}, sau respectiv funcțiile
+\lstinline{syan_initialize_event} și \lstinline{syan_finalize_event}.
 
 Câmpul \lstinline{timestamp} este o reprezentare pe 64 de biți al
 numărului de nanosecunde scurse de la inițializarea bibliotecii până la
@@ -318,27 +319,27 @@ acestei cozi este următoarea:
 
 \begin{lstlisting}[caption=Interfața cozii de evenimente folosite în
                            bibliotecă]
-    #define SYAN_BUFFER_PAGE_SIZE 256
-    #define SYAN_BUFFER_NUM_PAGES 1024
+#define SYAN_BUFFER_PAGE_SIZE 256
+#define SYAN_BUFFER_NUM_PAGES 1024
 
-    typedef struct {
-      SyanEvent storage[SYAN_BUFFER_PAGE_SIZE];
-      int_fast32_t storage_front;
-      atomic_int_fast32_t storage_back;
-    } SyanBufferPage;
+typedef struct {
+    SyanEvent storage[SYAN_BUFFER_PAGE_SIZE];
+    int_fast32_t storage_front;
+    atomic_int_fast32_t storage_back;
+} SyanBufferPage;
 
-    typedef SyanBufferPage* SyanBufferPagePtr;
+typedef SyanBufferPage* SyanBufferPagePtr;
 
-    typedef struct {
-      SyanBufferPagePtr pages[SYAN_BUFFER_NUM_PAGES];
-      int_fast32_t pages_front;
-      atomic_int_fast32_t pages_back;
-    } SyanBuffer;
+typedef struct {
+    SyanBufferPagePtr pages[SYAN_BUFFER_NUM_PAGES];
+    int_fast32_t pages_front;
+    atomic_int_fast32_t pages_back;
+} SyanBuffer;
 
-    int syan_buffer_init(SyanBuffer** b);
-    SyanEvent* syan_buffer_acquire_event_slot(SyanBuffer* b);
-    SyanBufferPagePtr syan_buffer_get_front_page(SyanBuffer* b);
-    void syan_buffer_release_front_page(SyanBuffer* b);
+int syan_buffer_init(SyanBuffer** b);
+SyanEvent* syan_buffer_acquire_event_slot(SyanBuffer* b);
+SyanBufferPagePtr syan_buffer_get_front_page(SyanBuffer* b);
+void syan_buffer_release_front_page(SyanBuffer* b);
 \end{lstlisting}
 
 Încă din interfață se poate observa prima proprietate importantă a
@@ -354,13 +355,14 @@ din coadă (pagina \lstinline{b->pages[b->pages_back]}). Asta omite
 necesitatea de a apela funcții precum \lstinline{malloc} pentru a obține
 memorie pentru eveniment sau \lstinline{memcpy} pentru a muta
 evenimentul în coadă abia după ce acesta este complet format. Așadar în
-funcția \lstinline{syan_initialize_event} se obține o zonă de memorie
-pentru stocarea respectivului eveniment printr-un apel la funcția
-\lstinline{syan_buffer_acquire_event_slot}, care implementează un
-algoritm \textit{lock-free} bazat pe operațiile primitive de
-\textit{compare-and-swap} și \textit{atomic-fetch-add} pe variabilele
-atomice \lstinline{pages_back} și respectiv \lstinline{storage_back} din
-acea pagină. Implementarea este similară cu cele descrise în articolele
+interiorul funcției \lstinline{syan_initialize_event} se obține o zonă
+de memorie pentru stocarea respectivului eveniment printr-un apel la
+funcția \lstinline{syan_buffer_acquire_event_slot}. Aceasta
+implementează un algoritm \textit{lock-free} bazat pe operațiile
+primitive de \textit{compare-and-swap} și \textit{atomic-fetch-add} pe
+variabilele atomice \lstinline{pages_back} și respectiv
+\lstinline{storage_back} din acea pagină. Implementarea este similară cu
+cele descrise în articolele
 \textit{Lock-free linked lists using compare-and-swap}
 \cite{LinkedListsCAS} și
 \textit{A practical nonblocking queue algorithm using compare-and-swap}
@@ -375,7 +377,7 @@ poate observa și în interfață că variabilele \lstinline{pages_front} și
 și citite doar de firul intern al bibliotecii, așa că nu necesită
 sincronizare. Am menționat și mai devreme cum un eveniment pus în coadă
 nu este scris pe disc până când câmpul \lstinline{signature} al
-evenimentului nu are valoarea corectă, scrisă doar de apelul funcției
+evenimentului nu are valoarea corectă, scrisă de apelul funcției
 \lstinline{syan_finalize_event}. În practică, firul de execuție al
 bibliotecii citește aceste semnături din evenimentele de la începutul
 cozii folosind operația \textit{atomic-load}, pentru că se așteaptă ca
@@ -387,28 +389,30 @@ iterația a scris cu succes date pe disc, se trece direct la următoarea
 iterație. Altfel, înseamnă că nu mai există evenimente noi capturate, și
 firul apelează funcția de sistem \lstinline{usleep} pentru a permite
 firelor programului client să își continue execuția înainte de a începe
-o nouă iterație. Pentru a afla ce evenimente noi are de scris pe disc,
-firul apelează funcția \lstinline{syan_buffer_get_front_page} și
-verifică valorile câmpurilor \lstinline{storage_front} și
-\lstinline{storage_back} de pe acea pagină. Dacă valorile acestea sunt
-diferite, atunci toate evenimentele dintre sunt fie evenimente noi
-capturate, fie evenimente în curs de capturare. Firul așteaptă
-finalizarea tuturor acestor evenimente pe modelul \textit{busy-wait}.
-Biblioteca asumă că între apelurile funcțiilor
+o nouă iterație. Pentru a afla ce evenimente noi trebuie scrise pe disc,
+firul verifică valorile câmpurilor \lstinline{storage_front} și
+\lstinline{storage_back} de pe cea mai veche pagină a cozii, obținută
+printr-un apel la funcția \lstinline{syan_buffer_get_front_page}. Dacă
+valorile acestea sunt diferite, atunci toate evenimentele dintre sunt
+fie evenimente noi capturate, fie evenimente în curs de capturare. Firul
+așteaptă finalizarea tuturor acestor evenimente pe modelul
+\textit{busy-wait}, deoarece se asumă că apelurile funcțiilor
 \lstinline{syan_initialize_event} și \lstinline{syan_finalize_event}
-trece relativ puțin timp. S-a experimentat aici și cu alte modele de
-așteptare (\lstinline{pthread_sched_yield}, \lstinline{usleep}) și s-a
-observat empiric că \textit{busy-wait} se comportă cel mai bine în
-practică. După ce toate aceste evenimente sunt finalizate, ele sunt
-scrise împreună pe disc printr-un singur apel al funcției standard C
-\lstinline{fwrite}. Dacă prin scrierea acestor evenimente s-au scris
-toate evenimentele din pagină, aceasta este eliberată. Altfel, se
-modifică doar câmpul \lstinline{storage_front} al paginii pentru a marca
-până unde au fost scrise evenimentele din pagină. O variantă
-simplificată a implementării în limbajul C poate fi văzută mai jos:
+se fac la puțin timp unul după celălalt. S-a experimentat aici și cu
+alte modele de așteptare (\lstinline{pthread_sched_yield},
+\lstinline{usleep}) și s-a observat empiric că \textit{busy-wait} se
+comportă cel mai bine în practică. După ce toate aceste evenimente sunt
+finalizate, ele sunt scrise împreună pe disc printr-un singur apel al
+funcției standard C \lstinline{fwrite}. Dacă prin scrierea acestor
+evenimente s-au scris toate evenimentele din pagină, aceasta este
+eliberată. Altfel, se modifică doar câmpul \lstinline{storage_front} al
+paginii pentru a marca până unde au fost scrise evenimentele din pagină.
+O variantă simplificată a implementării în limbajul C poate fi văzută
+în Fragmentul de cod \ref{code:lib-write-events}.
 
 \begin{lstlisting}[caption=Scrierea evenimentelor pe disc,
-                   label=code:lib-write-events]
+                   label=code:lib-write-events,
+                   float, floatplacement=H]
     SyanBufferPagePtr p = syan_global_buffer_get_front_page();
     int_fast32_t front = p->storage_front;
     int_fast32_t back = atomic_load(&p->storage_back);

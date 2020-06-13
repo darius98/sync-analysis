@@ -5,10 +5,11 @@ la internet. De asemenea, calculatorul trebuie să aibă instalate
 următoarele programe:
 \begin{itemize}
     \item \lstinline{as, ar, ld, addr2line} -- de obicei aceste programe
-    sau alte programe echivalente vin preinstalate cu orice distribuție
-    de GNU/Linux sau Mac OS. Ele fac parte din colecția de utilitare
+    vin preinstalate cu orice distribuție de GNU/Linux sau Mac OS. Ele
+    fac parte din colecția de utilitare
     \lstinline{binutils}\cite{binutils} și sunt disponibile gratuit
-    pentru descărcare pe website-ul oficial GNU\cite{GNUWebsite}.
+    pentru descărcare pe website-ul oficial GNU\cite{GNUWebsite} în
+    cazul în care nu sunt deja instalate.
     \item \lstinline{CMake}\cite{CMake} -- versiunea \lstinline{3.15}
     sau mai nouă
     \item \lstinline{make} -- orice versiune compatibilă cu versiunea de
@@ -16,8 +17,8 @@ următoarele programe:
     \item \lstinline{atos}\cite{atos} -- doar pentru Mac OS, unde este
     mereu preinstalat
     \item un compilator de C și C++ care suportă standardele C11,
-    respectiv C++17 în întregime (de exemplu \lstinline{Clang 10}
-    \cite{Clang})
+    respectiv C++17 în întregime (de exemplu
+    \lstinline{Clang10}\cite{Clang})
     \item \lstinline{git}\cite{git} -- minim versiunea \lstinline{2.0}
 \end{itemize}
 
@@ -29,12 +30,12 @@ de comenzi \lstinline{shell}:
                    numbers=left,
                    xleftmargin=3em,
                    caption=Instrucțiuni pentru instalarea proiectului]
-    git clone https://github.com/darius98/sync-analysis.git
-    cd sync-analysis/
-    git submodule update --init
-    cmake .
-    make all
-    make install
+git clone https://github.com/darius98/sync-analysis.git
+cd sync-analysis/
+git submodule update --init
+cmake .
+make all
+make install
 \end{lstlisting}
 
 Comanda 1 descarcă \textit{repository}-ul de git al proiectului de pe
@@ -44,11 +45,11 @@ proiectului, așa că comanda 2 schimbă directorul curent pentru restul
 comenzilor.
 
 Deoarece \textit{repository}-ul include biblioteca
-\lstinline{mcga-cli}\cite{mcga-cli} ca submodul, trebuie executată
-comanda 3 separat pentru a inițializa submodulele de git și a descărca
-acest submodul.
+\lstinline{mcga-cli}\cite{mcga-cli} ca submodul, aceasta trebuie
+descărcată separat după inițializarea logicii de git pentru submodule.
+Comanda 3 execută ambele acțiuni.
 
-Odată ce \textit{repository}-ul principal și \textit{submodul}-ul
+Odată ce \textit{repository}-ul principal și submodulul
 \lstinline{mcga-cli} au fost descărcate cu succes, proiectul poate fi
 compilat prin comenzile 4-5. După compilarea proiectului, acesta poate
 fi instalat în sistem folosind comanda 6. Această comandă adaugă fișiere
@@ -61,22 +62,22 @@ exemplu pe sistemul de operare Ubuntu, este de a rula comanda folosind
 
 \begin{itemize}
     \item biblioteca pentru capturare de evenimente:
-    \lstinline{lib/libsync_analysis.so} (pentru Mac OS extensia este
-    \lstinline{.dylib}) și interfața C a acesteia:
-    \lstinline{include/sync_analysis.h}
-    \item programul independent \lstinline{SyncAnalysis}
+    \lstinline{lib/libsync_analysis.so} (pe Mac OS extensia este
+    \lstinline{.dylib}) și interfața C a acesteia în fișierul de
+    interfață \lstinline{include/sync_analysis.h}
+    \item programul independent \lstinline{SyncAnalysis} în fișierul
     \lstinline{bin/sync_analysis}
     \item interfața C++ pentru dezvoltarea analizorilor
     \lstinline{include/syan_analyzer_api/}
     \item biblioteca pentru integrare \lstinline{lib/libcxxsync.so}
-    (pentru Mac OS extensia este \lstinline{.dylib}) și interfața C++ a
-    acesteia: directorul \lstinline{include/cxxsync/}
+    (respectiv \lstinline{.dylib} pe Mac OS) și interfața C++ a
+    acesteia în directorul \lstinline{include/cxxsync/}
     \item biblioteca pentru integrare
     \lstinline{lib/libsyan_pthread_shim.so} (pentru Mac OS extensia este
     \lstinline{.dylib})
     \item biblioteca pentru integrare
-    \lstinline{lib/libsyan_stdcxx_shim.so} (pentru Mac OS extensia
-    este \lstinline{.dylib}) și interfața C++ a acesteia: directorul
-    \lstinline{include/stdcxx_shim/}
+    \lstinline{lib/libsyan_stdcxx_shim.so} (respectiv
+    \lstinline{.dylib} pe Mac OS) și interfața C++ a acesteia în
+    directorul \lstinline{include/stdcxx_shim/}
     \item analizorii preinstalați directorul \lstinline{syan-analyzers/}
 \end{itemize}

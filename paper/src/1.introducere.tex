@@ -141,8 +141,9 @@ Folosirea acestuia implică compilarea programului cu un compilator care
 implementează suport pentru ThreadSanitizer, folosind opțiunile de linie
 de comandă documentate de compilator (de exemplu, pentru Clang pe Linux
 opțiunea este \lstinline{-fsanitize=thread}). Executabilul obținut prin
-compilare conține verificări împotriva acceselor concurente
-nesincronizate la memorie:
+compilare verifică toate scrierile în memoria RAM și emite erori dacă
+o scriere este concurentă cu o alta sau cu o citire, și cele două nu
+sunt explicit sincronizate.
 
 \begin{lstlisting}[caption=Exemplu de folosire ThreadSanitizer]
 % clang -fsanitize=thread -g -O1 -o program tiny_race.c
