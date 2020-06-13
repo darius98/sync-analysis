@@ -31,7 +31,3 @@ void syan_finalize_event(void* event, void* addr) {
   ((SyanEvent*)event)->addr = (intptr_t)addr;
   atomic_store(&((SyanEvent*)event)->signature, SYAN_EVENT_SIGNATURE);
 }
-
-void syan_capture_event(int event_type, void* addr) {
-  syan_finalize_event(syan_initialize_event(event_type), addr);
-}

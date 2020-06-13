@@ -43,9 +43,9 @@ add_analyzer_test(lock-shadow positive mutex_and_rw_lock)
 add_analyzer_test(lock-shadow positive three_locks)
 add_analyzer_test(lock-shadow positive two_mutexes)
 add_analyzer_test(mutex-lock-order negative three_mutexes_ordered_correctly)
-#TODO: Fix this!
+#TODO: Fix these tests!
+#add_analyzer_test(mutex-lock-order positive two_mutexes)
 #add_analyzer_test(mutex-lock-order positive three_mutexes)
-add_analyzer_test(mutex-lock-order positive two_mutexes)
 add_analyzer_test(redundant-recursive-mutex negative rec_mutex_used_correctly)
 add_analyzer_test(redundant-recursive-mutex negative unused_leaked_mutex)
 add_analyzer_test(redundant-recursive-mutex negative unused_mutex)

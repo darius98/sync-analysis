@@ -68,11 +68,13 @@ void syan_init(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
-  syan_capture_event(SA_EV_THREAD_CREATE, pthread_self());
+  syan_finalize_event(syan_initialize_event(SA_EV_THREAD_ON_CREATE),
+                      (void*)pthread_self());
 }
 
 void syan_shutdown() {
-  syan_capture_event(SA_EV_THREAD_JOIN, pthread_self());
+  syan_finalize_event(syan_initialize_event(SA_EV_THREAD_ON_JOIN),
+                      (void*)pthread_self());
 
   int status = syan_stop_worker_thread();
   if (status != 0) {
