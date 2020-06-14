@@ -27,3 +27,4 @@ CMakeCache.txt
 executable/sync_analysis
 tests/run_analyzer_test
 tests/CTestTestfile.cmake
+*.tdo
