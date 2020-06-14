@@ -6,11 +6,14 @@
 
 namespace syan {
 
-class Analyzer {
-  using func = void (*)();
+struct DsoClose {
+  void operator()(void* dso_handle) const noexcept;
+};
+using DsoHandle = std::unique_ptr<void, DsoClose>;
 
+class Analyzer {
 public:
-  Analyzer(std::string name, void* dso_handle);
+  Analyzer(std::string name, DsoHandle dso_handle);
 
   Analyzer(const Analyzer&) = delete;
   Analyzer& operator=(const Analyzer&) = delete;
@@ -29,14 +32,12 @@ public:
   void shut_down() const noexcept;
 
 private:
+  using func = void (*)();
+
   func find_func_in_dso(const char* symbol) const noexcept;
 
-  struct DsoClose {
-    void operator()(void* dso_handle) const noexcept;
-  };
-
   std::string name;
-  std::unique_ptr<void, DsoClose> dso_handle;
+  DsoHandle dso_handle;
   func start_up_impl;
   func on_event_impl;
   func shut_down_impl;

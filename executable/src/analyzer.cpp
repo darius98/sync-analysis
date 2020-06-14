@@ -4,9 +4,15 @@
 
 namespace syan {
 
-Analyzer::Analyzer(std::string name, void* dso_handle)
+void DsoClose::operator()(void* handle) const noexcept {
+  if (handle != nullptr) {
+    dlclose(handle);
+  }
+}
+
+Analyzer::Analyzer(std::string name, DsoHandle dso_handle)
     : name{std::move(name)},
-      dso_handle{dso_handle},
+      dso_handle{std::move(dso_handle)},
       start_up_impl{find_func_in_dso("syan_analyzer_start_up")},
       on_event_impl{find_func_in_dso("syan_analyzer_on_event")},
       shut_down_impl{find_func_in_dso("syan_analyzer_shut_down")} {}
@@ -35,12 +41,6 @@ void Analyzer::shut_down() const noexcept {
 
 Analyzer::func Analyzer::find_func_in_dso(const char* symbol) const noexcept {
   return reinterpret_cast<func>(dlsym(dso_handle.get(), symbol));
-}
-
-void Analyzer::DsoClose::operator()(void* handle) const noexcept {
-  if (handle != nullptr) {
-    dlclose(handle);
-  }
 }
 
 }  // namespace syan

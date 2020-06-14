@@ -1,5 +1,8 @@
 #include "find_analyzers.hpp"
 
+#include <filesystem>
+#include <string>
+
 #include <dlfcn.h>
 
 #include "debug.hpp"
@@ -70,20 +73,20 @@ std::vector<Analyzer> find_analyzers(const Options& options) {
           !is_analyzer_filename(path)) {
         continue;
       }
-      void* handle = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
+      DsoHandle handle(dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL));
       if (handle == nullptr) {
         continue;
       }
-      void* syan_analyzer_name_symbol = dlsym(handle, "syan_analyzer");
+      void* syan_analyzer_name_symbol = dlsym(handle.get(), "syan_analyzer");
       if (syan_analyzer_name_symbol == nullptr) {
-        dlclose(handle);
         continue;
       }
       std::string_view syan_analyzer_name =
           *static_cast<const char**>(syan_analyzer_name_symbol);
       if (respects_analyzer_name_rules(syan_analyzer_name,
                                        options.analyzer_name_rules)) {
-        analyzers.emplace_back(std::string{syan_analyzer_name}, handle);
+        analyzers.emplace_back(std::string{syan_analyzer_name},
+                               std::move(handle));
       }
     }
   }
