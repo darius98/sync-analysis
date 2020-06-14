@@ -138,8 +138,8 @@ iese în mod natural prin terminarea blocului sau printr-un
 \subsubsection{pthread shim (C/C++)}
 Multe programe ce folosesc mai multe fire de execuție se folosesc de
 interfața bibliotecii \lstinline{pthread} pentru a crea și sincroniza
-aceste fire, pentru că aceasta este disponibilă ca bibliotecă dinamică
-pe orice sistem de operare ce respectă interfața POSIX.
+aceste fire, pentru că aceasta este disponibilă pe orice sistem de
+operare ce respectă interfața POSIX.
 
 Biblioteca \lstinline{syan_pthread_shim} este o bibliotecă dinamică ce
 exportă o parte din simbolurile disponibile în biblioteca
@@ -147,22 +147,24 @@ exportă o parte din simbolurile disponibile în biblioteca
 \textit{interceptează} apelurile programului la funcții din
 \lstinline{pthread}, capturează evenimentele asociate respectivelor
 funcții prin apeluri la \lstinline{syan_capture_event} și apelează mai
-departe funcțiile cu același simbol din \lstinline{pthread}.
-
-Această bibliotecă nu oferă o interfață în cod sursă, pentru că
-interfața la nivel de sursă este o submulțime a funcțiilor din interfața
+departe funcțiile cu același simbol din \lstinline{pthread}. Această
+bibliotecă nu oferă o interfață în cod sursă, pentru că interfața la
+nivel de sursă este o submulțime a funcțiilor din interfața
 \lstinline{pthread}. Precum orice alt \textit{shim} (bibliotecă ce
 interceptează în mod transparent apelurile la altă bibliotecă
 \cite{wiki:Shim_(computing)}), această bibliotecă trebuie încărcată de
 un program ce folosește \lstinline{pthread} \textit{înainte} de
-încărcarea bibliotecii \lstinline{pthread} propriu-zise, pentru ca
+încărcarea bibliotecii \lstinline{pthread} propriu-zisă, pentru ca
 apelurile la funcții cu simbolurile vizibile din \lstinline{pthread} să
 fie interpretate ca apeluri la funcții din biblioteca
 \lstinline{syan_pthread_shim}.
 
 Pentru a folosi această bibliotecă, ne vom folosi de bine-cunoscutul
 \textit{LD\_PRELOAD trick}\cite{LD_PRELOAD} pentru a garanta că
-biblioteca este încărcată prima:
+biblioteca este încărcată prima. Trucul se bazează pe variabila de mediu
+\lstinline{LD_PRELOAD}: dacă această variabilă conține o listă de nume
+de biblioteci dinamice, atunci aceste biblioteci sunt încărcate înaintea
+tuturor celorlalte cerute de program:
 \begin{lstlisting}
     % LD_PRELOAD="libsyan_pthread_shim.so" ./program
 \end{lstlisting}
@@ -188,7 +190,7 @@ de asemenea evenimentele interesante prin apeluri la funcția
       original_func_t f = (original_func_t)dlsym(
             RTLD_NEXT, "pthread_rwlock_tryrdlock");
       syan_capture_event(SA_EV_RWLOCK_ON_TRY_RD_LOCK, rwl);
-      int r = f(rwlock);
+      int r = f(rwl);
       if (r == 0)
         syan_capture_event(SA_EV_RWLOCK_AFTER_RD_LOCK, rwl);
       return r;

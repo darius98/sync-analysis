@@ -471,19 +471,30 @@ unul după celălalt, serializate în formatul binar descris în secțiunea
 
 \subsubsection{Măsurători de performanță}\label{library-performance}
 
-După cum am menționat în secțiunea \textbf{\ref{section:queue}},
-performanța bibliotecii se împarte în două metrici diferite: timpul
-necesar capturării unui eveniment și volumul de evenimente ce poate fi
-serializat într-o perioadă de timp. Ambele măsurători depind de
-frecvența evenimentelor și de numărul de fire de execuție ce capturează
-evenimente. În Figura \ref{fig:lib-perf} se pot vedea două tabele cu
-măsurătorile făcute cu ajutorul bibliotecii \lstinline{Google Benchmark}
-\cite{GoogleBenchmark} pentru ambele metrici interesante.
+Performanța bibliotecii se împarte în două metrici diferite: timpul
+necesar capturării unui eveniment (metrica de \textit{latență}) și
+volumul de evenimente ce poate fi serializat într-o perioadă de timp
+(metrica de \textit{debit}). În Figura \ref{fig:lib-perf} se pot vedea
+două tabele cu măsurătorile făcute cu ajutorul bibliotecii
+\lstinline{Google Benchmark}\cite{GoogleBenchmark} pentru ambele metrici
+interesante.
 
-\begin{figure}[ht]
+\begin{figure}[H]
 \centering
 \missingfigure[figwidth=14cm]
     {TODO: table of library performance measurements}
 \caption{Măsurători de performanță a bibliotecii}
 \label{fig:lib-perf}
 \end{figure}
+
+Metrica de \textit{latență} este măsurată în \textit{nanosecunde} (cât
+durează o operație) și depinde de numărul de fire de execuție ce
+capturează evenimente concurent, pentru că operațiile
+\textit{compare-and-swap} implicate în acest procedeu au șansă mai mare
+să eșueze cu cât sunt mai multe fire care încearcă să le execute în
+același timp.
+
+Metrica de \textit{debit} este măsurată în \textit{MB/secundă} (câte
+date despre evenimente pot fi serializate pe disc într-o perioadă de
+timp) și depinde de volumul de evenimente capturate și plasate în coada
+de evenimente.
