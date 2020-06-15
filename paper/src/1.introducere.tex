@@ -142,7 +142,18 @@ compilare verifică toate scrierile în memoria RAM și emite erori dacă
 o scriere este concurentă cu o alta sau cu o citire, și cele două nu
 sunt explicit sincronizate.
 
-\begin{lstlisting}[caption=Exemplu de folosire ThreadSanitizer]
+În Fragmentul de cod \ref{code:thread-sanitizer} (parafrazat din site-ul
+oficial de documenție al proiectului \cite{ThreadSanitizerDoc}) se vede
+cum ThreadSanitizer analizează programul \textit{on-the-fly}: analiza
+este făcută direct în cadrul execuției programului, în același proces.
+Asta duce la o încetinire drastică a programului și la un consum ridicat
+de memorie. Măsurătorile făcute pentru articolul \cite{ThreadSanitizer}
+arată o creștere a timpului de execuție între 120\% și 2760\%, și în
+consumul de memorie între 20\% și 660\%, în funcție de programul
+analizat.
+
+\begin{lstlisting}[caption=Exemplu de folosire ThreadSanitizer,
+                   label=code:thread-sanitizer]
 % clang -fsanitize=thread -g -O1 -o program tiny_race.c
 % ./program
 WARNING: ThreadSanitizer: data race (pid=19219)
@@ -155,15 +166,7 @@ WARNING: ThreadSanitizer: data race (pid=19219)
     #1 main tiny_race.c:9 (exe+0xa3a4)
 \end{lstlisting}
 
-După cum se vede din exemplul de mai sus (parafrazat din site-ul oficial
-de documenție al proiectului \cite{ThreadSanitizerDoc}), ThreadSanitizer
-analizează programul \textit{on-the-fly}: analiza este făcută direct în
-cadrul execuției programului, în același proces. Asta duce la o
-încetinire drastică a programului și la un consum ridicat de memorie.
-Măsurătorile făcute pentru articolul \cite{ThreadSanitizer} arată o
-creștere a timpului de execuție între 120\% și 2760\%, și în consumul de
-memorie între 20\% și 660\%, în funcție de programul analizat. De
-asemenea, ThreadSanitizer are nevoie de ajutor din partea
+De asemenea, ThreadSanitizer are nevoie de ajutor din partea
 compilatorului, deci poate fi folosit doar cu compilatoare ce
 încorporează explicit suport pentru el. Deși această unealtă este
 folosită în companii mari din industrie \cite{ThreadSanitizer}, aceste
@@ -192,7 +195,13 @@ Deși accentul nu este pus pe folosirea corectă sau eficientă a
 primitivelor de sincronizare în cel din urmă, comparația dintre
 proiectele \textit{SyncAnalysis} și \textit{Clang-Tidy} este aptă pentru
 că amândouă încearcă să creeze un sistem de unelte, mai degrabă decât
-să încerce să fie o unealtă de sine stătătoare. În timp ce proiectul
-\textit{Clang-Tidy} permite scrierea cu efort mic a unor analizori
-statici pentru codul sursă de C/C++, \textit{SyncAnalysis} face asta
-pentru analizori \textit{post-mortem}.
+să încerce să fie o unealtă de sine stătătoare. \textit{Clang-Tidy}
+permite dezvoltatorilor să scrie noi analizori folosind o interfață
+elegantă de C++, în care este necesară strict implementarea analizei în
+sine, într-un mod declarativ și simplu, programul \lstinline{Clang-Tidy}
+rezolvând în spate toate celelalte probleme pentru a duce la o unealtă
+completă.
+
+În timp ce proiectul \textit{Clang-Tidy} permite scrierea cu efort mic a
+unor analizori statici pentru codul sursă de C și C++,
+\textit{SyncAnalysis} face asta pentru analizori \textit{post-mortem}.

@@ -36,15 +36,18 @@ constante numerice. În limbajul C, interfața poate fi descrisă astfel:
       SA_EV_THREAD_ON_CREATE = SA_EV_THREAD | SA_EV_CREATE,
     };
 \end{lstlisting}
-Funcționalitatea acestei biblioteci este de a captura evenimente, așa
-că interfața publică importantă este funcția
+Această bibliotecă expune ca funcționalitate principală capturarea
+evenimentelor, așa că interfața publică importantă este funcția
 \lstinline{syan_capture_event}, care îndeplinește exact acest scop.
 Toate celelalte componente ale interfeței expuse sunt pentru a trata
-cazuri particulare mai complexe sau a oferi mai multă informație
-programului de analiză post-mortem, și sunt descrise mai jos. Exemplul
-principal de utilizare după care a fost proiectată funcția
-\lstinline{syan_capture_event} este următorul:
-\begin{lstlisting}[caption=Exemplul folosit în proiectarea interfeței]
+cazuri particulare mai complexe sau a standardiza tipuri de evenimente
+pe care se bazează și programul \lstinline{SyncAnalysis}, și sunt
+descrise mai jos. Exemplul principal de utilizare după care a fost
+proiectată funcția \lstinline{syan_capture_event} se poate vedea în
+Fragmentul de cod \ref{code:library-interface-example}.
+
+\begin{lstlisting}[caption=Exemplul folosit în proiectarea interfeței,
+                   label=code:library-interface-example]
 
     #define EVENT_MUTEX_BEFORE_LOCK 1331
     #define EVENT_MUTEX_AFTER_LOCK 1332
@@ -56,6 +59,7 @@ principal de utilizare după care a fost proiectată funcția
         syan_capture_event(EVENT_MUTEX_AFTER_LOCK, m);
     }
 \end{lstlisting}
+
 Funcția este apelată cu 2 parametri, unul pentru tipul de eveniment
 capturat și celălalt pentru identitatea obiectului țintă al
 evenimentului. Astfel, în analiza post-mortem a unui program se poate
@@ -161,8 +165,10 @@ tipul evenimentului sau de identitatea obiectului țintă al acestuia.
 Aceasta a fost proiectată astfel încât mai multe evenimente să poată fi
 stocate ușor și eficient într-o zonă continuă de memorie și serializate
 în format binar pe disc. În codul sursă C al bibliotecii, structura ce
-definește un eveniment este următoarea:
-\begin{lstlisting}[caption=Structura unui eveniment capturat]
+definește un eveniment se poate vedea în Fragmentul de cod
+\ref{code:event-structure}.
+\begin{lstlisting}[caption=Structura unui eveniment capturat,
+                   label=code:event-structure, float, floatplacement=H]
     typedef struct {
         int32_t signature;
         int32_t event_type;
@@ -284,10 +290,13 @@ Dacă funcția \lstinline{function_2} face un apel la funcția
 \lstinline{syan_capture_event} pentru a captura un eveniment, vrem să
 obținem lista de adrese de întoarcere din toate cadrele funcțiilor din
 stivă. Acest rezultat poate fi obținut folosind biblioteca
-\textit{libunwind}\cite{libunwind}:
+\textit{libunwind}\cite{libunwind}, după cum se poate vedea în
+Fragmentul de cod \ref{code:stack-unwinding}.
 
 \begin{lstlisting}[caption=Capturarea stivei de execuție folosind
-                           \lstinline{libunwind}]
+                           \lstinline{libunwind},
+                   label=code:stack-unwinding,
+                   float, floatplacement=H]
     #include <libunwind.h>
     void syan_get_backtrace(intptr_t* backtrace) {
         unw_context_t ctx;
@@ -315,54 +324,49 @@ ca mai apoi un alt fir de execuție creat de bibliotecă să copieze datele
 din memoria RAM pe disc. Pentru a obține rezultate satisfăcătoare de
 performanță, am proiectat o \textit{coadă de evenimente} (intern numită
 \lstinline{SyanBuffer}) specifică pentru această bibliotecă. Interfața
-acestei cozi este următoarea:
+acestei cozi se poate vedea în Fragmentul de cod
+\ref{code:queue-interface}.
 
 \begin{lstlisting}[caption=Interfața cozii de evenimente folosite în
-                           bibliotecă]
+                           bibliotecă,
+                   label=code:queue-interface, float, floatplacement=H]
 #define SYAN_BUFFER_PAGE_SIZE 256
 #define SYAN_BUFFER_NUM_PAGES 1024
-
 typedef struct {
     SyanEvent storage[SYAN_BUFFER_PAGE_SIZE];
     int_fast32_t storage_front;
     atomic_int_fast32_t storage_back;
 } SyanBufferPage;
-
 typedef SyanBufferPage* SyanBufferPagePtr;
-
 typedef struct {
     SyanBufferPagePtr pages[SYAN_BUFFER_NUM_PAGES];
     int_fast32_t pages_front;
     atomic_int_fast32_t pages_back;
 } SyanBuffer;
-
 int syan_buffer_init(SyanBuffer** b);
 SyanEvent* syan_buffer_acquire_event_slot(SyanBuffer* b);
 SyanBufferPagePtr syan_buffer_get_front_page(SyanBuffer* b);
 void syan_buffer_release_front_page(SyanBuffer* b);
 \end{lstlisting}
-
-Încă din interfață se poate observa prima proprietate importantă a
-acestei cozi: nu conține niciun mecanism explicit de sincronizare, ci
-doar două variabile cu tipul de date \textit{atomic}.
-
-Punerea rapidă a evenimentelor în coadă este mai importantă decât
-eficiența citirii din coadă, pentru a interfera cât mai puțin cu firele
-de execuție ale programului client. Când un astfel de fir capturează un
-eveniment, memoria folosită pentru a stoca informațiile acelui eveniment
-este direct memorie din câmpul \lstinline{storage} al paginii curente
-din coadă (pagina \lstinline{b->pages[b->pages_back]}). Asta omite
-necesitatea de a apela funcții precum \lstinline{malloc} pentru a obține
-memorie pentru eveniment sau \lstinline{memcpy} pentru a muta
-evenimentul în coadă abia după ce acesta este complet format. Așadar în
-interiorul funcției \lstinline{syan_initialize_event} se obține o zonă
-de memorie pentru stocarea respectivului eveniment printr-un apel la
-funcția \lstinline{syan_buffer_acquire_event_slot}. Aceasta
-implementează un algoritm \textit{lock-free} bazat pe operațiile
-primitive de \textit{compare-and-swap} și \textit{atomic-fetch-add} pe
-variabilele atomice \lstinline{pages_back} și respectiv
-\lstinline{storage_back} din acea pagină. Implementarea este similară cu
-cele descrise în articolele
+Prima proprietate importantă a acestei cozi este că nu conține niciun
+mecanism explicit de sincronizare, ci doar câteva variabile cu tipul de
+date \textit{atomic}. Minimizarea latenței punerii evenimentelor în
+coadă este mai importantă decât eficiența citirii din coadă, pentru a
+interfera cât mai puțin cu firele de execuție ale programului client.
+Când un astfel de fir capturează un eveniment, memoria folosită pentru
+a stoca informațiile acelui eveniment este direct memorie din câmpul
+\lstinline{storage} al paginii curente din coadă (mai exact pagina
+\lstinline{b->pages[b->pages_back]}). Asta omite necesitatea de a apela
+funcții precum \lstinline{malloc} pentru a obține memorie pentru fiecare
+eveniment individual sau \lstinline{memcpy} pentru a muta evenimentul
+în coadă abia după ce acesta este complet format. Așadar funcția
+\lstinline{syan_initialize_event} obține memoria necesară pentru
+stocarea evenimentului apelând funcția
+\lstinline{syan_buffer_acquire_event_slot}. Aceasta este implementată
+folosind un algoritm \textit{lock-free} bazat pe operațiile de
+\textit{compare-and-swap} și \textit{atomic-fetch-add} pe variabilele
+atomice \lstinline{pages_back} și respectiv \lstinline{storage_back} din
+acea pagină. Implementarea este similară cu cele descrise în articolele
 \textit{Lock-free linked lists using compare-and-swap}
 \cite{LinkedListsCAS} și
 \textit{A practical nonblocking queue algorithm using compare-and-swap}
@@ -407,26 +411,6 @@ funcției standard C \lstinline{fwrite}. Dacă prin scrierea acestor
 evenimente s-au scris toate evenimentele din pagină, aceasta este
 eliberată. Altfel, se modifică doar câmpul \lstinline{storage_front} al
 paginii pentru a marca până unde au fost scrise evenimentele din pagină.
-O variantă simplificată a implementării în limbajul C poate fi văzută
-în Fragmentul de cod \ref{code:lib-write-events}.
-
-\begin{lstlisting}[caption=Scrierea evenimentelor pe disc,
-                   label=code:lib-write-events,
-                   float, floatplacement=H]
-    SyanBufferPagePtr p = syan_global_buffer_get_front_page();
-    int_fast32_t front = p->storage_front;
-    int_fast32_t back = atomic_load(&p->storage_back);
-    for (int i = front; i < back; i++)
-        while (atomic_load(&p->storage[i].signature)
-                   != SYAN_EVENT_SIGNATURE);
-    int num_bytes = (back - front) * sizeof(SyanEvent);
-    fwrite(&p->storage[front], 1, num_bytes, DUMP_file);
-    if (back == SYAN_BUFFER_PAGE_SIZE)
-        syan_global_buffer_release_front_page();
-    else
-        buf_page->storage_front = back;
-    return (back - front > 0);
-\end{lstlisting}
 
 \subsubsection{Fișiserului DUMP}\label{dump-file}
 
