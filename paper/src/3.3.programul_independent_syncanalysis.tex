@@ -261,7 +261,40 @@ la informațiile menționate mai sus, pentru care clasa
 \subsubsection{Afișarea simbolurilor din stiva de execuție}
 \label{stack-reconstruction}
 
-\todo{Write text}
+Cea mai importantă informație din rapoartele oferite de programul
+\lstinline{SyncAnalysis} este lista funcțiilor din stiva de execuție
+pentru fiecare din secțiunile unui raport. Lista de funcții ajută
+utilizatorul să pună capturarea unui eveniment în context. Dar după
+cum este menționat în secțiunea \textbf{\ref{stack-unwinding}},
+evenimentul capturat conține doar lista de \textit{adrese} în câmpul
+\lstinline{backtrace}.
+
+Programele \lstinline{addr2line}\cite{binutils} și
+\lstinline{atos}\cite{atos} sunt invocate de programul
+\lstinline{SyncAnalysis} pentru a transforma această listă de adrese în
+lista de simboluri de funcții. Teoretic, aceste programe primesc ca
+argumente în linia de comandă exact adresele și calea către programul
+din care au venit adresele și afișează numele funcțiilor și (dacă
+executabilul a fost compilat cu \textit{debug symbols}) locația în codul
+sursă de unde provine adresa. Apare însă o problemă: din cauza măsurii
+de securitate pe care o iau sistemele de operare numită ASLR
+(\textit{Address Space Layout Randomization}\cite{ASLR}), aceste adrese
+pot fi decalate cu o valoare fixă, egală cu adresa virtuală la care a
+fost încărcat programul în execuția originală. Această adresă este
+capturată de biblioteca pentru capturarea de evenimente și stocată în
+antetul fișierului DUMP (vezi Secțiunea \textbf{\ref{dump-file}}) în
+timpul execuției, pentru a fi disponibilă programului
+\lstinline{SyncAnalysis}. Acesta folosește adresa pentru a da
+programului \lstinline{addr2line} adresele direct \textit{normalizate}
+(prin decalarea acestora cu opusul decalajului inițial), respectiv
+pentru a da programului \lstinline{atos} această adresă ca argumentul
+\lstinline{-l} în comanda de invocare.
+
+Sunt folosite aceste două programe diferite pentru că pe sistemul de
+operare Mac OS, programul \lstinline{addr2line} nu oferă rezultate
+satisfăcătoare. Programul \lstinline{atos} este menținut și recomandat
+oficial de Apple Inc. pentru a îndeplini aproximativ același scop, dar
+cu rezultate semnificativ mai exacte.
 
 \subsubsection{Interfața C++ pentru un analizor}
 
