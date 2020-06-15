@@ -52,7 +52,7 @@ bool respects_analyzer_name_rules(std::string_view name,
       return rule[0] != '-';
     }
   }
-  return false;
+  return true;
 }
 
 }  // namespace

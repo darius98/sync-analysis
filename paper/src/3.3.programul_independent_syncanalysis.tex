@@ -1,25 +1,328 @@
 \subsection{Programul de analiză post-mortem SyncAnalysis}
 \label{executable}
 
-\todo{Write text}
+Programul \lstinline{SyncAnalysis} este a doua componentă a sistemului
+de creare de unelte. Acesta se ocupă de a citi evenimentele din fișierul
+DUMP scris de biblioteca de capturare de evenimente și a le analiza prin
+intermediul unor analizori scriși de client.
 
-\subsubsection{Parcurgerea și parsarea fișierului DUMP}
+Acest program are ca scop rezolvarea unor probleme ce fac scrierea de
+unelte de analiză \textit{post-mortem} dificilă: parsarea în mod
+eficient a evenimentelor capturate în timpul execuției, acces ușor la
+informații de interes (cum ar fi indentitatea obiectelor țintă a
+evenimentelor) și scrierea de rapoarte ce conțin toate informațiile
+necesare pentru rezolvarea problemelor descoperite prin analiză. Prin
+folosirea acestui program, scrierea unui nou \textit{analizor}
+(componentă a unei unelte de analiză ce diagnostichează un anumit tip de
+problemă) trebuie să se rezume la a implementa strict algoritmul de
+diagnosticare a problemei și nimic altceva. În secțiunea
+\textbf{\ref{analyzers}} se pot vedea câteva exemple de astfel de
+analizori ce rezolvă probleme reale, de multe ori implementate în mai
+puțin de 100 de linii de cod.
 
-\todo{Write text}
+\subsubsection{Argumentele pentru linia de comandă}
 
-\subsubsection{Stocarea și observarea obiectelor active}
+Programul \lstinline{SyncAnalysis} este proiectat pentru a fi invocat de
+la linia de comandă:
+\begin{lstlisting}
+    % sync_analysis -b program sync_analysis.dump
+\end{lstlisting}
+Primul lucru pe care îl face programul este să interpreteze argumentele
+date în comanda de invocare (în cazul de mai sus \lstinline{"-b"},
+\lstinline{"program"} și \lstinline{"sync_analysis.dump"}). În general,
+forma acestor argumente este următoarea:
+\begin{lstlisting}
+    % sync_analysis [-optiuni] calea/la/sync_analysis.dump
+\end{lstlisting}
+Argumentul pentru calea la fișierul \lstinline{sync_analysis.dump} este
+singurul obligatoriu pentru funcționarea executabilului. Acesta indică
+fișierul DUMP ce trebuie analizat. Toate celelalte argumente reprezintă
+\textit{opțiuni}, și pentru a urma tiparul executabilelor preinstalate
+pe sistemele GNU/Linux (de exemplu programele din
+\lstinline{binutils}\cite{binutils}), acesta încep cu \lstinline{-} sau
+\lstinline{--}. Pentru interpretarea argumentelor din linia de comandă
+în aceste opțiuni s-a folosit biblioteca
+\lstinline{mcga-cli}\cite{mcga-cli}. Aceasta oferă un mod elegant de a
+defini în opțiunile sub formă de variabile în codul sursă, a căror
+valoare este modificată conform argumentelor date în linia de comandă,
+indiferent de ordinea în care apar acestea. De asemenea, biblioteca
+generează și afișează automat o listă a tuturor opțiunilor pe care le
+poate primi programul și descrieri ale acestora într-un format ușor de
+citit prin invocarea programului cu un singur argument,
+\lstinline{--help} sau \lstinline{-h}.
 
-\todo{Write text}
+Cea mai importantă dintre opțiuni este
+\lstinline{--binary=calea/programului/client} (sau varianta mai
+scurtă \lstinline{-b calea/programului/client}), folosită pentru a
+indica fișierul executabil prin a cărui execuție s-a generat fișierului
+\lstinline{sync_analysis.dump} analizat. Această opțiune este necesară
+pentru a reconstrui lista simbolurilor funcțiilor din stiva de execuție
+a capturării unui eveniment dintr-un raport. Detalii despre cum se face
+această reconstrucție se găsesc în secțiunea
+\textbf{\ref{stack-reconstruction}}.
+
+O altă opțiune importantă pentru clienții ce vor să invoce programul în
+procedeele lor de testare și integrare automată este
+\lstinline{--report-file} (sau varianta scurtă \lstinline{-r}).
+Folosirea acestei opțiuni face ca rapoartele să fie scrise în fișierul
+specificat în loc să fie afișate în consolă (cum se întâmplă în mod
+implicit).
+
+Opțiunile \lstinline{--debug} și \lstinline{--print-header} controlează
+afișarea unor informații în plus despre execuția programului
+\lstinline{SyncAnalysis} în sine. Sunt opțiuni utile pentru
+dezvolatatorii de analizori, care pot astfel observa greșeli în modul
+cum au programat sau integrat analizorii în program, sau pot chiar
+observa și semnala probleme cu funcționarea programului propriu-zis.
 
 \subsubsection{Înregistrarea analizorilor}
 
-\todo{Write text}
+După interpretarea opțiunilor, programul încarcă analizorii, urmând
+indicațiile date de opțiunile \lstinline{-A} și \lstinline{-a}. Opțiunea
+\lstinline{-A} este folosită pentru a specifica directoare în care să se
+caute analizori. Un fișier găsit în oricare din directoarele specificate
+prin această opțiune este considerat un \textit{analizor} dacă respectă
+următoarele condiții:
+\begin{itemize}
+    \item Numele fișierului începe cu prefixul
+    \lstinline{libsyan-analyzer-} și are extensia \lstinline{.so} (sau
+    \lstinline{.dylib} pe Mac OS);
+    \item Fișierul poate fi încărcat cu succes printr-un apel la funcția
+    \lstinline{dlopen} (este un fișier în formatul ELF\cite{ELF} ce
+    reprezintă o bibliotecă dinamică);
+    \item Simbolul \lstinline{"syan_analyzer"} poate fi găsit în
+    biblioteca reprezentată în fișier printr-un apel la funcția
+    \lstinline{dlsym} și simbolul este asociat unui șir de caractere;
+\end{itemize}
+Șirul de caractere asociat simbolului \lstinline{"syan_analyzer"} este
+numele analizorului. Acest nume este folosit pentru a stabili dacă
+analizorul este folosit sau nu. Opțiunea \lstinline{-a} specifiă reguli
+pentru ce nume trebuie să aibă un analizor pentru a fi folosit sau
+ignorat: \textit{ultima} regulă dintre cele date prin opțiunea
+\lstinline{-a} pe care o respectă numele unui analizor trebuie să fie
+una \textit{pozitivă} pentru ca analizorul să fie folosit. O regulă este
+un \textit{glob} ce conține doar litere, cifre, \lstinline{-},
+\lstinline{_} sau \lstinline{*}. Numele unui analizor \textit{respectă}
+regula dacă aparițiile caracterului \lstinline{*} din regulă pot fi
+înlocuite prin secvențe de alte caractere permise astfel încât să se
+obțină numele analizorului (de exemplu, numele
+\lstinline{"redundant-recursive-mutex"} respectă regulile
+\lstinline{"redundant-*"} sau \lstinline{"*mutex"}, dar nu
+\lstinline{"rwlock-*"}). O regulă este \textit{negativă} dacă primul său
+caracter este \lstinline{-} (și atunci primul caracter \lstinline{-}
+este ignorat în verificarea regulii), altfel este \textit{pozitivă}.
 
-\subsubsection{Crearea de rapoarte}
+Acest mod de a filtra analizorii pe bază de listă de reguli
+\textit{glob} este inspirat din modul de folosire al
+Clang-Tidy\cite{ClangTidy}, care folosește mai mult sau mai puțin
+același algoritm de filtrare pe baza unui argument numit
+\lstinline{-checks}.
 
-\todo{Write text}
+\subsubsection{Procedeul de analiză}
+
+După încărcarea analizorilor, începe procedeul de analiză propriu-zis.
+Mai întâi se execută codul de inițializare înregistrat de fiecare
+analizor. Reamintim aici că analizorii sunt încărcați de program ca
+biblioteci dinamice prin apeluri manuale la funcția \lstinline{dlopen}
+din biblioteca de sistem \lstinline{DL}\cite{DL}. Dacă biblioteca unui
+analizor expune public simbolul \lstinline{"syan_analyzer_start_up"},
+acesta trebuie să fie asociat unei funcții ce nu primește parametri, și
+această funcție este apelată acum, la începutul analizei.
+
+După inițializarea analizorilor, programul citește evenimentele din
+fișierul DUMP și le expune unul câte unul analizorilor, în ordinea din
+fișier. Următoarea funcție este disponibilă analizorilor:
+\begin{lstlisting}
+    namespace syan { syan::Event current_event(); }
+\end{lstlisting}
+Pentru fiecare eveniment, acesta este pus într-o variabilă globală ce
+poate fi accesată de analizori prin funcția de mai sus. Apoi, pentru
+fiecare analizor a cărui bibliotecă expune public simbolul
+\lstinline{"syan_analyzer_on_event"}, acesta trebuie să fie asociat unei
+funcții ce nu primește parametri, și această funcție este apelată.
+
+După ce tot fluxul de evenimente din fișierul DUMP este epuizat, se
+caută în biblioteca fiecărui analizor simbolul
+\lstinline{"syan_analyzer_shut_down"}, care trebuie din nou să fie
+asociat unei funcții ce nu primește parametri. Pentru analizorii unde
+acest simbol există, funcția asociată este apelată acum, după
+parcurgerea tuturor evenimentelor.
+
+\subsubsection{Clasa \lstinline{syan::Event}}
+
+Am menționat deja că un analizor are acces la evenimentul curent
+procesat prin funcția \lstinline{current_event()} care returnează o
+instanță a clasei \lstinline{syan::Event}. Această clasă oferă
+informațiile despre evenimentul respectiv prin câteva metode simple:
+\begin{lstlisting}
+    int type() const;
+    ObjectId object() const;
+    ObjectId thread() const;
+    int64_t time_rel_to_program_start() const;
+\end{lstlisting}
+Aceste metode expun exact câmpurile ce au fost serializate în fișierul
+DUMP.
+
+O instanță a acestei clase poate fi copiată de un analizor dacă
+acesta are nevoie de informația din acest eveniment pentru un posibil
+raport viitor. Pentru că un eveniment ocupă suficient de multă memorie
+ca să fie ineficient de copiat de mai mulți analizori, informația în
+sine despre eveniment este stocată o singură dată, iar clasa
+\lstinline{syan::Event} acționează similar cu un
+\textit{shared pointer}\cite{SharedPtr}: de fiecare dată când o instanță
+este copiată, se incrementează un contor pentru numărul de referințe,
+iar de fiecare dată când o instanță este distrusă este decrementat acest
+contor. Când contorul ajunge la 0, memoria asociată unicei instanțe a
+informației propriu-zise a evenimentului este dealocată. Copierea unui
+\lstinline{syan::Event} este deci eficientă, și mai mulți analizori pot
+păstra referințe către un eveniment fără a avea un impact negativ asupra
+performanței analizei.
+
+\subsubsection{Crearea unui raport}
+
+Scopul principal al analizorilor este să găsească probleme prin
+observarea evenimentelor capturate. Când un analizor găsește o astfel de
+problemă, acesta trebuie să informeze programul că trebuie creat un
+raport pentru problema respectivă. Următoarea funcție este disponibilă
+analizorilor:
+\begin{lstlisting}
+    namespace syan { syan::Report create_report(); }
+\end{lstlisting}
+Instanța clasei \lstinline{syan::Report} astfel obținută controlează
+trimiterea unui raport către utilizator. Această clasă expune public
+următoarele 4 metode:
+\begin{lstlisting}
+    Report& set_level(Level level);
+    Report& set_description(std::string description);
+    Report& add_section(std::string description, Event event);
+    void send();
+\end{lstlisting}
+Un raport are un \textit{nivel de severitate}, o \textit{descriere} și
+zero sau mai multe \textit{secțiuni}. Nivelul de severitate poate fi
+\textit{informație} (\lstinline{Level::info}), \textit{avertisment}
+(\lstinline{Level::warning}) sau \textit{eroare}
+(\lstinline{Level::error}), oferind o indicație simplă pentru tipul de
+diagnostic emis. În general se recomandă ca nivelul de \textit{eroare}
+să fie folosit pentru diagnostice care mereu indică o greșeală ce
+trebuie rezolvată în program, nivelul de \textit{avertisment} să fie
+folosit pentru diagnostice care \textit{cel mai probabil} indică o
+problemă, dar pot fi totuși incorecte în anumite situații și nivelul de
+\textit{informație} pentru orice alt tip de diagnostic.
+
+\textit{Descrierea} este mesajul principal al raportului: aceasta spune
+ce problemă a fost descoperită de analiză.
+
+\textit{Secțiunile} unui raport sunt atașamente la mesajul principal dat
+de \textit{descriere}. O \textit{secțiune} conține un eveniment și o
+descriere. Descrierea ar trebui să explice ce rol joacă acest eveniment
+în diagnostic sau de ce este important. Evenimentul este inclus pentru
+ca această secțiune a raportului să conțină momentul de timp când a avut
+loc acest eveniment (atât în valoare absolută cât și relativ la
+începutul programului), firul de execuție pe care s-a capturat
+evenimentul și funcțiile din stiva de execuție a capturării
+evenimentului (vezi Secțiunea \textbf{\ref{stack-reconstruction}}).
+
+După construirea unui raport, acesta poate fi trimis manual folosind
+metoda \lstinline{.send()}. Dacă nu se face apel la metoda
+\lstinline{.send()} pentru un raport, acesta va apela automat metoda în
+destructor.
+
+\subsubsection{Baza de date a obiectelor active}\label{obj-database}
+
+Pe baza evenimentelor ce conțin în câmpul de tip
+\textit{biții indicatori} \lstinline{SA_EV_CREATE} și
+\lstinline{SA_EV_DESTROY} (vezi secțiunea
+\textbf{\ref{section:library-interface}}), programul menține
+(independent de analizori) o bază de date internă dar ușor accesibilă de
+obiecte \textit{active} (care au fost create dar nu distruse), incluzând
+o listă cu toate firele de execuție create (acestea nu se consideră
+niciodată distruse). Pentru fiecare din aceste obiecte este stocat
+evenimentul care a creat obiectul. De asemenea unui obiect îi este
+asociat un identificator unic numeric (independent de cel din câmpul de
+\lstinline{object_id}), pentru a putea fi folosit în rapoarte ca
+\textit{numele} obiectului (fără riscul de a apărea coliziuni, risc ce
+există pentru \lstinline{object_id}, după cum este descris în secțiunea
+\textbf{\ref{section:library-interface}}).
+
+Cu ajutorul acestei baze de date, pentru orice secțiune adăugată unui
+raport, se mai adaugă automat până la două alte secțiuni: evenimentul ce
+a creat obiectul țintă al evenimentului din secțiune (dacă există în
+baza de date) și evenimentul ce a creat firul de execuție al
+evenimentului din secțiune (dacă există în baza de date).
+
+Baza de date este accesibilă analizorilor prin următoarea funcție:
+\begin{lstlisting}
+    namespace syan { const syan::Database& database(); }
+\end{lstlisting}
+Analizorii se pot folosi de baza de date pentru a avea acces programatic
+la informațiile menționate mai sus, pentru care clasa
+\lstinline{syan::Database} oferă metode de acces.
 
 \subsubsection{Afișarea simbolurilor din stiva de execuție}
 \label{stack-reconstruction}
 
 \todo{Write text}
+
+\subsubsection{Interfața C++ pentru un analizor}
+
+Se recomandă scrierea analizorilor în limbajul C++, pentru că funcțiile
+expuse de program pentru analizori (\lstinline{current_event},
+\lstinline{database} și \lstinline{create_report}) respectiv clasele a
+căror instanțe sunt întoarse de aceste funcții (\lstinline{Event},
+\lstinline{Database} și \lstinline{Report}) sunt interfețe C++.
+
+Un mod rudimentar de a scrie un analizor în C++ ce expune toate cele 4
+simboluri căutate de program este văzut în Fragmentul de cod
+\ref{code:analyzer-C}.
+\begin{lstlisting}[caption=Interfața rudimentară a unui analizor,
+                   label=code:analyzer-C]
+    extern "C" const char* syan_analyzer = "analizorul-meu";
+    extern "C" void syan_analyzer_start_up() {
+        // cod pentru initializare
+    }
+    extern "C" void syan_analyzer_on_event() {
+        const syan::Event event = syan::current_event();
+        // cod pentru procesarea unui eveniment
+    }
+    extern "C" void syan_analyzer_shut_down() {
+        // cod pentru oprire
+    }
+\end{lstlisting}
+Motivul pentru care simbolurile pe care le caută programul în
+bibliotecile analizorilor sunt simboluri C și pentru care funcțiile ce
+trebuie asociate acestor simboluri au signatură C este pentru că
+interfața binară a limbajului C++ nu este standardizată oficial de ISO,
+pentrum cea de C.
+
+Această interfață nu este cea mai elegantă pentru limbajul C++.
+Interfața de mai sus încurajează abuzul de variabile globale,
+încurajează eliberarea manuală a memoriei și alte practici periculoase
+pentru care C++ oferă soluții mai bune. Așadar, în interfața expusă
+analizorilor este oferit și un \textit{macro} ce are ca scop construirea
+tuturor celor 4 simboluri necesare pe baza unei clase. Clasa trebuie să
+expună public un constructor fără niciun argument (din care se va genera
+simbolul \lstinline{"syan_analyzer_start_up"}), un destructor (din care
+se va genera simbolul \lstinline{"syan_analyzer_shut_down"}), o
+variabilă membru statică cu tipul de date \lstinline{const char*} și
+numele \lstinline{name} (din care se va genera simbolul
+\lstinline{"syan_analyzer"}) și o suprascriere a operatorului
+\lstinline{()} ce primește ca unic parametru un obiect de tipul
+\lstinline{syan::Event} (din care se va genera simbolul
+\lstinline{"syan_analyzer_on_event"}). Un exemplu de folosire al acestui
+\textit{macro} poate fi văzut în Fragmentul de cod
+\ref{code:analyzer-CXX}.
+
+\begin{lstlisting}[caption=Interfața pe bază de clasă a unui analizor,
+                   label=code:analyzer-CXX]
+    struct AnalizorulMeu {
+        static constexpr const char* name = "analizorul-meu";
+
+        AnalizorulMeu() { /* cod pentru initializare */ }
+        ~AnalizorulMeu() { /* cod pentru oprire */ }
+
+        void operator()(Event event) {
+            // cod pentru procesarea unui eveniment
+        }
+    };
+    SYAN_ANALYZER_CLASS(AnalizorulMeu);
+\end{lstlisting}

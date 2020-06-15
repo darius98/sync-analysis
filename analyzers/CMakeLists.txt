@@ -9,7 +9,7 @@ macro(add_syan_analyzer NAME)
     set_target_properties(syan-analyzer-${NAME} PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/syan-analyzers)
     add_dependencies(all_analyzers syan-analyzer-${NAME})
-    install(TARGETS syan-analyzer-${NAME} DESTINATION syan-analyzers)
+    install(TARGETS syan-analyzer-${NAME} DESTINATION lib/syan-analyzers)
 endmacro()
 
 macro(add_syan_analyzers)

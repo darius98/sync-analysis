@@ -9,6 +9,10 @@
 
 namespace syan {
 
+Report::~Report() {
+  send();
+}
+
 Report& Report::set_level(Level new_level) noexcept {
   level = new_level;
   return *this;
@@ -28,7 +32,12 @@ Report& Report::add_section(std::string section_description, Event event) {
   return *this;
 }
 
-Report::~Report() {
+void Report::send() {
+  if (is_sent) {
+    return;
+  }
+  is_sent = true;
+
   for (const auto& note : notes) {
     sections.emplace_back(
         "Note: " + database().object_name(note) + " was created here: ", note);

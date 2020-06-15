@@ -23,6 +23,8 @@ public:
   Report& set_description(std::string new_description) noexcept;
   Report& add_section(std::string section_description, Event event);
 
+  void send();
+
 private:
   Report() = default;
 
@@ -34,6 +36,7 @@ private:
         : description(std::move(description)), event(std::move(event)) {}
   };
 
+  bool is_sent = false;
   Level level{Level::info};
   std::string description;
   std::vector<ReportSection> sections;

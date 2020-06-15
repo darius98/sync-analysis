@@ -82,17 +82,15 @@ interior funcțiile \lstinline{pthread_mutex_trylock},
     void wr_lock();
     void wr_unlock();
 \end{lstlisting}
-
 Metodele acestea sunt implementate prin apeluri la funcțiile
-echivalente din biblioteca \lstinline{pthread}:
+echivalente din \lstinline{pthread}:
 \lstinline{pthread_rwlock_tryrdlock}, \lstinline{_rdlock},
-\lstinline{_unlock}, \lstinline{_trywrlock}, \lstinline{_wrlock}
-respectiv \lstinline{_unlock}.
+\lstinline{_unlock}, \lstinline{_trywrlock} și \lstinline{_wrlock}.
 
 Toate cele 4 clase principale din bibliotecă fac unul sau mai multe
 apeluri la funcția \lstinline{syan_capture_event}, pentru a raporta
-diverse evenimente. De exemplu, constructorul clasei
-\lstinline{RecursiveMutex} face următorul apel:
+diverse evenimente. Spre exemplu, clasa \lstinline{RecursiveMutex} face
+în constructor următorul apel:
 \begin{lstlisting}
     syan_capture_event(SA_EV_REC_MUTEX_ON_CREATE, this);
 \end{lstlisting}

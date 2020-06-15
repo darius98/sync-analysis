@@ -114,20 +114,17 @@ Biblioteca și programul de analiză post-mortem sunt de uz general,
 neavând în mod direct o interfață specifică analizării primitivelor de
 sincronizare. De aceea proiectul conține și două exemple de biblioteci
 pentru a facilita folosirea bibliotecii de capturare a evenimentelor în
-scopul de analiză a primitivelor de sincronizare. Una dintre acestea
-oferă o interfață identică cu cea a altei biblioteci populare,
-\lstinline{pthread}, pentru a permite programelor ce folosesc această
-bibliotecă să folosească \lstinline{SyncAnalysis} fără schimbări în
-codul sursă. Detalii despre aceste biblioteci se găsesc în secțiunea
-\textbf{\ref{integration-libraries}}. În Figura \ref{fig:architecture}
-se poate vedea arhitectura software a proiectului SyncAnalysis. Cu
-albastru sunt marcate elementele de uz general, adică cele independente
-de unealta dezvoltată (folosibile chiar pentru unelte care nu se ocupă
-de analiza primitivelor de sincronizare), cu verde sunt marcate
-elementele ce sunt specifice unei anumite unelte, iar cu gri sunt
-marcate elementele programului client.
+scopul de analiză a primitivelor de sincronizare, descrise în detaliu în
+Secțiunea \textbf{\ref{integration-libraries}}.
 
-\begin{figure}[H]
+În Figura \ref{fig:architecture} se poate vedea arhitectura software a
+proiectului SyncAnalysis. Cu albastru sunt marcate elementele de uz
+general, adică cele independente de unealta dezvoltată (folosibile chiar
+pentru unelte care nu se ocupă de analiza primitivelor de sincronizare),
+cu verde sunt marcate elementele ce sunt specifice unei anumite unelte,
+iar cu gri sunt marcate elementele programului client.
+
+\begin{figure}[ht]
 \centering
 \includegraphics[width=14cm]{architecture.jpg}
 \caption{Arhitectura proiectului SyncAnalysis}
