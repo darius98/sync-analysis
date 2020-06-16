@@ -1,23 +1,53 @@
 \subsection{Analizori}\label{analyzers}
 
-\todo{Write text}
+După execuția programului client integrat cu biblioteca pentru capturare
+de evenimente și una din bibliotecile de mai sus, evenimentele capturate
+trebuie acum analizate folosind programul \lstinline{SyncAnalysis}. Însă
+după cum am mai spus, acest program nu face pe cont propriu nicio
+analiză, ci se bazează pe \textit{analizorii} încărcați să emită
+diagnosticele în sine, programul doar ajutând acești analizori cu munca
+de rutină. Astfel, ca parte dintr-o unealtă de analiză trebuie compusă
+și o suită de analizori care să facă propriu-zis analiza.
 
-\subsubsection{mutex-lock-order}
-
-\todo{Write text}
-
-\subsubsection{lock-shadow}
-
-\todo{Write text}
-
-\subsubsection{redundant-recursive-mutex}
-
-\todo{Write text}
-
-\subsubsection{redundant-rwlock}
-
-\todo{Write text}
+Vom descrie în continuare un exemplu de astfel de suită: 4 analizori ce
+au ca scop observarea folosirii \textit{excesive} de primitive de
+sincronizare.
 
 \subsubsection{useless-lock}
 
-\todo{Write text}
+Observație: dacă un \textit{mutex}, \textit{mutex recursiv} sau un
+\textit{read-write lock} este \textit{locked} de un singur fir de
+execuție, primitiva respectivă nu este necesară programului.
+
+Pe baza observației de mai sus se poate concepe un simplu algoritm care
+analizează apariția acestei situații. Pentru fiecare eveniment care
+marchează crearea unui \textit{lock} (oricare din primitivele de mai
+sus), se crează o intrare pentru respectivul lock într-un tabel. Apoi,
+pentru orice eveniment capturat cu câmpul \lstinline{object_id} egal cu
+obiectul inițial se înregistrează câmpul \lstinline{thread_id} al
+evenimentului în intrarea pentru obiectul respectiv în tabel. Dacă un
+obiect ajunge să aibă 2 fire de execuție diferite stocate în intrarea
+sa din tabel, acesta poate fi șters din tabel, deoarece nu mai prezintă
+interes. Dacă atunci când se capturează evenimentul de distrugere a
+\textit{lock}-ului (sau când se termină lista de evenimente) intrarea
+acestuia încă se află în tabel, este emis un diagnostic cu nivelul de
+severitate de \textit{avertisment}, pentru că respectivul \textit{lock}
+nu este neapărat necesar.
+
+Implementarea acestui analizor conține un total de 89 de linii de cod
+C++.
+
+\subsubsection{lock-shadow}
+
+Implementarea acestui analizor conține un total de 103 linii de cod
+C++.
+
+\subsubsection{redundant-recursive-mutex}
+
+Implementarea acestui analizor conține un total de 73 de linii de cod
+C++.
+
+\subsubsection{redundant-rwlock}
+
+Implementarea acestui analizor conține un total de 76 de linii de cod
+C++.
