@@ -13,41 +13,142 @@ Vom descrie în continuare un exemplu de astfel de suită: 4 analizori ce
 au ca scop observarea folosirii \textit{excesive} de primitive de
 sincronizare.
 
+Vom folosi în explicațiile ce urmează notațiile:
+
+$t(e)=$ momentul de timp la care a avut loc evenimentul $e$
+
+$F(e)=$ identitatea firului de execuție pe care a fost capturat
+evenimentul $e$
+
+$LU(a)=$ mulțimea tuturor evenimentelor capturate cu $a$ ca obiect țintă
+(unde $a$ poate fi un \textit{mutex}, un \textit{mutex recursiv} sau un
+\textit{read write lock}), pentru care tipul evenimentului este unul de
+\textit{lock}, \textit{unlock}, \textit{read lock}, \textit{write lock},
+\textit{read unlock} sau \textit{write unlock}.
+
 \subsubsection{useless-lock}
 
-Observație: dacă un \textit{mutex}, \textit{mutex recursiv} sau un
-\textit{read-write lock} este \textit{locked} de un singur fir de
-execuție, primitiva respectivă nu este necesară programului.
+Observație: pentru un obiect $a$, fie
+$S_a = \{\ F\ |\ \exists e \in M(a) \ a.i.\ F(e) = F\ \}$. Dacă
+$|S_a| \leq 1$, atunci obiectul $a$ nu este necesar corectitudinii
+programului.
 
-Pe baza observației de mai sus se poate concepe un simplu algoritm care
-analizează apariția acestei situații. Pentru fiecare eveniment care
-marchează crearea unui \textit{lock} (oricare din primitivele de mai
-sus), se crează o intrare pentru respectivul lock într-un tabel. Apoi,
-pentru orice eveniment capturat cu câmpul \lstinline{object_id} egal cu
-obiectul inițial se înregistrează câmpul \lstinline{thread_id} al
-evenimentului în intrarea pentru obiectul respectiv în tabel. Dacă un
-obiect ajunge să aibă 2 fire de execuție diferite stocate în intrarea
-sa din tabel, acesta poate fi șters din tabel, deoarece nu mai prezintă
+Se poate concepe un simplu algoritm care analizează apariția situației
+descrise în observație. Pentru fiecare eveniment care marchează crearea
+unui obiect $a$, se crează o intrare cu o mulțime vidă pentru $a$
+într-un tabel. Apoi, pentru orice eveniment capturat $e$ cu obiectul
+țintă $a$ se adaugă $F(e)$ în intrarea pentru $a$ din tabel. Dacă un
+obiect ajunge să aibă cardinalul mulțimii din intrarea sa din tabel
+minim 2, acesta poate fi șters din tabel, deoarece nu mai prezintă
 interes. Dacă atunci când se capturează evenimentul de distrugere a
-\textit{lock}-ului (sau când se termină lista de evenimente) intrarea
-acestuia încă se află în tabel, este emis un diagnostic cu nivelul de
-severitate de \textit{avertisment}, pentru că respectivul \textit{lock}
-nu este neapărat necesar.
+obiectului (sau când se termină lista de evenimente) intrarea acestuia
+încă se află în tabel, este emis un diagnostic cu nivelul de severitate
+de \textit{avertisment}, pentru că respectivul obiect nu este necesar
+corectitudinii programului.
 
-Implementarea acestui analizor conține un total de 89 de linii de cod
-C++.
+Acest analizor este implementat în 89 de linii de cod C++.
 
 \subsubsection{lock-shadow}
 
-Implementarea acestui analizor conține un total de 103 linii de cod
-C++.
+Observație: pentru un obiect $a$ fixat, dacă $\exists$ un
+obiect $b\ \neq a$ astfel încât $\forall\ L_a,\ U_a$ evenimente de
+\textit{lock} respectiv \textit{unlock} consecutive cu obiectul țintă
+$a$, $\exists\ L_b,\ U_b$ evenimente de \textit{lock} respectiv
+\textit{unlock} consecutive pe obiectul $b$ astfel încât 
+$t(L_b) < t(L_a) < t(U_a) < t(U_b)$ și $F(L_a) = F(L_b)$, atunci
+obiectul $a$ nu este necesar corectitudinii programului.
+
+Implementarea acestui analizor este puțin mai complexă decât a celui de
+mai sus. S-au folosit două structuri de date diferite: un tabel $T$ ce 
+menține lista de potențiale obiecte $b$ pentru fiecare obiect $a$ în
+parte (folosind notațiile din observația de mai sus) și un alt tabel $S$
+ce menține lista de obiecte \textit{locked} de fiecare fir de execuție
+în parte. Astfel, pentru fiecare eveniment care marchează crearea unui
+obiect $a$ se adaugă o intrare în prima structură de date, considerând
+că mulțimea de posibile obiecte $b$ pentru obiectul $a$ este mulțimea
+tuturor obiectelor (în implementare se folosește valoarea
+\lstinline{NULL} pentru a reprezenta mulțimea infinită):
+$T(a) \gets $ \lstinline{NULL}. La momentul unui eveniment de
+\textit{lock} $L$ asupra obiectului $a$, mai întâi se schimbă mulțimea
+de potențiale obiecte $b$ a lui $a$  prin intersectarea acesteia cu
+mulțimea obiectelor \textit{locked} de firul de execuție a lui $L$:
+$T(a) \gets T(a) \cap S(F(L))$. Apoi obiectul $a$ este adăugat în
+mulțimea de obiecte \textit{locked} de firul de execuție al obiectului
+$L$: $S(F(L)) \gets S(F(L)) \cup \{a\}$. Pentru un eveniment de tip
+\textit{unlock} $U$ pe un obiect $a$, acesta este scos din mulțimea de
+obiecte \textit{locked} a firului de execuție $F(U)$:
+$S(F(U)) \gets S(F(U)) \backslash \{a\}$.
+
+Când este procesat un eveniment pentru distrugerea unui obiect $a$ (sau
+când procesarea evenimentelor se încheie) și $T(a) \neq \emptyset$,
+fiecare obiect din $T(a)$ respectă proprietatea menționată pentru
+obiectul $b$ în observația de mai sus. Astfel, analizorul emite un
+diagnostic cu nivelul de \textit{avertisment} pentru fiecare astfel de
+pereche $(a, b)$ cu $b \in T(a)$.
+
+Acest analizor este implementat în 103 linii de cod C++.
 
 \subsubsection{redundant-recursive-mutex}
 
-Implementarea acestui analizor conține un total de 73 de linii de cod
-C++.
+Observație: Dacă un \textit{mutex recursiv} nu este niciodată
+\textit{locked} de două ori la rând (fără un \textit{unlock} între ele),
+acesta poate fi înlocuit cu un \textit{mutex} simplu.
+
+Pentru a implementa acest analizor, menținem tabelul $S$ la fel ca
+pentru analizorul \textit{lock-shadow} descris mai sus, dar cu intrări
+doar pentru obiectele de tipul \textit{mutex recursiv} și lista $L$ de
+obiecte de tipul \textit{mutex recursiv} care sunt potențial redundante.
+Pentru fiecare eveniment care marchează crearea unui astfel de obiect,
+obiectul este adăugat în lista $L$. Pentru fiecare eveniment $e$ de
+tipul \textit{lock} pe un astfel de obiect $a$, se verifică mai întâi
+dacă $a$ se află în $S(F(e))$, și dacă da, acesta este scos din lista
+$L$ (dacă încă era), deoarece a fost făcut un \textit{lock recursiv} pe
+obiectul $a$.
+
+Când este procesat un eveniment pentru distrugerea unui obiect $a$ (sau
+când procesarea evenimentelor se încheie), dacă $a \in L$, atunci
+analizorul emite un diagnostic cu nivelul de \textit{avertisment} pentru
+obiectul $a$, deoarece acesta nu a fost niciodată folosit în mod
+recursiv și ar putea fi înlocuit cu un \textit{mutex} simplu. În
+practică implementarea este puțin mai complexă pentru a evita emiterea
+unui diagnostic pentru obiecte ce nu au fost niciodată \textit{locked},
+deoarece analizorul \textit{useless-lock} va emite oricum diagnostic
+pentru această situație.
+
+Acest analizor este implementat în 73 de linii de cod C++.
 
 \subsubsection{redundant-rwlock}
 
-Implementarea acestui analizor conține un total de 76 de linii de cod
-C++.
+Observație: Dacă un \textit{read write lock} nu este niciodată
+\textit{read-locked}, acesta poate fi înlocuit cu un \textit{mutex}
+simplu. De asemenea, dacă un \textit{read write lock} nu este niciodată
+\textit{write-locked}, acesta nu este defapt necesar programului
+(deoarece nu blochează defapt niciun acces concurent).
+
+Implementarea acestui analizor este chiar mai ușoară decât a celor de
+mai sus: se menține o singură structură de date de tip tabel, $S$, în
+care se crează câte o intrare pentru un obiect de tipul
+\textit{read write lock} în momentul procesării evenimentelor de tipul
+\lstinline{SA_EV_RWLOCK_ON_CREATE}. În intrarea din tabel sunt menținuți
+doi indicatori \lstinline{bool} pentru respectivul obiect:
+\lstinline{was_ever_rd_locked} care este marcat atunci
+când este procesat un eveniment \lstinline{SA_EV_RWLOCK_AFTER_RD_LOCK}
+cu acest obiect ca țintă și \lstinline{was_ever_wr_locked} care este
+marcat atunci când este procesat un eveniment de tipul
+\lstinline{SA_EV_RWLOCK_AFTER_WR_LOCK} cu acest obiect ca țintă.
+
+Când este procesat un eveniment pentru distrugerea unui obiect (sau când
+procesarea evenimentelor se încheie), analizorul verifică cei doi
+indicatori din tabel. Dacă indicatorul \lstinline{was_ever_rd_locked}
+a fost marcat, dar \lstinline{was_ever_wr_locked} nu, atunci se emite un
+diagnostic cu nivelul de \textit{avertisment} pentru că obiectul
+respectiv nu este necesar. Dacă indicatorul
+\lstinline{was_ever_wr_locked} a fost marcat, dar
+\lstinline{was_ever_rd_locked} nu, atunci se emite un diagnostic cu
+nivelul de \textit{avertisment} pentru că obiectul respectiv poate fi
+înlocuit cu un simplu \textit{mutex}. Analizorul evită astfel să emită
+diagnostice pentru obiectele ce nu au fost niciodată \textit{locked} (în
+niciun fel), deoarece analizorul \textit{useless-lock} va emite oricum
+diagnostic pentru această situație.
+
+Acest analizor este implementat în 76 de linii de cod C++.
