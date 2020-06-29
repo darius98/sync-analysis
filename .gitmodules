@@ -1,3 +1,6 @@
 [submodule "third_party/mcga-cli"]
 	path = third_party/mcga-cli
 	url = https://github.com/darius98/mcga-cli
+[submodule "third_party/benchmark"]
+	path = third_party/benchmark
+	url = https://github.com/google/benchmark
