@@ -458,27 +458,58 @@ unul după celălalt, serializate în formatul binar descris în secțiunea
 Performanța bibliotecii se împarte în două metrici diferite: timpul
 necesar capturării unui eveniment (metrica de \textit{latență}) și
 volumul de evenimente ce poate fi serializat într-o perioadă de timp
-(metrica de \textit{debit}). În Figura \ref{fig:lib-perf} se pot vedea
-două tabele cu măsurătorile făcute cu ajutorul bibliotecii
-\lstinline{Google Benchmark}\cite{GoogleBenchmark} pentru ambele metrici
-interesante.
+(metrica de \textit{debit}). În Figurile \ref{fig:lib-perf-latency} și
+\ref{fig:lib-perf-throughput} se pot vedea tabel cu măsurătorile
+efectuate cu ajutorul bibliotecii
+\lstinline{Google Benchmark}\cite{GoogleBenchmark} pentru ambele
+metrici.
 
 \begin{figure}[H]
 \centering
-\missingfigure[figwidth=14cm]
-    {table of library performance measurements}
-\caption{Măsurători de performanță a bibliotecii}
-\label{fig:lib-perf}
+
+\begin{center}
+    \begin{tabular}{||c c||} 
+        \hline
+        Numărul firelor de execuție & Latența capturării unui eveniment \\ [0.5ex] 
+        \hline\hline
+        1 & 569 ns \\ \hline
+        2 & 601 ns \\ \hline
+        3 & 615 ns \\ \hline
+        4 & 670 ns \\ \hline
+        5 & 811 ns \\ \hline
+        6 & 1080 ns \\ \hline
+    \end{tabular}
+\end{center}
+
+\caption{Măsurători de latență a bibliotecii}
+\label{fig:lib-perf-latency}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+
+\begin{center}
+    \begin{tabular}{||c||} 
+        \hline
+        Debitul maxim pentru serializarea pe disc a evenimentelor \\ [0.5ex] 
+        \hline\hline
+        5'190'780 evenimente/secundă \\ \hline
+    \end{tabular}
+\end{center}
+
+\caption{Măsurători de debit al bibliotecii}
+\label{fig:lib-perf-throughput}
 \end{figure}
 
 Metrica de \textit{latență} este măsurată în \textit{nanosecunde} (cât
-durează o operație) și depinde de numărul de fire de execuție ce
-capturează evenimente concurent, pentru că operațiile
+timp durează capturarea unui eveniment) și depinde de numărul de fire de
+execuție ce capturează evenimente concurent, pentru că operațiile
 \textit{compare-and-swap} implicate în acest procedeu au șansă mai mare
 să eșueze cu cât sunt mai multe fire care încearcă să le execute în
 același timp.
 
-Metrica de \textit{debit} este măsurată în \textit{MB/secundă} (câte
-date despre evenimente pot fi serializate pe disc într-o perioadă de
-timp) și depinde de volumul de evenimente capturate și plasate în coada
-de evenimente.
+Metrica de \textit{debit} este măsurată în \textit{evenimente/secundă}
+(câte evenimente pot fi serializate pe disc într-o perioadă de timp) și
+nu depinde de nimic: aceasta reprezintă numărul \textit{maxim} de
+evenimente a căror serializare poate fi cerută până când biblioteca nu
+mai poate serializa evenimentele la viteza cu care vin acestea.
