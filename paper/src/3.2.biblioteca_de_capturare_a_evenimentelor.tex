@@ -85,7 +85,7 @@ Această convenție este folosită și de către programul
 \lstinline{SyncAnalysis}, care se folosește de aceste evenimente pentru
 a reconstrui o bază de date de obiecte active în fiecare punct al
 execuției programului client, a include evenimentul ce marchează
-crearea unui obiect țintă în rapoarte și a curăța memorie după
+crearea unui obiect țintă în rapoarte și a elibera memorie după
 distrugerea unui obiect. Astfel, este recomandat ca orice bibliotecă de
 integrare să folosească acești indicatori pentru a captura evenimente ce
 marchează crearea și distrugerea tuturor obiectelor de interes pentru
@@ -140,7 +140,7 @@ marcat ca fiind \textit{finalizat}, dar este scris în fișier ca și cum
 \lstinline{syan_initialize_event} ar fi fost apelat
 \lstinline{syan_capture_event}, rezolvând problema ridicată mai devreme.
 Exemplul de mai sus se repară astfel:
-\begin{lstlisting}[caption=Capturare corectă a creării unui fir de
+\begin{lstlisting}[caption=Capturare corectă a creerii unui fir de
                            execuție]
     pthread_t T;
     void* ev = syan_initialize_event(SA_EV_THREAD_ON_CREATE);
