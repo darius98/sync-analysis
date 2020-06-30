@@ -470,7 +470,7 @@ metrici.
 \begin{center}
     \begin{tabular}{||c c||} 
         \hline
-        Numărul firelor de execuție & Latența capturării unui eveniment \\ [0.5ex] 
+        Numărul firelor de execuție & Latența medie a capturării unui eveniment \\ [0.5ex] 
         \hline\hline
         1 & 569 ns \\ \hline
         2 & 601 ns \\ \hline
@@ -508,8 +508,29 @@ execuție ce capturează evenimente concurent, pentru că operațiile
 să eșueze cu cât sunt mai multe fire care încearcă să le execute în
 același timp.
 
-Metrica de \textit{debit} este măsurată în \textit{evenimente/secundă}
+Metrica de \textit{debit} se măsoară în \textit{evenimente/secundă}
 (câte evenimente pot fi serializate pe disc într-o perioadă de timp) și
 nu depinde de nimic: aceasta reprezintă numărul \textit{maxim} de
 evenimente a căror serializare poate fi cerută până când biblioteca nu
 mai poate serializa evenimentele la viteza cu care vin acestea.
+
+Măsurătorile au fost făcute pe o mașină Apple Macbook Pro, seria 2018,
+cu procesorul Intel i7-8559U 2800MHz cu 4 nuclee fizice și 4 virtuale,
+32KB L1 cache, 256KB L2 cache și 8MB L3 cache, cu memoria RAM 16 GB
+2133 MHz LPDDR3 și disc SSD AP1024M.
+
+Măsurătorile efectuate arată că biblioteca este într-adevăr eficientă în
+capturarea evenimentelor și serializarea acestora: pe același sistem,
+cererea de \textit{lock} pe un \textit{mutex} durează în medie 250ns
+dacă există concurență de 4 fire de execuție care încearcă să dea
+\textit{lock}. Capturarea a două evenimente care să marcheze cererea de
+\textit{lock} (unul înainte și unul după această cerere) mai adaugă
+1340ns la acest timp (536\% creștere pentru o astfel de operație).
+Într-un experiment efectuat prin rularea programului
+Chromium\cite{chromium} cu capturarea tuturor evenimentelor descrise în
+\textbf{\ref{section:event-types}} (folosind biblioteca de integrare
+\lstinline{syan_pthread_shim}, descrisă în Secțiunea
+\textbf{\ref{section:pthread-shim}}), creșterea timpului de execuție
+a programului în total a fost de 2.2\% (de la 6 minute și 3 secunde la 6
+minute și 11 secunde pentru executarea testelor automate ale unui
+proiect web).
