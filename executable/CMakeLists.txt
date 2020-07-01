@@ -2,6 +2,9 @@ set(sync_analysis_PLATFORM_SPECIFIC_SRC)
 if (APPLE)
     set(sync_analysis_PLATFORM_SPECIFIC_SRC
             ${CMAKE_CURRENT_SOURCE_DIR}/src/stacktrace_symbolizer_macos.cpp)
+elseif (LINUX)
+    set(sync_analysis_PLATFORM_SPECIFIC_SRC
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/stacktrace_symbolizer_linux.cpp)
 endif ()
 add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/src/analyzer.cpp

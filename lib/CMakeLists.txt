@@ -1,12 +1,5 @@
 add_library(sync_analysis_lib_options INTERFACE)
 target_include_directories(sync_analysis_lib_options INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-if (APPLE)
-    target_compile_definitions(sync_analysis_lib_options INTERFACE SYNC_ANALYSIS_IS_MAC_OS_X)
-elseif (LINUX)
-    target_compile_definitions(sync_analysis_lib_options INTERFACE SYNC_ANALYSIS_IS_LINUX)
-else ()
-    message(FATAL "Target platform not supported.")
-endif ()
 
 add_library(sync_analysis_lib SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/src/backtrace.c

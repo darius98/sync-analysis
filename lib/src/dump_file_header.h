@@ -15,11 +15,7 @@ typedef struct {
   const char* program_name;
   size_t program_command_length;
   const char* program_command;
-
-// Platform-specific stuff.
-#ifdef SYNC_ANALYSIS_IS_MAC_OS_X
   intptr_t program_load_addr;
-#endif
 } SyanDumpFileHeader;
 
 int syan_init_dump_file_header(SyanDumpFileHeader* header, int argc,

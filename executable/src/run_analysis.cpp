@@ -67,12 +67,10 @@ int run_analysis(const Options& options, std::vector<Analyzer> analyzers) {
     std::cout << "Sync analysis version " SYNC_ANALYSIS_VERSION "\n"
               << "\tExecutable: " << file_header.program_name << "\n"
               << "\tCommand line: " << file_header.program_command << "\n"
-#ifdef SYNC_ANALYSIS_IS_MAC_OS_X
               << "\tExecutable load address: " << file_header.program_load_addr
               << " (0x" << std::hex << std::setfill('0') << std::setw(16)
               << file_header.program_load_addr << std::setfill(' ') << std::dec
               << ")\n"
-#endif
               << "\tExecution start time: "
               << std::put_time(calendarTime, "%d/%m/%Y %H:%M:%S") << "."
               << std::setfill('0') << std::setw(6)

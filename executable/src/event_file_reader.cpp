@@ -97,7 +97,6 @@ int EventFileReader::read_header() {
   program_command[file_header.program_command_length] = 0;
   file_header.program_command = program_command;
 
-#ifdef SYNC_ANALYSIS_IS_MAC_OS_X
   num_read =
       fread(&file_header.program_load_addr, sizeof(intptr_t), 1, file.get());
   if (num_read != 1) {
@@ -105,7 +104,6 @@ int EventFileReader::read_header() {
     free(program_command);
     return 1;
   }
-#endif
 
   return 0;
 }

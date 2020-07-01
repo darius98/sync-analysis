@@ -6,8 +6,6 @@
 
 #include "event_time.h"
 
-#ifdef SYNC_ANALYSIS_IS_MAC_OS_X
-
 #include <dlfcn.h>
 
 static int syan_get_load_addr(intptr_t* load_addr) {
@@ -22,8 +20,6 @@ static int syan_get_load_addr(intptr_t* load_addr) {
   *load_addr = (intptr_t)info.dli_fbase;
   return 0;
 }
-
-#endif
 
 int syan_init_dump_file_header(SyanDumpFileHeader* header, int argc,
                                char** argv) {
@@ -48,13 +44,11 @@ int syan_init_dump_file_header(SyanDumpFileHeader* header, int argc,
   }
   header->program_command = program_command;
 
-#ifdef SYNC_ANALYSIS_IS_MAC_OS_X
   int get_load_addr_status = syan_get_load_addr(&header->program_load_addr);
   if (get_load_addr_status != 0) {
     free(program_command);
     return get_load_addr_status;
   }
-#endif
 
   return 0;
 }
@@ -90,12 +84,10 @@ int syan_write_dump_file_header(FILE* stream,
     return 1;
   }
 
-#ifdef SYNC_ANALYSIS_IS_MAC_OS_X
   num_written = fwrite(&header->program_load_addr, sizeof(intptr_t), 1, stream);
   if (num_written != 1) {
     return 1;
   }
-#endif
 
   return 0;
 }

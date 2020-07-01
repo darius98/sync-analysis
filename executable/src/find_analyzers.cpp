@@ -10,15 +10,8 @@
 namespace {
 
 bool is_analyzer_filename(const std::filesystem::path& path) {
-#ifdef SYNC_ANALYSIS_IS_MAC_OS_X
-  return path.extension() == ".dylib" &&
-         std::string_view{path.filename().c_str()}.substr(0, 17) ==
-             "libsyan-analyzer-";
-#elif SYNC_ANALYSIS_IS_LINUX
-  return path.extension() == ".so" &&
-         std::string_view{path.filename().c_str()}.substr(0, 17) ==
-             "libsyan-analyzer-";
-#endif
+  return std::string_view{path.filename().c_str()}.substr(0, 17) ==
+         "libsyan-analyzer-";
 }
 
 bool respects_analyzer_name_rule(std::string_view name, std::string_view rule) {
