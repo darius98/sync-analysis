@@ -10,9 +10,9 @@ Dar prin introducerea acestui nou model de programare, s-a introdus și o
 nouă gamă de dificultăți și posibilități de a face greșeli programatice.
 Firele de execuție dintr-un proces accesează același spațiu de memorie
 RAM, același disc, același monitor și alte dispozitive ale
-calculatorului. De pildă dacă mai multe fire de execuție ce rulează
-\textit{concurent} încearcă să stocheze informații diferite la aceeași
-adresă de memorie RAM, rezultatul obținut nu este clar definit.
+calculatorului. De pildă dacă mai multe fire de execuție ce sunt
+executate \textit{concurent} încearcă să stocheze informații diferite la
+aceeași adresă de memorie RAM, rezultatul obținut nu este clar definit.
 Problemele de acest tip se rezolvă folosind
 \textit{mecanisme de sincronizare} pentru a controla și arbitra accesul
 la resurse comune pe care mai multe fire de execuție le folosesc
@@ -148,9 +148,9 @@ cum ThreadSanitizer analizează programul \textit{on-the-fly}: analiza
 este făcută direct în cadrul execuției programului, în același proces.
 Asta duce la o încetinire drastică a programului și la un consum ridicat
 de memorie. Măsurătorile făcute pentru articolul \cite{ThreadSanitizer}
-arată o creștere a timpului de execuție între 120\% și 2760\%, și în
-consumul de memorie între 20\% și 660\%, în funcție de programul
-analizat.
+arată o creștere a timpului de execuție între 120\% și 2760\%, și o
+creștere în consumul de memorie între 20\% și 660\%, în funcție de
+programul analizat.
 
 \begin{lstlisting}[caption=Exemplu de folosire ThreadSanitizer,
                    label=code:thread-sanitizer]
