@@ -162,7 +162,7 @@ biblioteca este încărcată prima. Trucul se bazează pe variabila de mediu
 de biblioteci dinamice, atunci aceste biblioteci sunt încărcate înaintea
 tuturor celorlalte cerute de program:
 \begin{lstlisting}
-    % LD_PRELOAD="libsyan_pthread_shim.so" ./program
+    % LD_PRELOAD="syan_pthread_shim" ./program
 \end{lstlisting}
 Folosind acest truc, această bibliotecă poate fi folosită fără a
 necesita măcar recompilarea programului client. Când programul face

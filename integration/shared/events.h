@@ -19,7 +19,6 @@ enum {
   SA_TRY_RD_LOCK = 1u << 22,
   SA_BEFORE_RD_LOCK = 1u << 23,
   SA_AFTER_RD_LOCK = 1u << 24,
-  SA_RD_UNLOCK = 1u << 25,
   SA_JOIN = 1u << 26,
   SA_DETACH = 1u << 27,
 };

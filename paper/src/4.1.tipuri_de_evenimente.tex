@@ -32,19 +32,24 @@ SA_EV_MUTEX_AFTER_LOCK      = SA_MUTEX     | SA_AFTER_WR_LOCK
 SA_EV_MUTEX_ON_UNLOCK       = SA_MUTEX     | SA_WR_UNLOCK
 SA_EV_MUTEX_ON_DESTROY      = SA_MUTEX     | SA_EV_DESTROY
 SA_EV_REC_MUTEX_ON_CREATE   = SA_REC_MUTEX | SA_EV_CREATE
-SA_EV_REC_MUTEX_ON_TRY_LOCK = SA_REC_MUTEX | SA_TRY_WR_LOCK
-SA_EV_REC_MUTEX_BEFORE_LOCK = SA_REC_MUTEX | SA_BEFORE_WR_LOCK
-SA_EV_REC_MUTEX_AFTER_LOCK  = SA_REC_MUTEX | SA_AFTER_WR_LOCK
-SA_EV_REC_MUTEX_ON_UNLOCK   = SA_REC_MUTEX | SA_WR_UNLOCK
-SA_EV_REC_MUTEX_ON_DESTROY  = SA_REC_MUTEX | SA_EV_DESTROY
 SA_EV_RWLOCK_ON_CREATE      = SA_RWLOCK    | SA_EV_CREATE
 SA_EV_RWLOCK_ON_TRY_RD_LOCK = SA_RWLOCK    | SA_TRY_RD_LOCK
 SA_EV_RWLOCK_BEFORE_RD_LOCK = SA_RWLOCK    | SA_BEFORE_RD_LOCK
 SA_EV_RWLOCK_AFTER_RD_LOCK  = SA_RWLOCK    | SA_AFTER_RD_LOCK
-SA_EV_RWLOCK_ON_RD_UNLOCK   = SA_RWLOCK    | SA_RD_UNLOCK
 SA_EV_RWLOCK_ON_TRY_WR_LOCK = SA_RWLOCK    | SA_TRY_WR_LOCK
 SA_EV_RWLOCK_BEFORE_WR_LOCK = SA_RWLOCK    | SA_BEFORE_WR_LOCK
 SA_EV_RWLOCK_AFTER_WR_LOCK  = SA_RWLOCK    | SA_AFTER_WR_LOCK
-SA_EV_RWLOCK_ON_WR_UNLOCK   = SA_RWLOCK    | SA_WR_UNLOCK
+SA_EV_RWLOCK_ON_UNLOCK      = SA_RWLOCK    | SA_WR_UNLOCK
 SA_EV_RWLOCK_ON_DESTROY     = SA_RWLOCK    | SA_EV_DESTROY
 \end{lstlisting}
+
+Pentru primitiva \textit{mutex recursiv}, se vor captura aceleași
+evenimente ca și pentru primitiva \textit{mutex}, mai puțin la crearea
+obiectului (\lstinline{SA_EV_MUTEX_ON_CREATE} versus
+\lstinline{SA_EV_REC_MUTEX_ON_CREATE}). Analizorii executați post-mortem
+vor putea observa dacă un eveniment comun (de exemplu
+\lstinline{SA_EV_MUTEX_AFTER_LOCK}) a avut loc pe un \textit{mutex} sau
+pe un \textit{mutex recursiv} pe baza evenimentului ce a creat obiectul
+respectiv, eveniment ce este stocat în baza de date a programului
+\lstinline{SyncAnalysis} descrisă în secțiunea
+\textbf{\ref{obj-database}}.
