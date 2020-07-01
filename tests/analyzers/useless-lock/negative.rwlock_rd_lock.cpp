@@ -8,9 +8,9 @@ int main() {
   RWLock m;
   Thread t([&]() {
     m.rd_lock();
-    m.rd_unlock();
+    m.unlock();
   });
   m.wr_lock();
-  m.wr_unlock();
+  m.unlock();
   return 0;
 }

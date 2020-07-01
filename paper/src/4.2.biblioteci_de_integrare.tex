@@ -69,21 +69,21 @@ câte 3 metode publice:
 Aceste trei metode sunt implementate la fel în ambele clase, apelând în
 interior funcțiile \lstinline{pthread_mutex_trylock},
 \lstinline{_lock} respectiv \lstinline{_unlock} din biblioteca
-\lstinline{pthread}. Clasa \lstinline{RWLock} expune 6 metode publice
-(3 pentru \textit{read-lock} și 3 pentru \textit{write-lock}):
+\lstinline{pthread}. Clasa \lstinline{RWLock} expune 5 metode publice
+(două pentru \textit{read-lock}, două pentru \textit{write-lock} și una
+pentru \textit{unlock}):
 
 \begin{lstlisting}
     bool try_rd_lock() noexcept;
     void rd_lock();
-    void rd_unlock();
     bool try_wr_lock() noexcept;
     void wr_lock();
-    void wr_unlock();
+    void unlock();
 \end{lstlisting}
 Metodele acestea sunt implementate prin apeluri la funcțiile
 echivalente din \lstinline{pthread}:
 \lstinline{pthread_rwlock_tryrdlock}, \lstinline{_rdlock},
-\lstinline{_unlock}, \lstinline{_trywrlock} și \lstinline{_wrlock}.
+\lstinline{_trywrlock}, \lstinline{_wrlock} și \lstinline{_unlock}.
 
 Toate cele 4 clase principale din bibliotecă fac unul sau mai multe
 apeluri la funcția \lstinline{syan_capture_event}, pentru a raporta

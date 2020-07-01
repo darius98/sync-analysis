@@ -11,7 +11,7 @@ int main() {
     assert(first_try_lock_result);
     const auto second_try_lock_result = m.try_rd_lock();
     assert(second_try_lock_result);
-    m.rd_unlock();
+    m.unlock();
   }
   return 0;
 }

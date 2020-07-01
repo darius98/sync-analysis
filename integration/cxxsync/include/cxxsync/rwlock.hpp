@@ -15,13 +15,11 @@ public:
 
   void rd_lock();
 
-  void rd_unlock();
-
   bool try_wr_lock() noexcept;
 
   void wr_lock();
 
-  void wr_unlock();
+  void unlock();
 
 private:
   pthread_rwlock_t pt_rwlock;

@@ -32,12 +32,6 @@ void RWLock::rd_lock() {
   syan_capture_event(SA_EV_RWLOCK_AFTER_RD_LOCK, this);
 }
 
-void RWLock::rd_unlock() {
-  syan_capture_event(SA_EV_RWLOCK_ON_UNLOCK, this);
-  int status = pthread_rwlock_unlock(&pt_rwlock);
-  SyncException::throw_on_error("RWLock", "pthread_rwlock_unlock", status);
-}
-
 bool RWLock::try_wr_lock() noexcept {
   syan_capture_event(SA_EV_RWLOCK_ON_TRY_WR_LOCK, this);
   if (pthread_rwlock_trywrlock(&pt_rwlock) == 0) {
@@ -54,7 +48,7 @@ void RWLock::wr_lock() {
   syan_capture_event(SA_EV_RWLOCK_AFTER_WR_LOCK, this);
 }
 
-void RWLock::wr_unlock() {
+void RWLock::unlock() {
   syan_capture_event(SA_EV_RWLOCK_ON_UNLOCK, this);
   int status = pthread_rwlock_unlock(&pt_rwlock);
   SyncException::throw_on_error("RWLock", "pthread_rwlock_unlock", status);
@@ -65,7 +59,7 @@ RWLockReadGuard::RWLockReadGuard(RWLock* rwlock): rwlock(rwlock) {
 }
 
 RWLockReadGuard::~RWLockReadGuard() {
-  rwlock->rd_unlock();
+  rwlock->unlock();
 }
 
 RWLockWriteGuard::RWLockWriteGuard(RWLock* rwlock): rwlock(rwlock) {
@@ -73,7 +67,7 @@ RWLockWriteGuard::RWLockWriteGuard(RWLock* rwlock): rwlock(rwlock) {
 }
 
 RWLockWriteGuard::~RWLockWriteGuard() {
-  rwlock->wr_unlock();
+  rwlock->unlock();
 }
 
 }  // namespace sync
