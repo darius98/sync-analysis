@@ -8,9 +8,11 @@
 
 #include <dlfcn.h>
 
+extern int main(int argc, char** argv);
+
 static int syan_get_load_addr(intptr_t* load_addr) {
   Dl_info info;
-  int status = dladdr((void*)&syan_init_dump_file_header, &info);
+  int status = dladdr((void*)&main, &info);
   if (status == 0) {
     fprintf(
         stderr,
