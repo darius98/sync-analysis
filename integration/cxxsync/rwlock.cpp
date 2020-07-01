@@ -33,7 +33,7 @@ void RWLock::rd_lock() {
 }
 
 void RWLock::rd_unlock() {
-  syan_capture_event(SA_EV_RWLOCK_ON_RD_UNLOCK, this);
+  syan_capture_event(SA_EV_RWLOCK_ON_UNLOCK, this);
   int status = pthread_rwlock_unlock(&pt_rwlock);
   SyncException::throw_on_error("RWLock", "pthread_rwlock_unlock", status);
 }
@@ -55,7 +55,7 @@ void RWLock::wr_lock() {
 }
 
 void RWLock::wr_unlock() {
-  syan_capture_event(SA_EV_RWLOCK_ON_WR_UNLOCK, this);
+  syan_capture_event(SA_EV_RWLOCK_ON_UNLOCK, this);
   int status = pthread_rwlock_unlock(&pt_rwlock);
   SyncException::throw_on_error("RWLock", "pthread_rwlock_unlock", status);
 }

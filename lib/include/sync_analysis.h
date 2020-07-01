@@ -8,9 +8,7 @@ extern "C" {
 void* syan_initialize_event(int event_type);
 void syan_finalize_event(void* event, void* addr);
 
-inline void syan_capture_event(int event_type, void* addr) {
-  syan_finalize_event(syan_initialize_event(event_type), addr);
-}
+void syan_capture_event(int event_type, void* addr);
 
 enum {
   SA_EV_CREATE = 1 << 28,

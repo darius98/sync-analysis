@@ -47,7 +47,7 @@ struct RedundantRecursiveMutexAnalyzer {
     }
 
     switch (event.type()) {
-    case SA_EV_REC_MUTEX_AFTER_LOCK: {
+    case SA_EV_MUTEX_AFTER_LOCK: {
       it->second.was_ever_locked = true;
       if (it->second.thread_owner.has_value()) {
         // Found a legitimate use of a recursive mutex. Backing off.
@@ -58,11 +58,11 @@ struct RedundantRecursiveMutexAnalyzer {
       it->second.thread_owner.emplace(event.thread());
       break;
     }
-    case SA_EV_REC_MUTEX_ON_UNLOCK: {
+    case SA_EV_MUTEX_ON_UNLOCK: {
       it->second.thread_owner.reset();
       break;
     }
-    case SA_EV_REC_MUTEX_ON_DESTROY: {
+    case SA_EV_MUTEX_ON_DESTROY: {
       recursive_mutexes.erase(it);
     }
     default: break;

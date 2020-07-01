@@ -1,7 +1,7 @@
 #ifndef SYNC_ANALYSIS_ANALYZERS_UTILS_H_
 #define SYNC_ANALYSIS_ANALYZERS_UTILS_H_
 
-#include <syan_analyzer_api/event.hpp>
+#include <syan_analyzer_api/syan_analyzer_api.hpp>
 
 #include "../integration/shared/events.h"
 
@@ -25,11 +25,14 @@ inline ObjectType object_type(const Event& event) noexcept {
   if (event.type() & SA_EV_THREAD) {
     return ObjectType::thread;
   }
-  if (event.type() & SA_MUTEX) {
-    return ObjectType::mutex;
-  }
   if (event.type() & SA_REC_MUTEX) {
     return ObjectType::rec_mutex;
+  }
+  if (event.type() & SA_MUTEX) {
+    if (database().object_create(event.object()).type() & SA_REC_MUTEX) {
+      return ObjectType::rec_mutex;
+    }
+    return ObjectType::mutex;
   }
   if (event.type() & SA_RWLOCK) {
     return ObjectType::rwlock;
@@ -65,20 +68,14 @@ std::string_view event_type_str(const Event& event) noexcept {
     EVENT_TYPE_STR_CASE(MUTEX_ON_UNLOCK)
     EVENT_TYPE_STR_CASE(MUTEX_ON_DESTROY)
     EVENT_TYPE_STR_CASE(REC_MUTEX_ON_CREATE)
-    EVENT_TYPE_STR_CASE(REC_MUTEX_BEFORE_LOCK)
-    EVENT_TYPE_STR_CASE(REC_MUTEX_AFTER_LOCK)
-    EVENT_TYPE_STR_CASE(REC_MUTEX_ON_TRY_LOCK)
-    EVENT_TYPE_STR_CASE(REC_MUTEX_ON_UNLOCK)
-    EVENT_TYPE_STR_CASE(REC_MUTEX_ON_DESTROY)
     EVENT_TYPE_STR_CASE(RWLOCK_ON_CREATE)
     EVENT_TYPE_STR_CASE(RWLOCK_BEFORE_RD_LOCK)
     EVENT_TYPE_STR_CASE(RWLOCK_AFTER_RD_LOCK)
-    EVENT_TYPE_STR_CASE(RWLOCK_ON_RD_UNLOCK)
     EVENT_TYPE_STR_CASE(RWLOCK_ON_TRY_RD_LOCK)
     EVENT_TYPE_STR_CASE(RWLOCK_BEFORE_WR_LOCK)
     EVENT_TYPE_STR_CASE(RWLOCK_AFTER_WR_LOCK)
-    EVENT_TYPE_STR_CASE(RWLOCK_ON_WR_UNLOCK)
     EVENT_TYPE_STR_CASE(RWLOCK_ON_TRY_WR_LOCK)
+    EVENT_TYPE_STR_CASE(RWLOCK_ON_UNLOCK)
     EVENT_TYPE_STR_CASE(RWLOCK_ON_DESTROY)
   default: return unknown_str;
   }

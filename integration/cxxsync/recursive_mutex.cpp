@@ -23,27 +23,27 @@ RecursiveMutex::RecursiveMutex() {
 
 RecursiveMutex::~RecursiveMutex() {
   pthread_mutex_destroy(&pt_mutex);
-  syan_capture_event(SA_EV_REC_MUTEX_ON_DESTROY, this);
+  syan_capture_event(SA_EV_MUTEX_ON_DESTROY, this);
 }
 
 bool RecursiveMutex::try_lock() noexcept {
-  syan_capture_event(SA_EV_REC_MUTEX_ON_TRY_LOCK, this);
+  syan_capture_event(SA_EV_MUTEX_ON_TRY_LOCK, this);
   if (pthread_mutex_trylock(&pt_mutex) == 0) {
-    syan_capture_event(SA_EV_REC_MUTEX_AFTER_LOCK, this);
+    syan_capture_event(SA_EV_MUTEX_AFTER_LOCK, this);
     return true;
   }
   return false;
 }
 
 void RecursiveMutex::lock() {
-  syan_capture_event(SA_EV_REC_MUTEX_BEFORE_LOCK, this);
+  syan_capture_event(SA_EV_MUTEX_BEFORE_LOCK, this);
   int status = pthread_mutex_lock(&pt_mutex);
   SyncException::throw_on_error("RecursiveMutex", "pthread_mutex_lock", status);
-  syan_capture_event(SA_EV_REC_MUTEX_AFTER_LOCK, this);
+  syan_capture_event(SA_EV_MUTEX_AFTER_LOCK, this);
 }
 
 void RecursiveMutex::unlock() {
-  syan_capture_event(SA_EV_REC_MUTEX_ON_UNLOCK, this);
+  syan_capture_event(SA_EV_MUTEX_ON_UNLOCK, this);
   int status = pthread_mutex_unlock(&pt_mutex);
   SyncException::throw_on_error("RecursiveMutex", "pthread_mutex_unlock",
                                 status);

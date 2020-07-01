@@ -52,8 +52,7 @@ struct LockShadowAnalyzer {
     }
 
     if (event.type() == SA_EV_MUTEX_ON_UNLOCK ||
-        event.type() == SA_EV_REC_MUTEX_ON_UNLOCK ||
-        event.type() == SA_EV_RWLOCK_ON_WR_UNLOCK) {
+        event.type() == SA_EV_RWLOCK_ON_UNLOCK) {
       auto first_occurrence =
           current_thread_locks.find(database().object_create(event));
       if (first_occurrence != current_thread_locks.end()) {
@@ -65,7 +64,6 @@ struct LockShadowAnalyzer {
     auto it = locks.find(event.object());
 
     if (event.type() == SA_EV_MUTEX_AFTER_LOCK ||
-        event.type() == SA_EV_REC_MUTEX_AFTER_LOCK ||
         event.type() == SA_EV_RWLOCK_AFTER_WR_LOCK ||
         event.type() == SA_EV_RWLOCK_AFTER_RD_LOCK) {
       if (it != locks.end()) {
@@ -91,7 +89,6 @@ struct LockShadowAnalyzer {
     }
 
     if (event.type() == SA_EV_MUTEX_ON_DESTROY ||
-        event.type() == SA_EV_REC_MUTEX_ON_DESTROY ||
         event.type() == SA_EV_RWLOCK_ON_DESTROY) {
       if (it != locks.end()) {
         locks.erase(it);
