@@ -107,7 +107,7 @@ public:
       if (pc != 0) {
         addr2line_command_builder
             << "0x" << std::hex << std::setfill('0') << std::setw(16)
-            << pc - dump_file_header.program_load_addr << " ";
+            << pc - dump_file_header.program_load_addr << "\n";
       }
     }
     addr2line_command_builder << '\n';
