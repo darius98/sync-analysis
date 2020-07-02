@@ -43,7 +43,15 @@ Event EventFileReader::read() {
   if (done()) {
     return Event{};
   }
-  return Event::make(&buffer[buffer_cursor++]);
+  auto event = Event::make(&buffer[buffer_cursor]);
+  std::cerr << "Event:";
+  for (char* ptr = (char*)&buffer[buffer_cursor];
+       ptr < ((char*)&buffer[buffer_cursor] + sizeof(SyanEvent)); ptr += 4) {
+    std::cerr << " " << *(int*)ptr;
+  }
+  std::cerr << "\n";
+  buffer_cursor++;
+  return event;
 }
 
 int EventFileReader::read_header() {
@@ -122,6 +130,8 @@ void EventFileReader::read_next_chunk() {
   if (done()) {
     return;
   }
+  std::cerr << "sizeof(SyanEvent) in executable: " << sizeof(::SyanEvent)
+            << "\n";
   auto num_read =
       std::fread(buffer.get(), sizeof(::SyanEvent), buffer_cap, file.get());
   if (num_read < buffer_cap || std::feof(file.get())) {

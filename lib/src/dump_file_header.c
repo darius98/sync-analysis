@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "event.h"
 #include "event_time.h"
 
 #define __USE_GNU
@@ -100,6 +101,7 @@ int syan_write_dump_file_header(FILE* stream,
   }
 
   fprintf(stderr, "Wrote a header of %lu bytes\n", total_bytes);
+  fprintf(stderr, "sizeof(SyanEvent) in library: %lu\n", sizeof(SyanEvent));
 
   return 0;
 }
