@@ -22,10 +22,7 @@ target_include_directories(syan_analyzer_api
         SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/mcga-cli/include
         )
 target_link_libraries(syan_analyzer_api PUBLIC mcga_cli PUBLIC sync_analysis_lib_options)
-target_compile_definitions(syan_analyzer_api PUBLIC
-        -DSYNC_ANALYSIS_IS_IN_EXECUTABLE
-        -DSYNC_ANALYSIS_VERSION="${SYNC_ANALYSIS_VERSION}"
-        )
+target_compile_definitions(syan_analyzer_api PUBLIC -DSYNC_ANALYSIS_VERSION="${SYNC_ANALYSIS_VERSION}")
 
 add_library(sync_analysis_event_file_reader_helperlib
         ${CMAKE_CURRENT_SOURCE_DIR}/src/event_file_reader.cpp)

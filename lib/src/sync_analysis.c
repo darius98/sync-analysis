@@ -1,7 +1,5 @@
 #include <sync_analysis.h>
 
-#include <stdatomic.h>
-
 #include <pthread.h>
 
 #include "backtrace.h"
@@ -9,6 +7,8 @@
 #include "event_time.h"
 #include "global_buffer.h"
 #include "init.h"
+
+static int syan_event_signature = SYAN_EVENT_SIGNATURE;
 
 __attribute__((constructor)) static void syan_init_call(int argc, char** argv) {
   syan_init(argc, argv);
@@ -29,7 +29,8 @@ void* syan_initialize_event(int event_type) {
 
 void syan_finalize_event(void* event, void* addr) {
   ((SyanEvent*)event)->addr = (intptr_t)addr;
-  atomic_store(&((SyanEvent*)event)->signature, SYAN_EVENT_SIGNATURE);
+  __atomic_store(&((SyanEvent*)event)->signature, &syan_event_signature,
+                 __ATOMIC_RELEASE);
 }
 
 void syan_capture_event(int event_type, void* addr) {
