@@ -7,16 +7,12 @@ else ()
             ${CMAKE_CURRENT_SOURCE_DIR}/src/stacktrace_symbolizer_linux.cpp)
 endif ()
 add_library(sync_analysis_analyzer_api SHARED
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/analyzer.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/database.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/debug.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/event.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/event_file_reader.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/find_analyzers.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/analyzer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/global_environment.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/report.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/run_analysis.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/stacktrace_symbolizer.cpp
         ${sync_analysis_PLATFORM_SPECIFIC_SRC}
         )
@@ -32,7 +28,12 @@ target_compile_definitions(sync_analysis_analyzer_api PUBLIC
         )
 
 add_executable(sync_analysis
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/debug.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/event_file_reader.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/find_analyzers.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/options.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/run_analysis.cpp
         )
 target_link_libraries(sync_analysis sync_analysis_analyzer_api)
 

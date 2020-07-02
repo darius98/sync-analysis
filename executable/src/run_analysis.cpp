@@ -1,49 +1,15 @@
 #include "run_analysis.hpp"
-#include "syan_analyzer_api/syan_analyzer_api.hpp"
+
+#include "global_environment.hpp"
 
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 
 #include "debug.hpp"
-#include "environment.hpp"
 #include "event_file_reader.hpp"
 
 namespace syan {
-
-namespace {
-
-Environment* environment = nullptr;
-
-}  // namespace
-
-Event current_event() {
-  return environment->current_event();
-}
-
-const Database& database() {
-  return environment->get_database();
-}
-
-Report create_report() {
-  return Report{};
-}
-
-struct timespec execution_start_time() {
-  return environment->execution_start_time();
-}
-
-std::string_view active_analyzer_name() {
-  return environment->active_analyzer_name();
-}
-
-void symbolize_stacktrace(const Event& event, std::ostream& stream) {
-  environment->symbolize_stacktrace(event, stream);
-}
-
-void send_report(Report::Level level, const std::string& report_message) {
-  environment->send_report(level, report_message);
-}
 
 int run_analysis(const Options& options, std::vector<Analyzer> analyzers) {
   std::ostream* report_stream = &std::cout;
@@ -84,8 +50,10 @@ int run_analysis(const Options& options, std::vector<Analyzer> analyzers) {
     FATAL_OUT << "No analyzers enabled. Nothing to do.";
   }
 
-  environment = new Environment(options.binary_file_path, file_header,
-                                std::move(analyzers), report_stream);
+  auto environment = new Environment(options.binary_file_path, file_header,
+                                     std::move(analyzers), report_stream);
+
+  set_global_environment(environment);
 
   environment->start_up();
 
@@ -106,7 +74,8 @@ int run_analysis(const Options& options, std::vector<Analyzer> analyzers) {
   int exit_code = environment->shut_down();
 
   delete environment;
-  environment = nullptr;
+
+  set_global_environment(nullptr);
 
   return exit_code;
 }
