@@ -11,8 +11,6 @@
 
 namespace syan {
 
-// TODO: Implement this for Linux too.
-
 class StacktraceSymbolizer {
 public:
   static std::unique_ptr<StacktraceSymbolizer>
