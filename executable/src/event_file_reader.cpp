@@ -112,8 +112,6 @@ void EventFileReader::read_next_chunk() {
   if (done()) {
     return;
   }
-  std::cerr << "sizeof(SyanEvent) in executable: " << sizeof(::SyanEvent)
-            << "\n";
   auto num_read =
       std::fread(buffer.get(), sizeof(::SyanEvent), buffer_cap, file.get());
   if (num_read < buffer_cap || std::feof(file.get())) {
