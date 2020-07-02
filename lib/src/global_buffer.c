@@ -1,5 +1,7 @@
 #include "buffer.h"
 
+#include <stdlib.h>
+
 static SyanBuffer* syan_global_buffer = NULL;
 
 int syan_global_buffer_init() {

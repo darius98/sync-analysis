@@ -1,6 +1,7 @@
 #include <benchmark/benchmark.h>
 #include <thread>
 #include <vector>
+#include <atomic>
 
 #include <sync_analysis.h>
 
