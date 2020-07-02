@@ -82,18 +82,11 @@ public:
     close(stdout_pipe[PIPE_READ]);
     close(stdout_pipe[PIPE_WRITE]);
 
-    std::stringstream load_address_builder;
-    load_address_builder << std::hex << std::setfill('0') << std::setw(16)
-                         << dump_file_header.program_load_addr + 8;
-    std::string load_address = load_address_builder.str();
-    // TODO: Don't hardcode architecture here!
     const char* args[] = {"/usr/bin/addr2line",
-                          "-arch",
-                          "x86_64",
-                          "-o",
+                          "-e",
                           binary_file_path.c_str(),
-                          "-l",
-                          load_address.c_str(),
+                          "-j",
+                          ".text",
                           nullptr};
     if (execv("/usr/bin/addr2line", (char* const*)args) != 0) {
       std::cerr << "Failed to execute stacktrace symbolizer process"
@@ -112,8 +105,9 @@ public:
     std::stringstream addr2line_command_builder;
     for (const auto& pc : stack_trace) {
       if (pc != 0) {
-        addr2line_command_builder << "0x" << std::hex << std::setfill('0')
-                                  << std::setw(16) << pc << " ";
+        addr2line_command_builder
+            << "0x" << std::hex << std::setfill('0') << std::setw(16)
+            << pc - dump_file_header.program_load_addr << " ";
       }
     }
     addr2line_command_builder << '\n';
