@@ -9,7 +9,8 @@ set_target_properties(test.stacktrace.event_emitter PROPERTIES
 
 add_executable(test.stacktrace.runner EXCLUDE_FROM_ALL runner.cpp)
 target_link_libraries(test.stacktrace.runner
-        PUBLIC sync_analysis_analyzer_api
+        PUBLIC syan_analyzer_api
+        PUBLIC sync_analysis_event_file_reader_helperlib
         PUBLIC sync_analysis_lib_options)
 set_target_properties(test.stacktrace.runner PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${TEST_DIR}
