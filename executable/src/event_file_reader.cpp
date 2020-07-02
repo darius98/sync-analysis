@@ -47,15 +47,19 @@ Event EventFileReader::read() {
 }
 
 int EventFileReader::read_header() {
+  size_t total_bytes = 0;
+
   size_t num_read;
   num_read =
       fread(&file_header.start_time, sizeof(struct timespec), 1, file.get());
+  total_bytes += sizeof(struct timespec) * 1;
   if (num_read != 1) {
     return 1;
   }
 
   num_read =
       fread(&file_header.program_name_length, sizeof(size_t), 1, file.get());
+  total_bytes += sizeof(size_t) * 1;
   if (num_read != 1) {
     return 1;
   }
@@ -67,6 +71,7 @@ int EventFileReader::read_header() {
 
   num_read = fread(program_name, sizeof(char), file_header.program_name_length,
                    file.get());
+  total_bytes += sizeof(char) * file_header.program_name_length;
   if (num_read != file_header.program_name_length) {
     free(program_name);
     return 1;
@@ -76,6 +81,7 @@ int EventFileReader::read_header() {
 
   num_read =
       fread(&file_header.program_command_length, sizeof(size_t), 1, file.get());
+  total_bytes += sizeof(size_t) * 1;
   if (num_read != 1) {
     free(program_name);
     return 1;
@@ -89,6 +95,7 @@ int EventFileReader::read_header() {
 
   num_read = fread(program_command, sizeof(char),
                    file_header.program_command_length, file.get());
+  total_bytes += sizeof(char) * file_header.program_command_length;
   if (num_read != file_header.program_command_length) {
     free(program_name);
     free(program_command);
@@ -99,11 +106,14 @@ int EventFileReader::read_header() {
 
   num_read =
       fread(&file_header.program_load_addr, sizeof(intptr_t), 1, file.get());
+  total_bytes += sizeof(intptr_t) * 1;
   if (num_read != 1) {
     free(program_name);
     free(program_command);
     return 1;
   }
+
+  std::cerr << "Read a header of " << total_bytes << " bytes.\n";
 
   return 0;
 }
