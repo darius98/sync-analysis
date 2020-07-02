@@ -32,7 +32,7 @@ static bool work(FILE* file) {
     fprintf(stderr,
             "SyncAnalysis write failed: num_events=%d, num_bytes=%d, "
             "ferror=%d, errno=%d\n",
-            back - front, num_bytes, ferror(file), errno);
+            (int)(back - front), num_bytes, ferror(file), errno);
     exit(EXIT_FAILURE);
   }
 

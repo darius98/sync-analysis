@@ -1,9 +1,11 @@
 #include "stacktrace_symbolizer.hpp"
 
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 
+#include <cstring>
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>

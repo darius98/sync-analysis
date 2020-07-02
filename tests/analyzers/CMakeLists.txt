@@ -1,12 +1,9 @@
-add_custom_target(clear_coverage_data
-        COMMAND find ${PROJECT_BINARY_DIR} -name "*.gcda" -print0 | xargs -0 rm)
-
 add_executable(run_analyzer_test EXCLUDE_FROM_ALL run_analyzer_test.cpp)
 target_link_libraries(run_analyzer_test mcga_cli)
 
 add_custom_target(tests.analyzers
         COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -R "$analyzer.")
-add_dependencies(tests.analyzers clear_coverage_data run_analyzer_test sync_analysis all_analyzers)
+add_dependencies(tests.analyzers run_analyzer_test sync_analysis all_analyzers)
 
 function(add_analyzer_test ANALYZER TYPE DESCRIPTION)
     set(TEST_NAME "analyzer.${ANALYZER}.${TYPE}.${DESCRIPTION}")

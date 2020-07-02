@@ -1,5 +1,6 @@
 #include "stacktrace_symbolizer.hpp"
 
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <sstream>

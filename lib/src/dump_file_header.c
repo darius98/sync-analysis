@@ -6,6 +6,7 @@
 
 #include "event_time.h"
 
+#define __USE_GNU
 #include <dlfcn.h>
 
 extern int main(int argc, char** argv);
@@ -34,7 +35,7 @@ int syan_init_dump_file_header(SyanDumpFileHeader* header, int argc,
   for (int i = 0; i < argc; i++) {
     header->program_command_length += strlen(argv[i]);
   }
-  char* program_command = malloc(header->program_command_length + 1);
+  char* program_command = (char*)malloc(header->program_command_length + 1);
   if (program_command == NULL) {
     return 1;
   }

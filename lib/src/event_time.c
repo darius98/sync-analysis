@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <inttypes.h>
 #include <time.h>
 
 static struct timespec syan_start_time;

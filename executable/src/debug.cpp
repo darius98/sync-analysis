@@ -1,5 +1,6 @@
 #include "debug.hpp"
 
+#include <cstring>
 #include <chrono>
 #include <ctime>
 #include <iomanip>

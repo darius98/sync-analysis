@@ -2,7 +2,7 @@ set(sync_analysis_PLATFORM_SPECIFIC_SRC)
 if (APPLE)
     set(sync_analysis_PLATFORM_SPECIFIC_SRC
             ${CMAKE_CURRENT_SOURCE_DIR}/src/stacktrace_symbolizer_macos.cpp)
-elseif (LINUX)
+else ()
     set(sync_analysis_PLATFORM_SPECIFIC_SRC
             ${CMAKE_CURRENT_SOURCE_DIR}/src/stacktrace_symbolizer_linux.cpp)
 endif ()
@@ -25,7 +25,7 @@ target_include_directories(sync_analysis_executable_lib
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../
         SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/mcga-cli/include
         )
-target_link_libraries(sync_analysis_executable_lib PRIVATE mcga_cli PRIVATE sync_analysis_lib_options)
+target_link_libraries(sync_analysis_executable_lib PRIVATE mcga_cli PRIVATE sync_analysis_lib_options PRIVATE dl)
 target_compile_definitions(sync_analysis_executable_lib PUBLIC
         -DSYNC_ANALYSIS_IS_IN_EXECUTABLE
         -DSYNC_ANALYSIS_VERSION="${SYNC_ANALYSIS_VERSION}"
@@ -34,7 +34,7 @@ target_compile_definitions(sync_analysis_executable_lib PUBLIC
 add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
         )
-target_link_libraries(sync_analysis sync_analysis_executable_lib)
+target_link_libraries(sync_analysis sync_analysis_executable_lib mcga_cli sync_analysis_lib_options)
 target_link_options(sync_analysis PUBLIC -rdynamic)
 
 install(TARGETS sync_analysis DESTINATION bin)

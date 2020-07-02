@@ -12,10 +12,6 @@ void Thread::sleep_ns(long long nanoseconds) {
   nanosleep(&sleep_duration, NULL);
 }
 
-void Thread::yield() {
-  pthread_yield_np();
-}
-
 Thread::~Thread() {
   if (!is_null()) {
     join();
@@ -23,7 +19,7 @@ Thread::~Thread() {
 }
 
 Thread::Thread(Thread&& other) noexcept: pt_thread(other.pt_thread) {
-  other.pt_thread = nullptr;
+  other.pt_thread = (pthread_t)nullptr;
 }
 
 Thread& Thread::operator=(Thread&& other) noexcept {
@@ -32,13 +28,13 @@ Thread& Thread::operator=(Thread&& other) noexcept {
       join();
     }
     pt_thread = other.pt_thread;
-    other.pt_thread = nullptr;
+    other.pt_thread = (pthread_t)nullptr;
   }
   return *this;
 }
 
 bool Thread::is_null() const noexcept {
-  return pt_thread == nullptr;
+  return !pt_thread;
 }
 
 void Thread::join() {
@@ -50,7 +46,7 @@ void Thread::join() {
   int status = pthread_join(pt_thread, &result);
   SyncException::throw_on_error("Thread", "pthread_join", status);
   syan_capture_event(SA_EV_THREAD_ON_JOIN, (void*)pt_thread);
-  pt_thread = nullptr;
+  pt_thread = (pthread_t)nullptr;
 }
 
 void Thread::detach() {
@@ -61,7 +57,7 @@ void Thread::detach() {
   int status = pthread_detach(pt_thread);
   SyncException::throw_on_error("Thread", "pthread_detach", status);
   syan_capture_event(SA_EV_THREAD_ON_DETACH, (void*)pt_thread);
-  pt_thread = nullptr;
+  pt_thread = (pthread_t)nullptr;
 }
 
 void Thread::init_thread(void* (*func)(void*), void* arg) {

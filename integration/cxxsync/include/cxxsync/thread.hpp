@@ -9,8 +9,6 @@ class Thread {
 public:
   static void sleep_ns(long long nanoseconds);
 
-  static void yield();
-
   Thread() = default;
 
   template<class Func>
@@ -35,7 +33,7 @@ public:
 private:
   void init_thread(void* (*func)(void*), void* arg);
 
-  pthread_t pt_thread = nullptr;
+  pthread_t pt_thread = (pthread_t)nullptr;
 
   template<class Func>
   static void* proxy(void* arg) {
