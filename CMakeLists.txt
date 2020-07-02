@@ -4,6 +4,8 @@ project(sync_analysis)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(SYNC_ANALYSIS_VERSION "1.0")
 
 add_compile_options(-Wall -Wextra -Wpedantic -fno-omit-frame-pointer)

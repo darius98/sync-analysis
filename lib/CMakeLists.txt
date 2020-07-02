@@ -3,7 +3,6 @@ target_include_directories(sync_analysis_lib_options INTERFACE ${CMAKE_CURRENT_S
 target_compile_definitions(sync_analysis_lib_options INTERFACE UNW_LOCAL_ONLY)
 if (NOT APPLE)
     target_link_libraries(sync_analysis_lib_options INTERFACE dl INTERFACE unwind)
-    target_compile_options(sync_analysis_lib_options INTERFACE -D__USE_GNU)
 endif ()
 
 add_library(sync_analysis_lib SHARED

@@ -6,6 +6,7 @@
 
 #include "event_time.h"
 
+#define __USE_GNU
 #include <dlfcn.h>
 
 extern int main(int argc, char** argv);
