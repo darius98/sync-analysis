@@ -21,9 +21,10 @@ static bool work(FILE* file) {
   }
 
   for (int i = front; i < back; i++) {
-    while (atomic_load(&buf_page->storage[i].signature) !=
-           SYAN_EVENT_SIGNATURE) {
-    }
+    int32_t ret;
+    do {
+      __atomic_load(&buf_page->storage[i].signature, &ret, __ATOMIC_ACQUIRE);
+    } while (ret != SYAN_EVENT_SIGNATURE);
   }
 
   int num_bytes = (back - front) * sizeof(SyanEvent);
