@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "event.h"
 #include "event_time.h"
 
 #define __USE_GNU
@@ -59,49 +58,39 @@ int syan_init_dump_file_header(SyanDumpFileHeader* header, int argc,
 
 int syan_write_dump_file_header(FILE* stream,
                                 const SyanDumpFileHeader* header) {
-  size_t total_bytes = 0;
   size_t num_written;
   num_written = fwrite(&header->start_time, sizeof(struct timespec), 1, stream);
-  total_bytes += sizeof(struct timespec) * 1;
   if (num_written != 1) {
     return 1;
   }
 
   num_written = fwrite(&header->program_name_length, sizeof(size_t), 1, stream);
-  total_bytes += sizeof(size_t) * 1;
   if (num_written != 1) {
     return 1;
   }
 
   num_written = fwrite(header->program_name, sizeof(char),
                        header->program_name_length, stream);
-  total_bytes += sizeof(char) * header->program_name_length;
   if (num_written != header->program_name_length) {
     return 1;
   }
 
   num_written =
       fwrite(&header->program_command_length, sizeof(size_t), 1, stream);
-  total_bytes += sizeof(size_t) * 1;
   if (num_written != 1) {
     return 1;
   }
 
   num_written = fwrite(header->program_command, sizeof(char),
                        header->program_command_length, stream);
-  total_bytes += sizeof(char) * header->program_command_length;
   if (num_written != header->program_command_length) {
     return 1;
   }
 
   num_written = fwrite(&header->program_load_addr, sizeof(intptr_t), 1, stream);
-  total_bytes += sizeof(intptr_t) * 1;
   if (num_written != 1) {
     return 1;
   }
-
-  fprintf(stderr, "Wrote a header of %lu bytes\n", total_bytes);
-  fprintf(stderr, "sizeof(SyanEvent) in library: %lu\n", sizeof(SyanEvent));
 
   return 0;
 }

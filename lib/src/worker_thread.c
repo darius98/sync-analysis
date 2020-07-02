@@ -29,14 +29,6 @@ static bool work(FILE* file) {
 
   int num_bytes = (back - front) * sizeof(SyanEvent);
   int num_written = fwrite(&buf_page->storage[front], 1, num_bytes, file);
-  for (int i = front; i < back; i++) {
-    fprintf(stderr, "Event:");
-    for (char* ptr = (char*)&buf_page->storage[i];
-         ptr < ((char*)&buf_page->storage[i] + sizeof(SyanEvent)); ptr += 4) {
-      fprintf(stderr, " %d", *(int*)ptr);
-    }
-    fprintf(stderr, "\n");
-  }
   if (num_written < num_bytes) {
     fprintf(stderr,
             "SyncAnalysis write failed: num_events=%d, num_bytes=%d, "
