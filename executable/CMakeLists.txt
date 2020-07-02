@@ -6,7 +6,7 @@ else ()
     set(sync_analysis_PLATFORM_SPECIFIC_SRC
             ${CMAKE_CURRENT_SOURCE_DIR}/src/stacktrace_symbolizer_linux.cpp)
 endif ()
-add_library(sync_analysis_executable_lib
+add_library(sync_analysis_analyzer_api SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/src/analyzer.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/database.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/debug.cpp
@@ -20,13 +20,13 @@ add_library(sync_analysis_executable_lib
         ${CMAKE_CURRENT_SOURCE_DIR}/src/stacktrace_symbolizer.cpp
         ${sync_analysis_PLATFORM_SPECIFIC_SRC}
         )
-target_include_directories(sync_analysis_executable_lib
+target_include_directories(sync_analysis_analyzer_api
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../
         SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/mcga-cli/include
         )
-target_link_libraries(sync_analysis_executable_lib PRIVATE mcga_cli PRIVATE sync_analysis_lib_options PRIVATE dl)
-target_compile_definitions(sync_analysis_executable_lib PUBLIC
+target_link_libraries(sync_analysis_analyzer_api PUBLIC mcga_cli PUBLIC sync_analysis_lib_options)
+target_compile_definitions(sync_analysis_analyzer_api PUBLIC
         -DSYNC_ANALYSIS_IS_IN_EXECUTABLE
         -DSYNC_ANALYSIS_VERSION="${SYNC_ANALYSIS_VERSION}"
         )
@@ -34,8 +34,7 @@ target_compile_definitions(sync_analysis_executable_lib PUBLIC
 add_executable(sync_analysis
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
         )
-target_link_libraries(sync_analysis sync_analysis_executable_lib mcga_cli sync_analysis_lib_options)
-target_link_options(sync_analysis PUBLIC -rdynamic)
+target_link_libraries(sync_analysis sync_analysis_analyzer_api)
 
 install(TARGETS sync_analysis DESTINATION bin)
 install(DIRECTORY include DESTINATION .)
