@@ -82,12 +82,8 @@ public:
     close(stdout_pipe[PIPE_READ]);
     close(stdout_pipe[PIPE_WRITE]);
 
-    const char* args[] = {"/usr/bin/addr2line",
-                          "-e",
-                          binary_file_path.c_str(),
-                          "-j",
-                          ".text",
-                          nullptr};
+    const char* args[] = {"/usr/bin/addr2line",     "-C",   "-f", "-e",
+                          binary_file_path.c_str(), nullptr};
     if (execv("/usr/bin/addr2line", (char* const*)args) != 0) {
       std::cerr << "Failed to execute stacktrace symbolizer process"
                 << " errno=" << errno << " (" << strerror(errno) << ")\n";
@@ -110,7 +106,6 @@ public:
             << pc - dump_file_header.program_load_addr << "\n";
       }
     }
-    addr2line_command_builder << '\n';
     std::string addr2line_command = addr2line_command_builder.str();
     size_t total_written = 0;
     while (total_written < addr2line_command.size()) {
@@ -125,10 +120,11 @@ public:
       total_written += written;
     }
 
-    int num_lines_expected = std::count_if(std::begin(stack_trace),
-                                           std::end(stack_trace), [](auto pc) {
-                                             return pc != 0;
-                                           });
+    int num_lines_expected =
+        2 * std::count_if(std::begin(stack_trace), std::end(stack_trace),
+                          [](auto pc) {
+                            return pc != 0;
+                          });
 
     int num_lines = 0;
     char ch;
@@ -149,13 +145,19 @@ public:
         std::abort();
       }
       num_consecutive_read_failures = 0;
-      formatter << ch;
+      if (ch == '\n' && num_lines % 2 == 0) {
+        formatter << ' ';
+      } else {
+        formatter << ch;
+      }
       if (ch == '\n') {
         num_lines += 1;
         if (num_lines == num_lines_expected) {
           break;
         }
-        formatter << "\t\t";
+        if (num_lines % 2 == 0) {
+          formatter << "\t\t";
+        }
       }
     }
     if (num_consecutive_read_failures == 20000) {
