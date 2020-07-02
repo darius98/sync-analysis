@@ -16,8 +16,7 @@ Report create_report();
 }  // namespace syan
 
 #if __GNUC__ >= 4
-#define SYAN_ANALYZER_API                                                      \
-  __attribute__((visibility("default"))) extern "C" [[maybe_unused]]
+#define SYAN_ANALYZER_API extern "C" [[maybe_unused]]
 #else
 #define SYAN_ANALYZER_API extern "C" [[maybe_unused]]
 #endif

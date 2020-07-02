@@ -1,4 +1,5 @@
 #include <benchmark/benchmark.h>
+#include <atomic>
 #include <numeric>
 #include <thread>
 #include <vector>

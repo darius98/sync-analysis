@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#define __USE_GNU
 #include <dlfcn.h>
 #include <pthread.h>
 
@@ -19,20 +20,20 @@
               dlerror());                                                      \
     }                                                                          \
   }                                                                            \
-  __attribute__((visibility("default"))) int NAME ARGS
+  int NAME ARGS
 
 SYAN_SHIM(pthread_create, (pthread_t * id, const pthread_attr_t* attr,
                            void* (*func)(void*), void* arg)) {
   void* event = syan_initialize_event(SA_EV_THREAD_ON_CREATE);
   int result = syan_shimmed_pthread_create(id, attr, func, arg);
-  syan_finalize_event(event, *id);
+  syan_finalize_event(event, (void*)*id);
   return result;
 }
 
 SYAN_SHIM(pthread_join, (pthread_t id, void** ret)) {
   int result = syan_shimmed_pthread_join(id, ret);
   if (result == 0) {
-    syan_capture_event(SA_EV_THREAD_ON_JOIN, id);
+    syan_capture_event(SA_EV_THREAD_ON_JOIN, (void*)id);
   }
   return result;
 }
@@ -40,7 +41,7 @@ SYAN_SHIM(pthread_join, (pthread_t id, void** ret)) {
 SYAN_SHIM(pthread_detach, (pthread_t id)) {
   int result = syan_shimmed_pthread_detach(id);
   if (result == 0) {
-    syan_capture_event(SA_EV_THREAD_ON_DETACH, id);
+    syan_capture_event(SA_EV_THREAD_ON_DETACH, (void*)id);
   }
   return result;
 }
