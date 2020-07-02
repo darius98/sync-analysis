@@ -1,7 +1,9 @@
 add_library(sync_analysis_lib_options INTERFACE)
 target_include_directories(sync_analysis_lib_options INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_definitions(sync_analysis_lib_options INTERFACE UNW_LOCAL_ONLY)
 if (NOT APPLE)
     target_link_libraries(sync_analysis_lib_options INTERFACE dl INTERFACE unwind)
+    target_compile_options(sync_analysis_lib_options INTERFACE -D__USE_GNU)
 endif ()
 
 add_library(sync_analysis_lib SHARED
@@ -15,10 +17,7 @@ add_library(sync_analysis_lib SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/src/worker_thread.c
         )
 target_link_libraries(sync_analysis_lib PUBLIC pthread PUBLIC sync_analysis_lib_options)
-target_compile_definitions(sync_analysis_lib PRIVATE UNW_LOCAL_ONLY)
-if (NOT APPLE)
-    target_link_libraries(sync_analysis_lib PUBLIC dl PUBLIC unwind)
-else ()
+if (APPLE)
     target_link_options(sync_analysis_lib PUBLIC -Wl,-U,_main)
 endif ()
 set_target_properties(sync_analysis_lib PROPERTIES OUTPUT_NAME sync_analysis)
