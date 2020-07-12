@@ -44,7 +44,7 @@ void Report::send() {
   }
 
   for (const auto& note : thread_notes) {
-    sections.emplace_back("Note: " + database().thread_name(note) +
+    sections.emplace_back("Note: thread " + database().thread_name(note) +
                               " was created here: ",
                           database().thread_create(note));
   }

@@ -78,7 +78,7 @@ std::vector<Analyzer> find_analyzers(const Options& options) {
           *static_cast<const char**>(syan_analyzer_name_symbol);
       if (respects_analyzer_name_rules(syan_analyzer_name,
                                        options.analyzer_name_rules)) {
-        analyzers.emplace_back(std::string{syan_analyzer_name},
+        analyzers.emplace_back(std::string{syan_analyzer_name}, path.string(),
                                std::move(handle));
       }
     }

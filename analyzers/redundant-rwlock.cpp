@@ -24,7 +24,9 @@ struct RWLockState {
       report.set_level(Report::Level::warning);
       report.set_description("Read-write lock was only used as a read lock. "
                              "Can be removed completely.");
-      report.add_section("Read-write lock created here", create_event);
+      report.add_section("Read-write lock created on thread " +
+                             database().thread_name(create_event) + " here:",
+                         create_event);
     }
     if (!was_ever_rd_locked) {
       auto report = create_report();

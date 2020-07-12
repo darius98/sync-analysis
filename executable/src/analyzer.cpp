@@ -10,8 +10,10 @@ void DsoClose::operator()(void* handle) const noexcept {
   }
 }
 
-Analyzer::Analyzer(std::string name, DsoHandle dso_handle)
+Analyzer::Analyzer(std::string name, std::string dso_file_path,
+                   DsoHandle dso_handle)
     : name{std::move(name)},
+      dso_file_path{std::move(dso_file_path)},
       dso_handle{std::move(dso_handle)},
       start_up_impl{find_func_in_dso("syan_analyzer_start_up")},
       on_event_impl{find_func_in_dso("syan_analyzer_on_event")},
@@ -19,6 +21,10 @@ Analyzer::Analyzer(std::string name, DsoHandle dso_handle)
 
 std::string_view Analyzer::get_name() const noexcept {
   return name;
+}
+
+std::string_view Analyzer::get_dso_file_path() const noexcept {
+  return dso_file_path;
 }
 
 void Analyzer::start_up() const noexcept {
